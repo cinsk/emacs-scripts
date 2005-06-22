@@ -1,7 +1,7 @@
 ;;; etheme.el --- Theme support in emacs
 
 ;;;
-;;; Copyright (C) 2005  Seong-Kook Shin <cinsky at gmail dot com>
+;;; Copyright (C) 2005  Seong-Kook Shin <cinsky@gmail.com>
 ;;;
 
 ;;; This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,8 @@
   '(("cinsk" 1) 
     ("vim" 2) 
     ("elflord" 3)
-    ("morning" 4))
+    ("morning" 4)
+    ("canyon" 5))
   "Installed etheme name alist")
 
 ;;;
@@ -89,76 +90,99 @@
 ;;;  font-lock-warning-face Red1 on unspecified
 
 (defvar etheme-cinsk-faces
-      '((default :foreground "powder blue" :background "black")
-	(modeline :foreground "white" :background "IndianRed4")
-	(modeline-inactive :foreground "grey80" :background "gray30")
-	(isearch :foreground "brown4" :background "palevioletred2")
-	(font-lock-comment-face :foreground "chocolate1")
-	(font-lock-constant-face :foreground "Aquamarine")
-	(font-lock-type-face :foreground "PaleGreen")
-	(font-lock-variable-name-face :foreground "LightGoldenrod")
-	(font-lock-function-name-face :foreground "LightSkyBlue")
-	(font-lock-preprocessor-face :foreground unspecified)
-	(font-lock-string-face :foreground "LightSalmon")
-	(font-lock-keyword-face :foreground "Cyan1"))
-      "cinsk style face attribute set")
+  '((default :foreground "powder blue" :background "black")
+    (modeline :foreground "white" :background "IndianRed4")
+    (modeline-inactive :foreground "grey80" :background "gray30")
+    (isearch :foreground "brown4" :background "palevioletred2")
+    ;; (font-lock-builtin-face :foreground "DarkGoldenrod4")
+    (font-lock-comment-face :foreground "chocolate1")
+    (font-lock-constant-face :foreground "Aquamarine")
+    (font-lock-type-face :foreground "PaleGreen")
+    (font-lock-variable-name-face :foreground "LightGoldenrod")
+    (font-lock-function-name-face :foreground "LightSkyBlue")
+    (font-lock-preprocessor-face :foreground unspecified)
+    (font-lock-string-face :foreground "LightSalmon")
+    (font-lock-keyword-face :foreground "Cyan1"))
+  "cinsk style face attribute set")
 
 (defvar etheme-cinsk-hook
   nil
   "Hook for cinsk theme")
 
+(defvar etheme-canyon-faces
+  '((default :foreground "grey30" :background "NavajoWhite2")
+    (modeline :foreground "grey90" :background "chocolate2")
+    (modeline-inactive :foreground "grey80" :background "chocolate4")
+    (isearch :foreground "brown4" :background "palevioletred2")
+    (font-lock-builtin-face :foreground "DarkGoldenrod4")
+    (font-lock-comment-face :foreground "Firebrick")
+    (font-lock-constant-face :foreground "purple4")
+    (font-lock-type-face :foreground "aquamarine4")
+    (font-lock-variable-name-face :foreground "cyan4")
+    (font-lock-function-name-face :foreground "green4")
+    (font-lock-preprocessor-face :foreground "IndianRed3")
+    (font-lock-string-face :foreground "HotPink4")
+    (font-lock-keyword-face :foreground "DarkOrange4")))
+
+(defvar etheme-canyon-hook
+  nil
+  "Hook for canyon theme")
+
 (defvar etheme-vim-faces
-      '((default :foreground "gray" :background "black")
-	(modeline :foreground "black" :background "gray75")
-	(modeline-inactive :foreground "grey80" :background "gray30")
-	(isearch :foreground "brown4" :background "palevioletred2")
-	(font-lock-comment-face :foreground "RoyalBlue")
-	(font-lock-constant-face :foreground "Aquamarine")
-	(font-lock-type-face :foreground "green")
-	(font-lock-variable-name-face :foreground "LightGoldenrod")
-	(font-lock-function-name-face :foreground "LightSkyBlue")
-	(font-lock-preprocessor-face :foreground "magenta")
-	(font-lock-string-face :foreground "red")
-	(font-lock-keyword-face :foreground "DarkOrange2"))
-      "graphical version of vim style face attribute set")
+  '((default :foreground "gray" :background "black")
+    (modeline :foreground "black" :background "gray75")
+    (modeline-inactive :foreground "grey80" :background "gray30")
+    (isearch :foreground "brown4" :background "palevioletred2")
+    ;; (font-lock-builtin-face :foreground "DarkGoldenrod4")
+    (font-lock-comment-face :foreground "RoyalBlue")
+    (font-lock-constant-face :foreground "Aquamarine")
+    (font-lock-type-face :foreground "green")
+    (font-lock-variable-name-face :foreground "LightGoldenrod")
+    (font-lock-function-name-face :foreground "LightSkyBlue")
+    (font-lock-preprocessor-face :foreground "magenta")
+    (font-lock-string-face :foreground "red")
+    (font-lock-keyword-face :foreground "DarkOrange2"))
+  "graphical version of vim style face attribute set")
 
 (defvar etheme-vim-hook
   nil
   "Hook for vim theme")
 
 (defvar etheme-elflord-faces
-      '((default :foreground "cyan" :background "black")
-	(modeline :foreground "black" :background "gray75")
-	(modeline-inactive :foreground "grey80" :background "gray30")
-	(isearch :foreground "brown4" :background "palevioletred2")
-	(font-lock-comment-face :foreground "#80a0ff")
-	(font-lock-constant-face :foreground "magenta")
-	(font-lock-type-face :foreground "#60ff60")
-	(font-lock-variable-name-face :foreground "#40ffff")
-	(font-lock-function-name-face :foreground "white")
-	(font-lock-preprocessor-face :foreground "#ff80ff")
-	(font-lock-string-face :foreground "magenta")
-	(font-lock-keyword-face :foreground "#aa4444"))
-      "vim elflord-like face attribute set")
+  '((default :foreground "cyan" :background "black")
+    (modeline :foreground "black" :background "gray75")
+    (modeline-inactive :foreground "grey80" :background "gray30")
+    (isearch :foreground "brown4" :background "palevioletred2")
+    ;; (font-lock-builtin-face :foreground "DarkGoldenrod4")
+    (font-lock-comment-face :foreground "#80a0ff")
+    (font-lock-constant-face :foreground "magenta")
+    (font-lock-type-face :foreground "#60ff60")
+    (font-lock-variable-name-face :foreground "#40ffff")
+    (font-lock-function-name-face :foreground "white")
+    (font-lock-preprocessor-face :foreground "#ff80ff")
+    (font-lock-string-face :foreground "magenta")
+    (font-lock-keyword-face :foreground "#aa4444"))
+  "vim elflord-like face attribute set")
 
 (defvar etheme-elflord-hook
   nil
   "Hook for elflord theme")
 
 (defvar etheme-morning-faces
-      '((default :foreground "black" :background "grey90")
-	(modeline :foreground unspecified :background "LightBlue1")
-	(modeline-inactive :foreground unspecified :background "LightBlue3")
-	(isearch :foreground unspecified :background "yellow")
-	(font-lock-comment-face :foreground "blue")
-	(font-lock-constant-face :foreground "magenta")
-	(font-lock-type-face :foreground "forest green")
-	(font-lock-variable-name-face :foreground "blue4")
-	(font-lock-function-name-face :foreground "sienna4")
-	(font-lock-preprocessor-face :foreground "DarkViolet")
-	(font-lock-string-face :foreground "magenta")
-	(font-lock-keyword-face :foreground "SlateBlue"))
-      "vim morning-like face attribute set")
+  '((default :foreground "black" :background "grey90")
+    (modeline :foreground unspecified :background "LightBlue1")
+    (modeline-inactive :foreground unspecified :background "LightBlue3")
+    (isearch :foreground unspecified :background "yellow")
+    ;; (font-lock-builtin-face :foreground "DarkGoldenrod4")
+    (font-lock-comment-face :foreground "blue")
+    (font-lock-constant-face :foreground "magenta")
+    (font-lock-type-face :foreground "forest green")
+    (font-lock-variable-name-face :foreground "blue4")
+    (font-lock-function-name-face :foreground "sienna4")
+    (font-lock-preprocessor-face :foreground "DarkViolet")
+    (font-lock-string-face :foreground "magenta")
+    (font-lock-keyword-face :foreground "SlateBlue"))
+  "vim morning-like face attribute set")
 
 (defvar etheme-morning-hook
   nil
@@ -176,7 +200,7 @@
   (enum #'(lambda (arg)
 	    (apply #'set-face-attribute
 		   (append (list (car arg) nil) (cdr arg))))
-      theme))
+	theme))
 
 (defun etheme-run-hook (theme-name)
   "Run THEME-NAME hook"
@@ -210,15 +234,28 @@
 
 (etheme-add-hook "vim" 'menu-bar-right-scroll-bar)
 (etheme-add-hook "vim" '(lambda () (tool-bar-mode 1)))
+(etheme-add-hook "vim" '(lambda () (set-cursor-color "white")))
+(etheme-add-hook "vim" '(lambda () (set-mouse-color "white")))
 
 (etheme-add-hook "morning" 'menu-bar-right-scroll-bar)
 (etheme-add-hook "morning" '(lambda () (tool-bar-mode 1)))
+(etheme-add-hook "morning" '(lambda () (set-cursor-color "plum4")))
+(etheme-add-hook "morning" '(lambda () (set-mouse-color "blue4")))
 
 (etheme-add-hook "elflord" 'menu-bar-right-scroll-bar)
 (etheme-add-hook "elflord" '(lambda () (tool-bar-mode 1)))
+(etheme-add-hook "elflord" '(lambda () (set-cursor-color "white")))
+(etheme-add-hook "elflord" '(lambda () (set-mouse-color "white")))
 
 (etheme-add-hook "cinsk" 'menu-bar-left-scroll-bar)
 (etheme-add-hook "cinsk" '(lambda () (tool-bar-mode -1)))
+(etheme-add-hook "cinsk" '(lambda () (set-cursor-color "white")))
+(etheme-add-hook "cinsk" '(lambda () (set-mouse-color "white")))
+
+(etheme-add-hook "canyon" 'menu-bar-left-scroll-bar)
+(etheme-add-hook "canyon" '(lambda () (tool-bar-mode 1)))
+(etheme-add-hook "canyon" '(lambda () (set-cursor-color "plum4")))
+(etheme-add-hook "canyon" '(lambda () (set-mouse-color "blue4")))
 
 (provide 'etheme)
 
