@@ -1,7 +1,7 @@
 ;;; etheme.el --- Theme support in emacs
 
 ;;;
-;;; Copyright (C) 2005  Seong-Kook Shin <cinsky@gmail.com>
+;;; Copyright (C) 2005  Seong-Kook Shin <cinsky at gmail dot com>
 ;;;
 
 ;;; This program is free software; you can redistribute it and/or modify
