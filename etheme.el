@@ -89,6 +89,23 @@
 ;;;  font-lock-regexp-backslash-construct unspecified on unspecified
 ;;;  font-lock-warning-face Red1 on unspecified
 
+(defvar etheme-saved-face-list
+  '(modeline 
+    modeline-inactive
+    isearch
+    font-lock-builtin-face
+    font-lock-comment-face
+    font-lock-constant-face
+    font-lock-type-face
+    font-lock-variable-name-face
+    font-lock-function-name-face
+    font-lock-preprocessor-face
+    font-lock-string-face
+    font-lock-keyword-face)
+  "List of face names which will be stored between theme change."
+  )
+
+	     
 (defvar etheme-cinsk-faces
   '((default :foreground "powder blue" :background "black")
     (modeline :foreground "white" :background "IndianRed4")
@@ -188,16 +205,9 @@
   nil
   "Hook for morning theme")
 
-(defun enum (fn lst)
-  (let ((iter (lambda (first rest)
-		(funcall fn first)
-		(and rest
-		     (funcall iter (car rest) (cdr rest))))))
-    (funcall iter (car lst) (cdr lst))))
-
 (defun etheme-set-faces (theme)
   "Set the given face attribute set THEME"
-  (enum #'(lambda (arg)
+  (mapcar #'(lambda (arg)
 	    (apply #'set-face-attribute
 		   (append (list (car arg) nil) (cdr arg))))
 	theme))
