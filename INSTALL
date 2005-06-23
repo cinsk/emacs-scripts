@@ -1,0 +1,8 @@
+-*-text-*-
+
+$Id$
+
+Copy files to your $HOME directory like this:
+
+     dot-emacs.el -> $HOME/.emacs
+     lib/theme.el -> $HOME/.emacs.d/theme.el
