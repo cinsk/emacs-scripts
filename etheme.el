@@ -44,7 +44,11 @@
     ("vim" 2) 
     ("elflord" 3)
     ("morning" 4)
-    ("canyon" 5))
+    ("canyon" 5)
+    ("blue" 6)
+    ("darkblue" 7)
+    ("desert" 8)
+    )
   "Installed etheme name alist")
 
 ;;;
@@ -205,6 +209,67 @@
   nil
   "Hook for morning theme")
 
+(defvar etheme-blue-faces
+  '((default :foreground "white" :background "navy")
+    (modeline :foreground "black" :background "deep sky blue")
+    (modeline-inactive :foreground "grey60" :background "navy")
+    (isearch :foreground unspecified :background "yellow")
+    (font-lock-builtin-face :foreground "yellow")
+    (font-lock-comment-face :foreground "LightGrey")
+    (font-lock-constant-face :foreground "cyan")
+    (font-lock-type-face :foreground "yellow")
+    (font-lock-variable-name-face :foreground "burlywood")
+    (font-lock-function-name-face :foreground "beige")
+    (font-lock-preprocessor-face :foreground "green")
+    (font-lock-string-face :foreground "cyan")
+    (font-lock-keyword-face :foreground "tomato"))
+  "vim morning-like face attribute set")
+
+(defvar etheme-blue-hook
+  nil
+  "Hook for blue theme")
+
+(defvar etheme-darkblue-faces
+  '((default :foreground "LightGrey" :background "#000040")
+    (modeline :foreground "black" :background "deep sky blue")
+    (modeline-inactive :foreground "grey60" :background "navy")
+    (isearch :foreground unspecified :background "yellow")
+    (font-lock-builtin-face :foreground "yellow")
+    (font-lock-comment-face :foreground "#80a0ff")
+    (font-lock-constant-face :foreground "cyan")
+    (font-lock-type-face :foreground "#60ff60")
+    (font-lock-variable-name-face :foreground "#40ffff")
+    (font-lock-function-name-face :foreground "beige")
+    (font-lock-preprocessor-face :foreground "#ff80ff")
+    (font-lock-string-face :foreground "#ffa0a0")
+    (font-lock-keyword-face :foreground "green"))
+  "vim morning-like face attribute set")
+
+(defvar etheme-darkblue-hook
+  nil
+  "Hook for darkblue theme")
+
+(defvar etheme-desert-faces
+  '((default :foreground "white" :background "grey20")
+    (modeline :foreground "black" :background "deep sky blue")
+    (modeline-inactive :foreground "grey20" :background "#c2bfa5")
+    (isearch :foreground "slategrey" :background "khaki")
+    (font-lock-builtin-face :foreground "yellow")
+    (font-lock-comment-face :foreground "SkyBlue")
+    (font-lock-constant-face :foreground "#ffa0a0")
+    (font-lock-type-face :foreground "darkkhaki")
+    (font-lock-variable-name-face :foreground "palegreen")
+    (font-lock-function-name-face :foreground "beige")
+    (font-lock-preprocessor-face :foreground "indianred")
+    (font-lock-string-face :foreground "#ffa0a0")
+    (font-lock-keyword-face :foreground "navajowhite"))
+  "vim morning-like face attribute set")
+
+(defvar etheme-desert-hook
+  nil
+  "Hook for darkblue theme")
+
+
 (defun etheme-set-faces (theme)
   "Set the given face attribute set THEME"
   (mapcar #'(lambda (arg)
@@ -234,6 +299,7 @@
 (defun etheme-set-theme (theme-name)
   "Set the current theme to THEME-NAME"
   (interactive "P")
+  (global-font-lock-mode 1)
   (let ((name theme-name))
     (if (stringp name)
 	(etheme-apply-theme name)
@@ -266,6 +332,21 @@
 (etheme-add-hook "canyon" '(lambda () (tool-bar-mode 1)))
 (etheme-add-hook "canyon" '(lambda () (set-cursor-color "plum4")))
 (etheme-add-hook "canyon" '(lambda () (set-mouse-color "blue4")))
+
+(etheme-add-hook "blue" 'menu-bar-right-scroll-bar)
+(etheme-add-hook "blue" '(lambda () (tool-bar-mode -1)))
+(etheme-add-hook "blue" '(lambda () (set-cursor-color "SkyBlue")))
+(etheme-add-hook "blue" '(lambda () (set-mouse-color "DimGray")))
+
+(etheme-add-hook "darkblue" 'menu-bar-right-scroll-bar)
+(etheme-add-hook "darkblue" '(lambda () (tool-bar-mode -1)))
+(etheme-add-hook "darkblue" '(lambda () (set-cursor-color "white")))
+(etheme-add-hook "darkblue" '(lambda () (set-mouse-color "yellow")))
+
+(etheme-add-hook "desert" 'menu-bar-right-scroll-bar)
+(etheme-add-hook "desert" '(lambda () (tool-bar-mode -1)))
+(etheme-add-hook "desert" '(lambda () (set-cursor-color "khaki")))
+(etheme-add-hook "desert" '(lambda () (set-mouse-color "yellow")))
 
 (provide 'etheme)
 
