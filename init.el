@@ -63,7 +63,8 @@
   (defun delete-quail-completions ()
     (when (get-buffer "*Quail Completions*")
       (kill-buffer "*Quail Completions*")))
-  (set-selection-coding-system 'euc-kr)
+  ;(set-selection-coding-system 'euc-kr)
+  (set-selection-coding-system 'utf-8)
 
   (unless window-system
     (menu-bar-mode -1)
@@ -90,6 +91,17 @@
       (define-key quail-translation-keymap "\C-?"
         'quail-translation-help))))
 
+(defun unicode-shell ()
+  "Execute the shell buffer in UTF-8 encoding.
+Note that you'll need to set the environment variable LANG and others 
+appropriately."
+  (interactive)
+  (let ((coding-system-for-read 'utf-8)
+        (coding-system-for-write 'utf-8)
+        (coding-system-require-warning t))
+    (call-interactively 'shell)))
+
+
 ;;; for wheel mouse
 ;;;
 ;;;  http://www.inria.fr/koala/colas/mouse-wheel-scroll/#gnuemacs
@@ -105,6 +117,11 @@
 (cond (window-system
        (mwheel-install)
        ))
+
+;;;
+;;; Force mouse yanks at point not at cursor.
+;;;
+(setq mouse-yank-at-point t)
 
 ;; frame title : set to buffer name
 ;;(setq frame-title-format "Emacs - %f ")  
@@ -185,9 +202,8 @@
 ;;;       Keypad PF keys.
 ;;;
 
-(global-set-key "\C-cc" 'compile)       ; M-x compile
-;;(global-set-key "\C-cs" 'shell)        ; M-x shell
-(global-set-key "\C-cd" 'shell)         ; M-x shell
+(global-set-key "\C-cc" 'compile)
+(global-set-key "\C-cd" 'unicode-shell)
 
 (global-set-key [?\C-.] 'find-tag-other-window) ; C-x o 
 (global-set-key "\C-c\C-l" 'goto-line)
@@ -379,7 +395,7 @@ character to the spaces"
 ;;; emacs server
 ;;;
 ;;;(load "/usr/share/emacs/21.2/lisp/gnuserv")
-;;(server-start)
+(server-start)
 ;;;(load "gnuserv")
 ;;;(gnuserv-start)
 
@@ -447,8 +463,8 @@ character to the spaces"
 ;;;
 ;;; psgml mode setup
 ;;;
-(autoload 'sgml-mode "psgml" "Major mode to edit SGML files." t)
-(autoload 'xml-mode "psgml" "Major mode to edit XML files." t)
+;(autoload 'sgml-mode "psgml" "Major mode to edit SGML files." t)
+;(autoload 'xml-mode "psgml" "Major mode to edit XML files." t)
 
 
 ;;;
@@ -505,6 +521,13 @@ character to the spaces"
 (require 'xcscope)
 
 ;;;
+;;; Version Control
+;;;
+(global-set-key [(control x) (control q)] 'vc-toggle-read-only)
+
+
+
+;;;
 ;;; etheme support
 ;;;
 (require 'etheme)
@@ -559,10 +582,13 @@ p           (auto-raise . t)
 
 ;;(split-window-horizontally)
 
-;;(setq explicit-bash-args '("--noediting" "-i" "-l"))
+(setq explicit-bash-args (quote ("--noediting" "-i" "-l")))
 
 (setq gnus-select-method '(nntp "news.kornet.net"))
 
+(require 'color-theme)
+;(color-theme-deep-blue)
+;(set-face-font 'default "fontset-lucida14")
 
 (fancy-splash-screens)
 ;;; To save & load Emacs session, following lines should be the last line
@@ -583,3 +609,6 @@ p           (auto-raise . t)
 
 ;;(desktop-load-default)
 ;;(desktop-read)
+
+
+;(put 'narrow-to-region 'disabled nil)
