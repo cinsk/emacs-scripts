@@ -424,6 +424,44 @@ character to the spaces"
   (interactive "p")
   (other-window (- arg)))
 
+(defun first-window ()
+  "Select the first window of the current frame."
+  (let ((window nil))
+    (mapcar '(lambda (w)
+               (let ((edges (window-edges w)))
+                 (and (eql (car edges) 0)
+                      (eql (cadr edges) 0)
+                      (setq window w)))) (window-list))
+    window))
+
+(defun abs-other-window (index)
+  "Same as \\[other-window] except the base is the first window not the
+current window"
+  (interactive "p")
+  (select-window (first-window))
+  (other-window index))
+
+(global-set-key [(control x) ?w ?0]
+                '(lambda () (interactive) (abs-other-window 0)))
+(global-set-key [(control x) ?w ?1]
+                '(lambda () (interactive) (abs-other-window 1)))
+(global-set-key [(control x) ?w ?2]
+                '(lambda () (interactive) (abs-other-window 2)))
+(global-set-key [(control x) ?w ?3]
+                '(lambda () (interactive) (abs-other-window 3)))
+(global-set-key [(control x) ?w ?4]
+                '(lambda () (interactive) (abs-other-window 4)))
+(global-set-key [(control x) ?w ?5]
+                '(lambda () (interactive) (abs-other-window 5)))
+(global-set-key [(control x) ?w ?6]
+                '(lambda () (interactive) (abs-other-window 6)))
+(global-set-key [(control x) ?w ?7]
+                '(lambda () (interactive) (abs-other-window 7)))
+(global-set-key [(control x) ?w ?8]
+                '(lambda () (interactive) (abs-other-window 8)))
+(global-set-key [(control x) ?w ?9]
+                '(lambda () (interactive) (abs-other-window 9)))
+
 ;(global-set-key [C-tab] 'other-window)  ; C-x o
 ;(global-set-key [S-iso-lefttab] 'reverse-other-window)
 ;(global-set-key [(backtab)] 'reverse-other-window)
