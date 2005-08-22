@@ -102,6 +102,12 @@ appropriately."
     (call-interactively 'shell)))
 
 
+;;;
+;;; Buffer Menu
+;;;
+;;; Sort by the 2nd column (buffer name) in Buffer list
+(setq Buffer-menu-sort-column 2)
+
 ;;; for wheel mouse
 ;;;
 ;;;  http://www.inria.fr/koala/colas/mouse-wheel-scroll/#gnuemacs
@@ -497,6 +503,19 @@ current window"
 (global-set-key [(control x) ?f ?o] 'smart-other-frame)
 (global-set-key [(control x) ?f ?p] 'reverse-smart-other-frame)
 
+(defun run-command-other-frame (command)
+  "Run COMMAND in a new frame."
+  (interactive "CC-x 5 M-x ")
+  (select-frame (new-frame))
+  (call-interactively command))
+(global-set-key "\C-x5\M-x" 'run-command-other-frame)
+
+
+;(require 'autofit-frame)
+;(add-hook 'after-make-frame-functions 'fit-frame)
+;
+;(add-hook 'temp-buffer-show-hook
+;          'fit-frame-if-one-window 'append)
 
 ;;;
 ;;; psgml mode setup
@@ -568,8 +587,8 @@ current window"
 ;;;
 ;;; etheme support
 ;;;
-(require 'etheme)
-(etheme-set-theme "cinsk")
+;(require 'etheme)
+;(etheme-set-theme "cinsk")
 
 ;;(when window-system
 (when nil
@@ -626,7 +645,8 @@ p           (auto-raise . t)
 
 (require 'color-theme)
 ;(color-theme-deep-blue)
-;(set-face-font 'default "fontset-lucida14")
+(color-theme-robin-hood)
+(set-face-font 'default "fontset-lucida14")
 
 (fancy-splash-screens)
 ;;; To save & load Emacs session, following lines should be the last line
