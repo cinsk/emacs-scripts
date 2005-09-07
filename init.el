@@ -1,3 +1,4 @@
+
 ;;; -*-emacs-lisp-*-
 
 ;;; $Id$
@@ -49,16 +50,16 @@
 (require 'cl)
 (when enable-multibyte-characters
   (set-language-environment "Korean")
-  (setq-default file-name-coding-system 'euc-kr)
+  (setq-default file-name-coding-system 'utf-8)
   ;; comment out if you use 3 bulsik
   (setq default-korean-keyboard "3")
+  (setq default-input-method "korean-hangul3")
   (setq input-method-verbose-flag nil
         input-method-highlight-flag nil)
   ;;;; give highest priority to euc-kr
-  (prefer-coding-system 'iso-2022-7bit)
-  (set-default-coding-systems 'euc-kr)
-  (when window-system
-    (global-set-key "\C-\\" 'undefined))
+  (prefer-coding-system 'utf-8)
+  (set-default-coding-systems 'utf-8)
+
   (add-hook 'quail-inactivate-hook 'delete-quail-completions)
   (defun delete-quail-completions ()
     (when (get-buffer "*Quail Completions*")
@@ -66,10 +67,10 @@
   ;(set-selection-coding-system 'euc-kr)
   (set-selection-coding-system 'utf-8)
 
-  (unless window-system
-    (menu-bar-mode -1)
-    (set-keyboard-coding-system 'nil)
-    (set-terminal-coding-system 'euc-kr))
+  ;;(unless window-system
+  ;;(menu-bar-mode -1)
+  ;;(set-keyboard-coding-system 'nil)
+  ;;(set-terminal-coding-system 'euc-kr))
 
   ;; Hangul Mail setting
   (setq-default sendmail-coding-system 'euc-kr)
@@ -77,8 +78,8 @@
   ;; For use of `emacs -nw' in Korean terminal emulator
   (if (and (null window-system) (null noninteractive))
       (progn
-        (set-keyboard-coding-system 'euc-kr)
-        (set-terminal-coding-system 'euc-kr)))
+        (set-keyboard-coding-system 'utf-8)
+        (set-terminal-coding-system 'utf-8)))
 
   ;; hangul printing for ps-mule.el
   (setq-default ps-multibyte-buffer 'non-latin-printer)
@@ -88,8 +89,17 @@
     '(progn
       (define-key quail-translation-keymap "\C-h"
         'quail-delete-last-char)
+      ;;(define-key quail-translation-keymap "\C-?"
+      ;;  'quail-translation-help)
       (define-key quail-translation-keymap "\C-?"
-        'quail-translation-help))))
+        'quail-delete-last-char)
+      ))
+
+  ;; The default coding system of the dired buffer is utf-8.
+  (add-hook 'dired-before-readin-hook
+            (lambda ()
+              (set (make-local-variable 'coding-system-for-read) 'utf-8)))
+)
 
 (defun unicode-shell ()
   "Execute the shell buffer in UTF-8 encoding.
@@ -225,7 +235,8 @@ appropriately."
 ;;;
 ;;;(add-hook 'c-mode-hook 'my-c-mode-hook)
 
-
+(add-hook 'emacs-lisp-mode-hook '(lambda ()
+                                   (visit-tags-table "/usr/share/emacs/TAGS")))
 
 (define-abbrev-table 'c-mode-abbrev-table 
   ;; I don't know why `@' for abbreviation doesn't work.
@@ -425,6 +436,17 @@ character to the spaces"
 ;;;
 ;;; navigation customization
 ;;;
+
+(require 'cc-mode)
+(add-hook 'c-mode-common-hook (lambda () (cwarn-mode 1)))
+
+;(define-key c-mode-base-map [(meta ?F)] 'c-forward-into-nomemclature)
+;(define-key c-mode-base-map [(meta ?B)] 'c-backward-into-nomemclature)
+(define-key c-mode-base-map [(meta ?{)] 'c-beginning-of-defun)
+(define-key c-mode-base-map [(meta ?})] 'c-end-of-defun)
+(define-key c-mode-base-map [(control meta ?{)] 'c-up-conditional-with-else)
+(define-key c-mode-base-map [(control meta ?})] 'c-down-conditional-with-else)
+
 (defun reverse-other-window (arg) 
   "Reverse `other-window' with no argument"
   (interactive "p")
@@ -569,6 +591,19 @@ current window"
 
 
 ;;;
+;;; Launch view-mode when visiting other's file.
+;;;
+(defun file-uid (filename)
+  (caddr (file-attributes (expand-file-name filename))))
+
+(defun smart-view-mode ()
+  (let ((file (buffer-file-name)))
+    (and (not (eq (file-uid file) (user-uid)))
+         (view-mode 1))))
+
+(add-hook 'find-file-hook 'smart-view-mode)
+
+;;;
 ;;; cscope binding
 ;;;
 ;;; You need to install cscope(1) and xcscope.el to use below bindings
@@ -583,13 +618,6 @@ current window"
 (global-set-key [(control x) (control q)] 'vc-toggle-read-only)
 
 
-
-;;;
-;;; etheme support
-;;;
-;(require 'etheme)
-;(etheme-set-theme "cinsk")
-
 ;;(when window-system
 (when nil
   (setq same-window-buffer-names 
@@ -602,7 +630,7 @@ current window"
            (font . "fixed")
            (left . 0)                   ; in pixels
            (top . -30)
-p           (auto-raise . t)
+           (auto-raise . t)
            (width . 70)
            (height . 10)                ; in characters
            (vertical-scroll-bars . nil)
@@ -643,11 +671,20 @@ p           (auto-raise . t)
 
 (setq gnus-select-method '(nntp "news.kornet.net"))
 
-(require 'color-theme)
-;(color-theme-deep-blue)
-(color-theme-robin-hood)
-(set-face-font 'default "fontset-lucida14")
+(when window-system
+  (require 'color-theme)
+  ;(color-theme-deep-blue)
+  (color-theme-robin-hood)
+  (set-face-font 'default "fontset-lucida14"))
 
+;;;
+;;; Emacs-wiki support
+;;;
+(require 'emacs-wiki)
+
+;;;
+;;; Display splash screen on startup
+;;;
 (fancy-splash-screens)
 ;;; To save & load Emacs session, following lines should be the last line
 ;;; in this file. 
