@@ -545,6 +545,9 @@ current window"
 ;(autoload 'sgml-mode "psgml" "Major mode to edit SGML files." t)
 ;(autoload 'xml-mode "psgml" "Major mode to edit XML files." t)
 
+(require 'nxml-mode)
+(setq auto-mode-alist (cons '("\\.xml\\|.pvm" . nxml-mode)
+      auto-mode-alist))
 
 ;;;
 ;;; Dired and dired-x setting
@@ -589,6 +592,22 @@ current window"
     (dired-other-frame dir)))
 (global-set-key [(control x) ?f ?j] 'dired-jump-other-frame)
 
+(defun dired-find-file-other-frame (&optional arg)
+  (interactive "p")
+  (let ((buffer (get-file-buffer (dired-get-file-for-visit)))
+        (frame (next-frame (selected-frame) 'visible)))
+    (and (not buffer)
+         (setq buffer (find-file-noselect
+                       (dired-get-file-for-visit) nil nil nil)))
+    (and (or (not frame)
+             (eq frame (selected-frame)))
+         (setq frame (make-frame)))
+    (set-window-buffer (get-lru-window frame) buffer)
+    (and (< arg 0)
+         (select-frame-set-input-focus frame))))
+
+(eval-after-load "dired"
+  '(define-key dired-mode-map [(control return)] 'dired-find-file-other-frame))
 
 ;;;
 ;;; Launch view-mode when visiting other's file.
@@ -601,7 +620,7 @@ current window"
     (and (not (eq (file-uid file) (user-uid)))
          (view-mode 1))))
 
-(add-hook 'find-file-hook 'smart-view-mode)
+;(add-hook 'find-file-hook 'smart-view-mode)
 
 ;;;
 ;;; cscope binding
@@ -671,11 +690,31 @@ current window"
 
 (setq gnus-select-method '(nntp "news.kornet.net"))
 
+
+(defun select-random-color-theme ()
+  "Select random color theme"
+  (interactive)
+  (let* ((index (+ (random (- (length color-themes) 2)) 2))
+         (theme (nth index color-themes))
+         (name (symbol-name (car theme))))
+    (message "%s installed" name)
+    (funcall (car theme))))
+
+(defun set-frame-color-theme (frame)
+  (select-frame frame)
+  (select-random-color-theme))
+
 (when window-system
   (require 'color-theme)
+  (global-set-key [(control f1)] 'select-random-color-theme)
+  (add-hook 'after-make-frame-functions 'set-frame-color-theme)
+  
   ;(color-theme-deep-blue)
+  (setq color-theme-is-global nil)
   (color-theme-robin-hood)
-  (set-face-font 'default "fontset-lucida14"))
+  
+  (set-face-font 'default "fontset-lucida14")
+  )
 
 ;;;
 ;;; Emacs-wiki support
