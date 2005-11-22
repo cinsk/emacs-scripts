@@ -694,6 +694,7 @@ current window"
 (defun select-random-color-theme ()
   "Select random color theme"
   (interactive)
+  (random t)
   (let* ((index (+ (random (- (length color-themes) 2)) 2))
          (theme (nth index color-themes))
          (name (symbol-name (car theme))))
