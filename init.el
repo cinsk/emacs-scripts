@@ -1,4 +1,3 @@
-
 ;;; -*-emacs-lisp-*-
 
 ;;; $Id$
@@ -707,6 +706,8 @@ current window"
 
 (when window-system
   (require 'color-theme)
+  (require 'pink-bliss)
+  (require 'cinsk-wood)
   (global-set-key [(control f1)] 'select-random-color-theme)
   (add-hook 'after-make-frame-functions 'set-frame-color-theme)
   
