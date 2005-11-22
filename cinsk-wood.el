@@ -29,8 +29,9 @@
 (require 'color-theme)
 
 (add-to-list 'color-themes
-	     '(color-theme-cinsk-wood "Cinsk Wood"
-				      "Seong-Kook Shin <cinsk@gmail.com>"))
+	     '(color-theme-cinsk-wood 
+               "Cinsk Wood"
+               "Seong-Kook Shin <cinsk at gmail.com>"))
 
 (defun color-theme-cinsk-wood ()
   "Seong-Kook Shin's wood theme."
@@ -57,7 +58,7 @@
                     :box (:line-width 1 :style released-button)))))
      (tooltip ((t (:background "lemon chiffon" :foreground "violet red"))))
      ;; isearch
-     ;; (isearch ((t (:foreground "brown4" :background "palevioletred2"))))
+
      (isearch ((t (:foreground "beige" :background "palevioletred2"))))
      (isearch-lazy-highlight-face ((t (:foreground "red"))))
      ;; info-mode
