@@ -353,6 +353,7 @@ appropriately."
 
 (which-function-mode 1)			; display function names in mode-line
 (iswitchb-mode 1)			; smart buffer switching mode
+(setq iswitchb-default-method 'maybe-frame)
 
 (global-font-lock-mode 1)		; every buffer uses font-lock-mode
 (line-number-mode 1)			; show line number in mode-line
@@ -719,6 +720,32 @@ current window"
   )
 
 ;;;
+;;; Calender
+;;;
+(setq calendar-date-display-form
+      '(year "-" month "-" day (if dayname (concat ", " dayname))))
+(setq mark-holidays-in-calendar t)
+(setq mark-diary-entries-in-calendar t)
+
+(setq general-holidays
+      '((holiday-fixed 1 1 "설날")
+        (holiday-fixed 3 1 "삼일절")
+        (holiday-fixed 4 5 "식목일")
+        (holiday-fixed 5 5 "어린이날")
+        ;;(holiday-fixed 5 8 "어버이날")
+        ;;(holiday-fixed 5 15 "스승의날")
+        (holiday-fixed 6 6 "현충일")
+        (holiday-fixed 7 17 "제헌절")
+        (holiday-fixed 8 15 "광복절")
+        ;;(holiday-fixed 10 1 "국군의 날")
+        (holiday-fixed 10 3 "개천절")
+        ;;(holiday-fixed 10 9 "한글날")
+        (holiday-fixed 12 25 "성탄절")))
+
+(setq local-holidays
+      '((holiday-fixed 11 1 "삼성전자 창립일")))
+
+;;;
 ;;; Emacs-wiki support
 ;;;
 (require 'emacs-wiki)
@@ -746,5 +773,4 @@ current window"
 ;;(desktop-load-default)
 ;;(desktop-read)
 
-
-;(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-region 'disabled nil)
