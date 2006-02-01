@@ -432,6 +432,12 @@ character to the spaces"
 ;(global-set-key [up]   '(lambda () (interactive) (scroll-down 1)))
 ;(global-set-key [down] '(lambda () (interactive) (scroll-up 1)))
 
+(fset 'scroll-other-frame "\C-xo\C-v\C-xo")      ; C-x o C-v C-x o
+(fset 'scroll-other-frame-down "\C-xo\366\C-xo") ; C-x o M-v C-x o
+
+(global-set-key [(meta shift prior)] 'scroll-other-frame-down)
+(global-set-key [(meta shift next)] 'scroll-other-frame)
+
 
 ;;;
 ;;; navigation customization
@@ -440,8 +446,8 @@ character to the spaces"
 (require 'cc-mode)
 (add-hook 'c-mode-common-hook (lambda () (cwarn-mode 1)))
 
-;(define-key c-mode-base-map [(meta ?F)] 'c-forward-into-nomemclature)
-;(define-key c-mode-base-map [(meta ?B)] 'c-backward-into-nomemclature)
+(define-key c-mode-base-map [(meta ?F)] 'c-forward-into-nomenclature)
+(define-key c-mode-base-map [(meta ?B)] 'c-backward-into-nomenclature)
 (define-key c-mode-base-map [(meta ?{)] 'c-beginning-of-defun)
 (define-key c-mode-base-map [(meta ?})] 'c-end-of-defun)
 (define-key c-mode-base-map [(control meta ?{)] 'c-up-conditional-with-else)
@@ -716,7 +722,7 @@ current window"
   (setq color-theme-is-global nil)
   (color-theme-robin-hood)
   
-  (set-face-font 'default "fontset-lucida14")
+  ;(set-face-font 'default "fontset-etl14")
   )
 
 ;;;
@@ -744,6 +750,10 @@ current window"
 
 (setq local-holidays
       '((holiday-fixed 11 1 "삼성전자 창립일")))
+
+(autoload 'css-mode "css-mode")
+(setq auto-mode-alist
+      (cons '("\\.css\\'" . css-mode) auto-mode-alist))
 
 ;;;
 ;;; Emacs-wiki support
