@@ -29,8 +29,7 @@
     (progn
       (c-set-style "K&R")
       (setq c-basic-offset 8))))
-(setq auto-mode-alist (cons '("/linux.*/.*\\.[ch]$" . linux-c-mode)
-                            auto-mode-alist))
+(add-to-list 'auto-mode-alist '("/linux.*/.*\\.[ch]$" . linux-c-mode))
 
 ;; (setq-default make-backup-files nil)
 
@@ -234,8 +233,11 @@ appropriately."
 ;;;
 ;;;(add-hook 'c-mode-hook 'my-c-mode-hook)
 
-(add-hook 'emacs-lisp-mode-hook '(lambda ()
-                                   (visit-tags-table "/usr/share/emacs/TAGS")))
+(add-hook 'emacs-lisp-mode-hook 
+          '(lambda ()
+             (let ((tagfile "/usr/share/emacs/TAGS"))
+               (and (file-readable-p tagfile)
+                    (visit-tags-table "/usr/share/emacs/TAGS")))))
 
 (define-abbrev-table 'c-mode-abbrev-table 
   ;; I don't know why `@' for abbreviation doesn't work.
@@ -352,8 +354,13 @@ appropriately."
 ;;;(add-hook 'c++-mode-hook (function (lambda nil (which-function-mode))))
 
 (which-function-mode 1)			; display function names in mode-line
+
+;;;
+;;; Switching between buffers using isitchb
+;;;
 (iswitchb-mode 1)			; smart buffer switching mode
-(setq iswitchb-default-method 'maybe-frame)
+(setq iswitchb-default-method 'maybe-frame) ; ask to use another frame.
+
 
 (global-font-lock-mode 1)		; every buffer uses font-lock-mode
 (line-number-mode 1)			; show line number in mode-line
@@ -392,6 +399,7 @@ character to the spaces"
                             (add-hook 'write-contents-hooks 'source-untabify)))
 
 (when nil
+  ;; Support for GNU global, the source code tag system
   (load-library "gtags")
   (add-hook 'c-mode-hook '(lambda () (gtags-mode 1)))
   (add-hook 'c++-mode-hook '(lambda () (gtags-mode 1))))
@@ -551,16 +559,18 @@ current window"
 ;(autoload 'sgml-mode "psgml" "Major mode to edit SGML files." t)
 ;(autoload 'xml-mode "psgml" "Major mode to edit XML files." t)
 
-(require 'nxml-mode)
-(setq auto-mode-alist (cons '("\\.xml\\|.pvm" . nxml-mode)
-      auto-mode-alist))
+(when (locate-library "nxml-mode")
+  (autoload 'nxml-mode "nxml-mode" "new XML major mode" t)
+  (setq auto-mode-alist (cons '("\\.xml\\|.pvm" . nxml-mode)
+                              auto-mode-alist)))
 
 ;;;
 ;;; Dired and dired-x setting
 ;;;
+(require 'dired-x)
+
 (add-hook 'dired-load-hook
 	  (lambda ()
-	    (load "dired-x")
 	    ;; Set dired-x global variables here.  For example:
 	    ;; (setq dired-guess-shell-gnutar "gtar")
 	    ;; Bind dired-x-find-file.
@@ -575,7 +585,6 @@ current window"
 	    ;; (dired-omit-mode 1)
 	    ))
 
-(require 'dired-x)
 (setq dired-omit-files
       (concat dired-omit-files
 	      ;; Omit RCS files
@@ -635,7 +644,8 @@ current window"
 ;;; Read xcscope.el packaged in cscope source tarball. It can be obtained
 ;;; from http://cscope.sourceforge.net/
 ;;;
-(require 'xcscope)
+(when (locate-library "xcscope")
+  (require 'xcscope))
 
 ;;;
 ;;; Version Control
@@ -711,15 +721,22 @@ current window"
   (select-frame frame)
   (select-random-color-theme))
 
-(when window-system
+(when (and window-system
+           (locate-library "color-theme"))
   (require 'color-theme)
-  (require 'pink-bliss)
-  (require 'cinsk-wood)
+  (and (locate-library "pink-bliss")
+       (require 'pink-bliss))
+
+  (and (locate-library "cinsk-wood")
+       (require 'cinsk-wood))
+
   (global-set-key [(control f1)] 'select-random-color-theme)
   (add-hook 'after-make-frame-functions 'set-frame-color-theme)
+
+  ;; color-theme-* is frame-local from now.
+  (setq color-theme-is-global nil)
   
   ;(color-theme-deep-blue)
-  (setq color-theme-is-global nil)
   (color-theme-robin-hood)
   
   ;(set-face-font 'default "fontset-etl14")
@@ -751,19 +768,21 @@ current window"
 (setq local-holidays
       '((holiday-fixed 11 1 "삼성전자 창립일")))
 
-(autoload 'css-mode "css-mode")
-(setq auto-mode-alist
-      (cons '("\\.css\\'" . css-mode) auto-mode-alist))
+(autoload 'css-mode "css-mode" "CSS editing major mode" t)
+(eval-after-load "css-mode"
+  '(setq cssm-indent-function #'cssm-c-style-indenter))
+(add-to-list 'auto-mode-alist '("\\.css\\'" . css-mode))
 
 ;;;
 ;;; Emacs-wiki support
 ;;;
-(require 'emacs-wiki)
+;(require 'emacs-wiki)
 
 ;;;
 ;;; Display splash screen on startup
 ;;;
 (fancy-splash-screens)
+
 ;;; To save & load Emacs session, following lines should be the last line
 ;;; in this file. 
 ;;;
