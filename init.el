@@ -707,6 +707,15 @@ current window"
 (setq gnus-select-method '(nntp "news.kornet.net"))
 
 
+(defmacro save-font-excursion (face &rest body)
+  "Save the :font property of given FACE during the execution of BODY."
+  (declare (indent 1) (debug t))
+  `(let ((oldfont (face-attribute ,face :font)) ret)
+     (setq ret (progn ,@body))
+     (or (string= oldfont (face-attribute ,face :font))
+         (set-face-attribute ,face nil :font oldfont))
+     ret))
+
 (defun select-random-color-theme ()
   "Select random color theme"
   (interactive)
@@ -715,8 +724,10 @@ current window"
          (theme (nth index color-themes))
          (name (symbol-name (car theme))))
     (message "%s installed" name)
-    (funcall (car theme))))
+    (save-font-excursion 'default
+      (funcall (car theme)))))
 
+        
 (defun set-frame-color-theme (frame)
   (select-frame frame)
   (select-random-color-theme))
