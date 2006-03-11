@@ -721,11 +721,10 @@ current window"
   (interactive)
   (random t)
   (let* ((index (+ (random (- (length color-themes) 2)) 2))
-         (theme (nth index color-themes))
-         (name (symbol-name (car theme))))
-    (message "%s installed" name)
+         (theme (nth index color-themes)))
     (save-font-excursion 'default
-      (funcall (car theme)))))
+      (funcall (car theme)))
+    (message "%s installed" (symbol-name (car theme)))))
 
         
 (defun set-frame-color-theme (frame)
