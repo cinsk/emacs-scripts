@@ -220,8 +220,10 @@ appropriately."
 (global-set-key "\C-cd" 'unicode-shell)
 
 (global-set-key [?\C-.] 'find-tag-other-window) ; C-x o 
-(global-set-key "\C-c\C-l" 'goto-line)
-(global-set-key "\C-c\C-i" 'indent-region)
+
+;; C-c C-l is used for c-toggle-electric-state
+;(global-set-key [(control c) ?l] 'goto-line) ; M-g M-g is binded to goto-line
+(global-set-key [(control c) ?i] 'indent-region)
 
 ;;; C-x C-v is binded find-alternate-file by default.
 (global-set-key "\C-x\C-v" 'view-file)
@@ -314,7 +316,8 @@ appropriately."
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */" nil 0)
     ("$lgpl"
 "/* <one line to give the library's name and a brief idea of what it does.>
@@ -332,7 +335,8 @@ appropriately."
  *
  * You should have received a copy of the GNU Library General Public
  * License along with this library; if not, write to the Free
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */" nil 0)
     ("$igpl"
 "static const char *gpl_notices[] = {
@@ -356,7 +360,7 @@ appropriately."
 (which-function-mode 1)			; display function names in mode-line
 
 ;;;
-;;; Switching between buffers using isitchb
+;;; Switching between buffers using iswitchb
 ;;;
 (iswitchb-mode 1)			; smart buffer switching mode
 (setq iswitchb-default-method 'maybe-frame) ; ask to use another frame.
@@ -759,6 +763,7 @@ current window"
       '(year "-" month "-" day (if dayname (concat ", " dayname))))
 (setq mark-holidays-in-calendar t)
 (setq mark-diary-entries-in-calendar t)
+(add-hook 'diary-display-hook 'fancy-diary-display)
 
 (setq general-holidays
       '((holiday-fixed 1 1 "설날")
@@ -782,6 +787,22 @@ current window"
 (eval-after-load "css-mode"
   '(setq cssm-indent-function #'cssm-c-style-indenter))
 (add-to-list 'auto-mode-alist '("\\.css\\'" . css-mode))
+
+(eval-after-load "css-mode"
+  '(setq cssm-indent-function #'cssm-c-style-indenter))
+
+;;;
+;;; Org mode
+;;;
+
+;; org-hide-leading-stars should be set before loading org-mode.
+(setq org-hide-leading-stars t)
+(setq org-odd-levels-only t)
+(setq org-agenda-include-diary t)
+
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+(global-set-key [(control c) ?a] 'org-agenda)
+(global-set-key [(control c) ?l] 'org-store-link)
 
 ;;;
 ;;; Emacs-wiki support
@@ -813,3 +834,28 @@ current window"
 ;;(desktop-read)
 
 (put 'narrow-to-region 'disabled nil)
+
+
+(when nil
+  (require 'kmacro)
+  (fset 'next-visible-outline-other-window
+        (lambda (&optional arg) 
+          "Keyboard macro." 
+          (interactive "p") 
+          (kmacro-exec-ring-item (quote ([C-tab 3 14 12 C-tab] 0 "%d")) arg)))
+
+  (fset 'prev-visible-outline-other-window
+        (lambda (&optional arg) 
+          "Keyboard macro." 
+          (interactive "p") 
+          (kmacro-exec-ring-item (quote ([C-tab 3 16 12 C-tab] 0 "%d")) arg)))
+
+  (global-set-key [f3] 'prev-visible-outline-other-window)
+  (global-set-key [f4] 'next-visible-outline-other-window))
+
+
+(autoload 'calc "calc" "The Emacs Calculator" t)
+(global-set-key [f12] 'calc)
+
+(global-set-key [f2] 'ff-find-other-file)
+(global-set-key [f3] 'dired-jump)
