@@ -8,14 +8,14 @@
 
 (setq load-path (cons (expand-file-name "~/.emacs.d/") load-path))
 
-;(server-start)
-
+
 ;;; Set up the keyboard so the delete key on both the regular keyboard
 ;;; and the keypad delete the character under the cursor and to the right
 ;;; under X, instead of the default, backspace behavior.
 ;;; (global-set-key [delete] 'delete-char)
 ;;; (global-set-key [kp-delete] 'delete-char)
 
+
 ;;;
 ;;; This sets up the coding mode for linux kernel sources.
 ;;; (originally obtained from Documentation/CodingStyle in Linux kernel tree)
@@ -30,6 +30,8 @@
       (c-set-style "K&R")
       (setq c-basic-offset 8))))
 (add-to-list 'auto-mode-alist '("/linux.*/.*\\.[ch]$" . linux-c-mode))
+
+
 
 ;; (setq-default make-backup-files nil)
 
@@ -108,7 +110,6 @@ appropriately."
         (coding-system-for-write 'utf-8)
         (coding-system-require-warning t))
     (call-interactively 'shell)))
-
 
 ;;;
 ;;; Buffer Menu
@@ -857,5 +858,45 @@ current window"
 (autoload 'calc "calc" "The Emacs Calculator" t)
 (global-set-key [f12] 'calc)
 
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+
 (global-set-key [f2] 'ff-find-other-file)
 (global-set-key [f3] 'dired-jump)
+
+
+;;;
+;;; ecb settings
+;;;
+(eval-after-load "ecb"
+  '(progn
+     (setq ecb-toggle-layout-sequence
+           '("left3" "left-symboldef" "left8"))
+     (setq ecb-tip-of-the-day nil)
+     (set-face-font 'ecb-default-general-face
+                    "-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*")
+     ))
+
+(defun ecb-next-action (arg)
+  (interactive "P")
+  (or (featurep 'ecb)
+      (progn (require 'cedet)
+             (require 'ecb)))           ; load required packages
+  (cond ((null ecb-minor-mode) (ecb-activate))
+        (t (if (null arg) 
+               (ecb-toggle-layout)
+             (ecb-deactivate)))))
+
+(global-set-key [f11] 'ecb-next-action)
+
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(ecb-options-version "2.32"))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
