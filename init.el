@@ -150,7 +150,6 @@ appropriately."
 ;;(global-set-key [C-mouse-4] 'down-a-lot)
 ;;(global-set-key [C-mouse-5] 'up-a-lot)
 
-
 ;;;
 ;;; If you want to scroll by half a page instead of only 5 lines as above,
 ;;; John Rowe sent this GNU Emacs code: 
@@ -457,14 +456,25 @@ character to the spaces"
 ;;;
 
 (require 'cc-mode)
+
+(when (locate-library "cc-subword")
+  (require 'cc-subword)
+  (define-key c-mode-base-map [(meta ?F)] 'c-forward-subword)
+  (define-key c-mode-base-map [(meta ?B)] 'c-backward-subword)
+  (define-key c-mode-base-map [(meta ?D)] 'c-kill-subword))
+
 (add-hook 'c-mode-common-hook (lambda () (cwarn-mode 1)))
 
-(define-key c-mode-base-map [(meta ?F)] 'c-forward-into-nomenclature)
-(define-key c-mode-base-map [(meta ?B)] 'c-backward-into-nomenclature)
 (define-key c-mode-base-map [(meta ?{)] 'c-beginning-of-defun)
 (define-key c-mode-base-map [(meta ?})] 'c-end-of-defun)
+
 (define-key c-mode-base-map [(control meta ?{)] 'c-up-conditional-with-else)
 (define-key c-mode-base-map [(control meta ?})] 'c-down-conditional-with-else)
+
+;;;
+;;; Prompt for arguments to the preprocessor for `c-macro-expand'
+;;;
+(setq c-macro-prompt-flag t)
 
 (defun reverse-other-window (arg) 
   "Reverse `other-window' with no argument"
@@ -512,12 +522,20 @@ current window"
 ;(global-set-key [C-tab] 'other-window)  ; C-x o
 ;(global-set-key [S-iso-lefttab] 'reverse-other-window)
 ;(global-set-key [(backtab)] 'reverse-other-window)
-(global-set-key [(control tab)] 'other-window)
+(global-set-key [(control tab)] 'smart-other-window)
 (global-set-key [(control x) ?w ?n] 'other-window)
 (global-set-key [(control x) ?w ?o] 'other-window)
 (global-set-key [(control x) ?w ?p] 'reverse-other-window)
 (global-set-key [(control x) ?w ?k] 'delete-window)
 (global-set-key [(control x) ?w ?K] 'delete-other-window)
+
+(defun smart-other-window ()
+  "This calls `other-window' if there are more than one window, otherwise
+calls `iswitchb'"
+  (interactive)
+  (if (one-window-p t 1)
+      (call-interactively 'iswitchb-buffer)
+    (call-interactively 'other-window)))
 
 (defun smart-other-frame (arg)
   "This calls `other-frame' if there are more than one frame, otherwise calls
@@ -550,6 +568,22 @@ current window"
   (select-frame (new-frame))
   (call-interactively command))
 (global-set-key "\C-x5\M-x" 'run-command-other-frame)
+
+
+;;;
+;;; Quick Frame Configuration Load/Save
+;;;
+(global-set-key [(control f2)] '(lambda ()
+                                  "Quick frame load"
+                                  (interactive)
+                                  (jump-to-register ?\x3)
+                                  (message "Load saved frame configuration")))
+
+(global-set-key [(control f3)] '(lambda ()
+                                  "Quick frame save"
+                                  (interactive)
+                                  (frame-configuration-to-register ?\x3)
+                                  (message "Frame configuration saved")))
 
 
 ;(require 'autofit-frame)
@@ -707,6 +741,9 @@ current window"
 
 ;;(split-window-horizontally)
 
+;;
+;; Make the inferior shell a login shell.
+;;
 (setq explicit-bash-args (quote ("--noediting" "-i" "-l")))
 
 (setq gnus-select-method '(nntp "news.kornet.net"))
@@ -857,6 +894,7 @@ current window"
 
 (autoload 'calc "calc" "The Emacs Calculator" t)
 (global-set-key [f12] 'calc)
+(global-set-key [(control f12)] 'quick-calc)
 
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 
@@ -867,6 +905,7 @@ current window"
 ;;;
 ;;; ecb settings
 ;;;
+(autoload 'ecb-activate "ecb" "Emacs Code Browser" t)
 (eval-after-load "ecb"
   '(progn
      (setq ecb-toggle-layout-sequence
