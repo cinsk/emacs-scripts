@@ -8,6 +8,21 @@
 
 (setq load-path (cons (expand-file-name "~/.emacs.d/") load-path))
 
+
+(defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
+  "setq-if-equal set SYMBOL to NEW-VALUE iff it has OLD-VALUE.
+It compare the old value with OLD-VALUE using `equal' then
+set it to NEW-VALUE if the old value matched.
+If NOWARN is nil, and the old value is not matched with the
+supplied one, a warning message is generated."
+   `(progn
+      (if (equal ,symbol ,old-value)
+	  (setq ,symbol ,new-value)
+	(if (not ,nowarn)
+	    (progn (message "%s has unexpected value `%S'"
+			    (symbol-name ',symbol) ,symbol)
+		   ,old-value)))))
+
 
 ;;; Set up the keyboard so the delete key on both the regular keyboard
 ;;; and the keypad delete the character under the cursor and to the right
@@ -101,6 +116,7 @@
               (set (make-local-variable 'coding-system-for-read) 'utf-8)))
 )
 
+
 (defun unicode-shell ()
   "Execute the shell buffer in UTF-8 encoding.
 Note that you'll need to set the environment variable LANG and others 
@@ -111,12 +127,14 @@ appropriately."
         (coding-system-require-warning t))
     (call-interactively 'shell)))
 
+
 ;;;
 ;;; Buffer Menu
 ;;;
 ;;; Sort by the 2nd column (buffer name) in Buffer list
 (setq Buffer-menu-sort-column 2)
 
+
 ;;; for wheel mouse
 ;;;
 ;;;  http://www.inria.fr/koala/colas/mouse-wheel-scroll/#gnuemacs
@@ -138,6 +156,7 @@ appropriately."
 ;;;
 (setq mouse-yank-at-point t)
 
+
 ;; frame title : set to buffer name
 ;;(setq frame-title-format "Emacs - %f ")  
 (setq frame-title-format (if window-system
@@ -145,6 +164,7 @@ appropriately."
 			   "Emacs - %f"))
 (setq icon-title-format  "%b")
 
+
 ;;(defun up-a-lot () (interactive) (scroll-up))
 ;;(defun down-a-lot () (interactive) (scroll-down))
 ;;(global-set-key [C-mouse-4] 'down-a-lot)
@@ -241,6 +261,7 @@ appropriately."
                (and (file-readable-p tagfile)
                     (visit-tags-table "/usr/share/emacs/TAGS")))))
 
+
 (define-abbrev-table 'c-mode-abbrev-table 
   ;; I don't know why `@' for abbreviation doesn't work.
   ;; So I choose `$' for that.
@@ -290,7 +311,9 @@ appropriately."
   \"This is free software, and you are welcome to redistribute it\",
   \"under certain conditions; type `show c' for details.\",
 };" nil 0)))
+(add-hook 'c-mode-hook (function (lambda nil (abbrev-mode 1))))
 
+
 (define-abbrev-table 'c++-mode-abbrev-table 
   ;; I don't know why `@' for abbreviation doesn't work.
   ;; So I choose `$' for that.
@@ -345,9 +368,9 @@ appropriately."
   \"This is free software, and you are welcome to redistribute it\",
   \"under certain conditions; type `show c' for details.\",
 };" nil 0)))
-
-(add-hook 'c-mode-hook (function (lambda nil (abbrev-mode 1))))
 (add-hook 'c++-mode-hook (function (lambda nil (abbrev-mode 1))))
+
+
 
 ;;; imenu mode
 ;;;(add-hook 'c-mode-hook (function (lambda nil (imenu-add-to-menubar))))
@@ -381,6 +404,7 @@ appropriately."
 
 (setq-default indent-tabs-mode nil)	; do not insert tab character.
 
+
 (defun source-untabify ()
   "Stealed from Jamie Zawinski's homepage,
 http://www.jwz.org/doc/tabs-vs-spaces.html
@@ -402,6 +426,7 @@ character to the spaces"
                             (make-local-variable 'write-contents-hooks)
                             (add-hook 'write-contents-hooks 'source-untabify)))
 
+
 (when nil
   ;; Support for GNU global, the source code tag system
   (load-library "gtags")
@@ -450,7 +475,7 @@ character to the spaces"
 (global-set-key [(meta shift prior)] 'scroll-other-frame-down)
 (global-set-key [(meta shift next)] 'scroll-other-frame)
 
-
+
 ;;;
 ;;; navigation customization
 ;;;
@@ -471,11 +496,13 @@ character to the spaces"
 (define-key c-mode-base-map [(control meta ?{)] 'c-up-conditional-with-else)
 (define-key c-mode-base-map [(control meta ?})] 'c-down-conditional-with-else)
 
+
 ;;;
 ;;; Prompt for arguments to the preprocessor for `c-macro-expand'
 ;;;
 (setq c-macro-prompt-flag t)
 
+
 (defun reverse-other-window (arg) 
   "Reverse `other-window' with no argument"
   (interactive "p")
@@ -569,7 +596,7 @@ calls `iswitchb'"
   (call-interactively command))
 (global-set-key "\C-x5\M-x" 'run-command-other-frame)
 
-
+
 ;;;
 ;;; Quick Frame Configuration Load/Save
 ;;;
@@ -585,7 +612,7 @@ calls `iswitchb'"
                                   (frame-configuration-to-register ?\x3)
                                   (message "Frame configuration saved")))
 
-
+
 ;(require 'autofit-frame)
 ;(add-hook 'after-make-frame-functions 'fit-frame)
 ;
@@ -602,7 +629,7 @@ calls `iswitchb'"
   (autoload 'nxml-mode "nxml-mode" "new XML major mode" t)
   (setq auto-mode-alist (cons '("\\.xml\\|.pvm" . nxml-mode)
                               auto-mode-alist)))
-
+
 ;;;
 ;;; Dired and dired-x setting
 ;;;
@@ -624,17 +651,22 @@ calls `iswitchb'"
 	    ;; (dired-omit-mode 1)
 	    ))
 
-(setq dired-omit-files
-      (concat dired-omit-files
-	      ;; Omit RCS files
-	      "\\|^RCS$\\|,v$"
-	      ;; Omit CVS and Bitkeeper files
-	      "\\|^CVS$\\|^BitKeeper$"
-	      ;; Omit dot files
-	      "\\|^\\..+$"
-	      ;; Omit .o, .lo, .Po, .Plo, .a, .la files
-	      "\\|.+\\.\\(o\\|lo\\|Po\\|Plo\\|a\\|la\\)$"))
+(setq-if-equal dired-omit-mode "^\\.?#\\|^\\.$\\|^\\.\\.$"
+               (concat dired-omit-files
+                       ;; Omit RCS files
+                       "\\|^RCS$\\|,v\\'"
+                       ;; Omit CVS and Bitkeeper files
+                       "\\|^CVS$\\|^BitKeeper\\'"
+                       ;; Omit dot files
+                       "\\|^\\..+\\'"
+                       ;; Omit .o, .lo, .Po, .Plo, .a, .la files
+                       "\\|.+\\.\\(o\\|lo\\|Po\\|Plo\\|a\\|la\\)\\'"))
 
+(setq-if-equal dired-garbage-files-regexp
+               "\\.\\(?:aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc\\)\\'"
+               (format "\\(?:%s\\|%s\\)\\'"
+                       "aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc" ; TeX related
+                       "\\`\.#.*[0-9]"))                          ; VC related
 
 ;(define-key global-map "\C-x\C-j" 'dired-jump)
 ;(define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
@@ -663,6 +695,7 @@ calls `iswitchb'"
 (eval-after-load "dired"
   '(define-key dired-mode-map [(control return)] 'dired-find-file-other-frame))
 
+
 ;;;
 ;;; Launch view-mode when visiting other's file.
 ;;;
@@ -794,6 +827,7 @@ calls `iswitchb'"
   ;(set-face-font 'default "fontset-etl14")
   )
 
+
 ;;;
 ;;; Calender
 ;;;
@@ -829,6 +863,7 @@ calls `iswitchb'"
 (eval-after-load "css-mode"
   '(setq cssm-indent-function #'cssm-c-style-indenter))
 
+
 ;;;
 ;;; Org mode
 ;;;
@@ -842,6 +877,7 @@ calls `iswitchb'"
 (global-set-key [(control c) ?a] 'org-agenda)
 (global-set-key [(control c) ?l] 'org-store-link)
 
+
 ;;;
 ;;; Emacs-wiki support
 ;;;
