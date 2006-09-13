@@ -828,6 +828,12 @@ calls `iswitchb'"
   )
 
 
+(autoload 'css-mode "css-mode" "CSS editing major mode" t)
+(eval-after-load "css-mode"
+  '(setq cssm-indent-function #'cssm-c-style-indenter))
+(add-to-list 'auto-mode-alist '("\\.css\\'" . css-mode))
+
+
 ;;;
 ;;; Calender
 ;;;
@@ -855,14 +861,6 @@ calls `iswitchb'"
 (setq local-holidays
       '((holiday-fixed 11 1 "삼성전자 창립일")))
 
-(autoload 'css-mode "css-mode" "CSS editing major mode" t)
-(eval-after-load "css-mode"
-  '(setq cssm-indent-function #'cssm-c-style-indenter))
-(add-to-list 'auto-mode-alist '("\\.css\\'" . css-mode))
-
-(eval-after-load "css-mode"
-  '(setq cssm-indent-function #'cssm-c-style-indenter))
-
 
 ;;;
 ;;; Org mode
@@ -882,6 +880,19 @@ calls `iswitchb'"
 ;;; Emacs-wiki support
 ;;;
 ;(require 'emacs-wiki)
+
+
+;;;
+;;; Ediff customization
+;;;
+(eval-after-load "ediff"
+  '(progn
+     ;; ignore whitespaces and newlines
+     (setq ediff-ignore-similar-regions t)
+     ;; do not create new frame for the control panel
+     (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+     ))
+
 
 ;;;
 ;;; Display splash screen on startup
