@@ -899,6 +899,30 @@ calls `iswitchb'"
 ;;;
 (fancy-splash-screens)
 
+
+;;;
+;;; ERC (IRC client) settings
+;;;
+
+(when (locate-library "erc")
+  (eval-after-load "erc"
+    '(progn
+       (setq erc-default-coding-system '(cp949 . undecided))
+       (setq erc-nick '("cinsk" "cinsky" "cinsk_" "cinsk__"))
+       (setq erc-user-full-name "Seong-Kook Shin")
+       (setq erc-server "localhost:8668"))))
+       
+
+
+;;;
+;;; python-mode
+;;;
+(when (locate-library "cc-subword")
+  (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
+  (setq interpreter-mode-alist (cons '("python" . python-mode)
+                                     interpreter-mode-alist))
+  (autoload 'python-mode "python-mode" "Python editing mode." t))
+
 ;;; To save & load Emacs session, following lines should be the last line
 ;;; in this file. 
 ;;;
