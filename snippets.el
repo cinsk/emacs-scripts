@@ -14,44 +14,40 @@
     (require 'cl)))
 
 
-(defun trim-string-right (string &optional trail)
-  "Return a copy of STRING with all trailing characters removed.
-Optional TRAIL specifies the trailing characters in a string form.
-If omitted, whitespace characters are used.  For example:
+(defmacro char (string index)
+  "Return the INDEX-th caracter of STRING"
+  `(aref ,string ,index))
 
-\(trim-string-right \"abcd  \")      => \"abcd\"
-\(trim-string-right \"abc.. \" \" .\") => \"abc\"
-
-See also `trim-string-left'."
-  (let* ((len (length string))
-         (i (1- len))
-         (trail (or trail " \t\n\v")))
-    (setq trail (append trail nil))
-    (while (and (>= i 0)
-                (member (elt string i) trail))
-      (setq i (1- i)))
-    (if (eq i (1- len))
-        string
-      (substring string 0 (1+ i)))))
+(defmacro string-left-trim (seq string)
+  "Like `string-trim', but only trims from the front."
+  `(string-both-trim ,seq nil ,string))
 
 
-(defun trim-string-left (string &optional leading)
-  "Return a copy of STRING with all leading characters removed.
-Optional LEADING specifies the leading characters in a string form.
-If omitted, whitespace characters are used.  For example:
+(defmacro string-right-trim (seq string)
+  "Like `string-trim', but only trims from the back."
+  `(string-both-trim nil ,seq ,string))
 
-\(trim-string-left \"  abcd\")      => \"abcd\"
-\(trim-string-left \" .abcd\" \" .\") => \"abcd\"
 
-See also `trim-string-right'."
-  (let ((len (length string))
-        (i 0)
-        (leading (or leading " \t\n\v")))
-    (setq leading (append leading nil))
-    (while (and (< i len)
-                (member (elt string i) leading))
+(defun string-trim (seq string)
+  "Remove any characters in SEQ from the beginning and the end of STRING."
+  (string-both-trim seq seq string))
+
+
+(defun string-both-trim (lseq rseq string)
+  "Remove specified characters from the both ends of STRING.
+First, remove any characters in LSEQ from the beginning of the STRING.
+Then, remove any characters in RSEQ from the end of the STRING."
+  (let ((l (length string)) (i 0) (j 0))
+    (while (and (< i l)
+                (find (char string i) lseq))
       (setq i (1+ i)))
-    (substring string i len)))
+    (setq j l)
+    (while (and (< i j)
+                (find (char string (1- j)) rseq))
+      (setq j (1- j)))
+    (if (and (= i 0) (= j l))
+        string
+      (substring string i j))))
 
 
 (provide 'snippets)
