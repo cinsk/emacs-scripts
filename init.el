@@ -619,6 +619,38 @@ calls `iswitchb'"
 ;(add-hook 'temp-buffer-show-hook
 ;          'fit-frame-if-one-window 'append)
 
+
+;;;
+;;; Common Lisp Mode -- from clisp-2.38/editors.txt
+;;;
+;;; It seems that Emacs already have `lisp-eval-last-sexp' that has
+;;; the same feature of `
+(setq inferior-lisp-program "clisp -I -q -E utf-8")
+
+(defun lisp-macroexpand-region (start end &optional and-go)
+  "Macroexpand the current region in the inferior Lisp process.
+Prefix argument means switch to the Lisp buffer afterwards."
+  (interactive "r\nP")
+  (comint-send-string
+   (inferior-lisp-proc)
+   (format "(macroexpand-1 (quote %s))\n"
+           (buffer-substring-no-properties start end)))
+  (if and-go (switch-to-lisp t)))
+
+
+(defun lisp-macroexpand-sexp (&optional and-go)
+  "Macroexpand the next sexp in the inferior Lisp process.
+Prefix argument means switch to the Lisp buffer afterwards."
+  (interactive "P")
+  (lisp-macroexpand-region (point) (scan-sexps (point) 1) and-go))
+
+(eval-after-load "inf-lisp"
+  '(define-key inferior-lisp-mode-map [(control ?x) (control ?m)] 
+     'lisp-macro-expand-sexp))
+
+(define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
+
+
 ;;;
 ;;; psgml mode setup
 ;;;
@@ -922,6 +954,15 @@ calls `iswitchb'"
   (setq interpreter-mode-alist (cons '("python" . python-mode)
                                      interpreter-mode-alist))
   (autoload 'python-mode "python-mode" "Python editing mode." t))
+
+
+
+;;;
+;;; w3m
+;;;
+(require 'w3m-load)
+
+
 
 ;;; To save & load Emacs session, following lines should be the last line
 ;;; in this file. 
