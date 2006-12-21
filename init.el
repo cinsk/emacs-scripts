@@ -1002,8 +1002,8 @@ Prefix argument means switch to the Lisp buffer afterwards."
      ;; major modes uses that for `comment-region'.  Thus, I'll uses
      ;; `C-c C-e' bindings for py-execute-buffer.  It makes sense
      ;; because cc-mode uses this for `c-macro-expand'.
-     (define-key 'py-mode-map [(control ?c) (control ?c)] 'comment-region)
-     (define-key 'py-mode-map [(control ?c) (control ?e)] 'py-execute-buffer)))
+     (define-key py-mode-map [(control ?c) (control ?c)] 'comment-region)
+     (define-key py-mode-map [(control ?c) (control ?e)] 'py-execute-buffer)))
 
 
 ;;;
