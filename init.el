@@ -239,6 +239,7 @@ appropriately."
 (global-set-key "\C-cc" 'compile)
 (global-set-key "\C-cd" 'unicode-shell)
 
+(global-set-key [(control ?c) (control ?d)] 'zap-to-nonspace)
 (global-set-key [?\C-.] 'find-tag-other-window) ; C-x o 
 
 ;; C-c C-l is used for c-toggle-electric-state
@@ -426,6 +427,16 @@ character to the spaces"
                             (make-local-variable 'write-contents-hooks)
                             (add-hook 'write-contents-hooks 'source-untabify)))
 
+
+(defun zap-to-nonspace ()
+  "Delete all whitespace up to the next non-whitespace char."
+  (interactive)
+  (save-excursion
+    (let ((start (point))
+          (end (point-max)))
+      (if (re-search-forward "[^ \n\t\v]" nil t)
+          (setq end (min (1- (point)) end)))
+      (kill-region start end))))
 
 (when nil
   ;; Support for GNU global, the source code tag system
@@ -998,13 +1009,15 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 (eval-after-load "python-mode"
   '(progn
-     ;; python-mode uses `C-c C-c' for py-execute-buffer where most
+     ;; python-mode uses `C-c C-c' for `py-execute-buffer' where most
      ;; major modes uses that for `comment-region'.  Thus, I'll uses
      ;; `C-c C-e' bindings for py-execute-buffer.  It makes sense
      ;; because cc-mode uses this for `c-macro-expand'.
      (define-key py-mode-map [(control ?c) (control ?c)] 'comment-region)
-     (define-key py-mode-map [(control ?c) (control ?e)] 'py-execute-buffer)))
+     (define-key py-mode-map [(control ?c) (control ?e)] 'py-execute-buffer)
 
+     ;; python-mode uses `C-c C-d' for `py-pdbtrack-toggle-stack-tracking'
+     (define-key py-mode-map [(control ?c) (control ?d)] 'zap-to-nonspace)))
 
 ;;;
 ;;; w3m
