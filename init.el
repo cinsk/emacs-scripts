@@ -1022,7 +1022,8 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;;
 ;;; w3m
 ;;;
-(require 'w3m-load)
+(when (locate-library "w3m")
+  (require 'w3m-load))
 
 
 
