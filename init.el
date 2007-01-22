@@ -951,7 +951,8 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;;
 ;;; Display splash screen on startup
 ;;;
-(fancy-splash-screens)
+(when window-system
+  (fancy-splash-screens))
 
 
 ;;;
