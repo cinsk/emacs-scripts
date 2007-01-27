@@ -1026,8 +1026,19 @@ Prefix argument means switch to the Lisp buffer afterwards."
 (when (locate-library "w3m")
   (require 'w3m-load))
 
-
 
+
+;;;
+;;; gnuplot
+;;;
+(when (locate-library "gnuplot")
+  (autoload 'gnuplot-mode "gnuplot" "gnuplot major mode" t)
+  (autoload 'gnuplot-make-buffer "gnuplot" "open a buffer in gnuplot-mode" t)
+
+  (setq auto-mode-alist (append '(("\\.gp$" . gnuplot-mode))
+                                auto-mode-alist)))
+
+
 ;;; To save & load Emacs session, following lines should be the last line
 ;;; in this file. 
 ;;;
