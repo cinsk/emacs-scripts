@@ -45,6 +45,7 @@ supplied one, a warning message is generated."
       (c-set-style "K&R")
       (setq c-basic-offset 8))))
 (add-to-list 'auto-mode-alist '("/linux.*/.*\\.[ch]$" . linux-c-mode))
+(add-to-list 'auto-mode-alist '("/ce20.*/.*\\.\\(c\\|h\\|cpp\\)$" . linux-c-mode))
 
 
 
@@ -65,7 +66,8 @@ supplied one, a warning message is generated."
 (require 'cl)
 (when enable-multibyte-characters
   (set-language-environment "Korean")
-  (setq-default file-name-coding-system 'utf-8)
+  ; (setq-default file-name-coding-system 'utf-8)
+
   ;; comment out if you use 3 bulsik
   (setq default-korean-keyboard "3")
   (setq default-input-method "korean-hangul3")
@@ -114,6 +116,10 @@ supplied one, a warning message is generated."
   (add-hook 'dired-before-readin-hook
             (lambda ()
               (set (make-local-variable 'coding-system-for-read) 'utf-8)))
+
+  (prefer-coding-system 'cp949)
+  (prefer-coding-system 'utf-8)
+
 )
 
 
@@ -693,6 +699,9 @@ Prefix argument means switch to the Lisp buffer afterwards."
 	    ;; Set dired-x buffer-local variables here.  For example:
 	    ;; (dired-omit-mode 1)
 	    ))
+
+(setq auto-mode-alist (cons '("[^/]\\.dired$" . dired-virtual-mode)
+                            auto-mode-alist))
 
 (setq-if-equal dired-omit-mode "^\\.?#\\|^\\.$\\|^\\.\\.$"
                (concat dired-omit-files
