@@ -45,7 +45,6 @@ supplied one, a warning message is generated."
       (c-set-style "K&R")
       (setq c-basic-offset 8))))
 (add-to-list 'auto-mode-alist '("/linux.*/.*\\.[ch]$" . linux-c-mode))
-(add-to-list 'auto-mode-alist '("/ce20.*/.*\\.\\(c\\|h\\|cpp\\)$" . linux-c-mode))
 
 
 
@@ -674,9 +673,14 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;(autoload 'sgml-mode "psgml" "Major mode to edit SGML files." t)
 ;(autoload 'xml-mode "psgml" "Major mode to edit XML files." t)
 
-(when (locate-library "nxml-mode")
-  (autoload 'nxml-mode "nxml-mode" "new XML major mode" t)
-  (setq auto-mode-alist (cons '("\\.xml\\|.pvm" . nxml-mode)
+(when (locate-library "rng-auto")
+  (load (locate-library "rng-auto"))
+  ;; `sgml-mode' adds an entry to `magic-mode-alist' so that
+  ;; `auto-mode-alist' to `nxml-mode' might not work.  To work around
+  ;; this, define an alias for `xml-mode' to `nxml-mode'.
+  (defalias 'xml-mode 'nxml-mode)
+  ;(autoload 'nxml-mode "nxml-mode" "new XML major mode" t)
+  (setq auto-mode-alist (cons '("\\.\\(xml\\|pvm\\|rss\\)\\'" . nxml-mode)
                               auto-mode-alist)))
 
 ;;;
@@ -843,17 +847,68 @@ Prefix argument means switch to the Lisp buffer afterwards."
          (set-face-attribute ,face nil :font oldfont))
      ret))
 
-(defun select-random-color-theme ()
+
+;;
+;; color-theme settings
+;;
+(setq color-theme-history-max-length 32)
+
+(defun color-theme-select-random ()
   "Select random color theme"
   (interactive)
-  (random t)
-  (let* ((index (+ (random (- (length color-themes) 2)) 2))
-         (theme (nth index color-themes)))
-    (save-font-excursion 'default
-      (funcall (car theme)))
-    (message "%s installed" (symbol-name (car theme)))))
+  (let ((sym (car (nth (random (length color-themes)) color-themes))))
+    (funcall sym)
+    (message "%s installed" (symbol-name sym)))
+  (if nil
+      ;; Below code was my first creation.  Don't know which is better yet.
+      (progn
+        (random t)
+        (let* ((index (+ (random (- (length color-themes) 2)) 2))
+               (theme (nth index color-themes)))
+          (save-font-excursion 'default
+            (funcall (car theme)))
+          (message "%s installed" (symbol-name (car theme)))))))
 
-        
+
+(defun color-themes-next-symbol (theme)
+"Return the next color-theme symbol of THEME"
+  (let ((found 0) (next nil))
+    (catch 'found
+      (mapcar (lambda (entry)
+                (if (and (= found 1) (null next))
+                    (progn (setq next (car entry))
+                           (throw 'found t)))
+                (if (eq (car entry) theme)
+                    (setq found 1)))
+              color-themes))
+    (if (and (= found 1) (null next))
+        (setq next (car (caddr color-themes)))
+      next)))
+
+
+(defun color-theme-apply (&optional arg)
+"Apply the color theme.
+
+If the argument is :random, this applies any color theme randomly, 
+or if the argument is :next, this applies the next color theme in the
+installed color theme list.  or if the argument is a symbol indicates
+the color-theme function, it applies that color theme."
+  (cond ((fboundp arg)  (apply arg nil))
+        ((eq arg :random)  (color-theme-select-random))
+        ((eq arg :next)	(let ((theme (color-theme-next-symbol)))
+                          (apply theme nil)
+                          (message "%s installed" (symbol-name theme))))
+        (t (error "Wrong type of argument"))))
+
+(defun color-theme-next-symbol ()
+"Return the next color-theme symbol of the last applied color theme.
+
+This function works iff color-theme-history-max-length is not NIL"
+  (if (null color-theme-history)
+      (car (car color-themes))
+    (color-themes-next-symbol (car (car color-theme-history)))))
+
+
 (defun set-frame-color-theme (frame)
   (select-frame frame)
   (select-random-color-theme))
@@ -867,7 +922,10 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (and (locate-library "cinsk-wood")
        (require 'cinsk-wood))
 
-  (global-set-key [(control f1)] 'select-random-color-theme)
+  (global-set-key [(control f1)] 'color-theme-select-random)
+  (global-set-key [(control f2)] '(lambda ()
+                                    (interactive)
+                                    (color-theme-apply :next)))
   (add-hook 'after-make-frame-functions 'set-frame-color-theme)
 
   ;; color-theme-* is frame-local from now.
@@ -1128,7 +1186,8 @@ Prefix argument means switch to the Lisp buffer afterwards."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(ecb-options-version "2.32"))
+ '(ecb-options-version "2.32")
+ '(safe-local-variable-values (quote ((c-file-offsets . "8")))))
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
