@@ -1106,6 +1106,15 @@ Prefix argument means switch to the Lisp buffer afterwards."
                                 auto-mode-alist)))
 
 
+;;;
+;;; lua
+;;;
+(when (locate-library "lua-mode")
+   (autoload 'lua-mode "lua-mode" "Major mode for lua script")
+   (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode)))
+
+
+
 ;;; To save & load Emacs session, following lines should be the last line
 ;;; in this file. 
 ;;;
@@ -1194,3 +1203,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
  )
+
+;;; Local Variables:
+;;; coding: utf-8
+;;; End:
