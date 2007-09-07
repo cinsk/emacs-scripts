@@ -465,7 +465,7 @@ character to the spaces"
 ;;; emacs server
 ;;;
 ;;;(load "/usr/share/emacs/21.2/lisp/gnuserv")
-;(server-start)
+(server-start)
 ;;;(load "gnuserv")
 ;;;(gnuserv-start)
 
@@ -673,6 +673,13 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;(autoload 'sgml-mode "psgml" "Major mode to edit SGML files." t)
 ;(autoload 'xml-mode "psgml" "Major mode to edit XML files." t)
 
+(defun lzx-nxml-mode ()
+  "OpenLaszlo XML Mode"
+  (interactive)
+  (nxml-mode)
+  (make-local-variable 'nxml-child-indent)
+  (setq nxml-child-indent 4))
+
 (when (locate-library "rng-auto")
   (load (locate-library "rng-auto"))
   ;; `sgml-mode' adds an entry to `magic-mode-alist' so that
@@ -681,6 +688,8 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (defalias 'xml-mode 'nxml-mode)
   ;(autoload 'nxml-mode "nxml-mode" "new XML major mode" t)
   (setq auto-mode-alist (cons '("\\.\\(xml\\|pvm\\|rss\\)\\'" . nxml-mode)
+                              auto-mode-alist))
+  (setq auto-mode-alist (cons '("\\.lzx\\'" . lzx-nxml-mode)
                               auto-mode-alist)))
 
 ;;;
@@ -707,7 +716,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
 (setq auto-mode-alist (cons '("[^/]\\.dired$" . dired-virtual-mode)
                             auto-mode-alist))
 
-(setq-if-equal dired-omit-mode "^\\.?#\\|^\\.$\\|^\\.\\.$"
+(setq-if-equal dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$"
                (concat dired-omit-files
                        ;; Omit RCS files
                        "\\|^RCS$\\|,v\\'"
@@ -911,7 +920,7 @@ This function works iff color-theme-history-max-length is not NIL"
 
 (defun set-frame-color-theme (frame)
   (select-frame frame)
-  (select-random-color-theme))
+  (color-theme-select-random))
 
 (when (and window-system
            (locate-library "color-theme"))
@@ -1003,6 +1012,17 @@ This function works iff color-theme-history-max-length is not NIL"
 ;(require 'emacs-wiki)
 
 
+;;;
+;;; ispell(aspell) configuration
+;;;
+;;; Currently neither of them provides Korean dictionary.
+;;; Currently, ispell complained that it does not have proper dictionary in
+;;; Korean language environment. 
+(eval-after-load "ispell"
+  '(progn
+     (setq ispell-dictionary "english")))
+
+
 ;;;
 ;;; Ediff customization
 ;;;
@@ -1195,8 +1215,8 @@ Prefix argument means switch to the Lisp buffer afterwards."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(ecb-options-version "2.32")
- '(safe-local-variable-values (quote ((c-file-offsets . "8")))))
+ '(ecb-options-version "2.32"))
+
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
