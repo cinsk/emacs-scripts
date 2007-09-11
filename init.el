@@ -261,11 +261,6 @@ appropriately."
 ;;;
 ;;;(add-hook 'c-mode-hook 'my-c-mode-hook)
 
-(add-hook 'emacs-lisp-mode-hook 
-          '(lambda ()
-             (let ((tagfile "/usr/share/emacs/TAGS"))
-               (and (file-readable-p tagfile)
-                    (visit-tags-table "/usr/share/emacs/TAGS")))))
 
 
 (define-abbrev-table 'c-mode-abbrev-table 
@@ -635,7 +630,23 @@ calls `iswitchb'"
 ;(add-hook 'temp-buffer-show-hook
 ;          'fit-frame-if-one-window 'append)
 
+
+;;;
+;;; Emacs Lisp Mode
+;;;
 
+(add-hook 'emacs-lisp-mode-hook 
+          '(lambda ()
+             (let ((tagfile "/usr/share/emacs/TAGS"))
+               (and (file-readable-p tagfile)
+                    (visit-tags-table "/usr/share/emacs/TAGS")))))
+
+(eval-after-load "lisp-mode"
+  '(progn
+    (define-key emacs-lisp-mode-map [f5] 'eval-buffer)
+    (define-key emacs-lisp-mode-map [(control c) ?|] 'eval-region)))
+
+
 ;;;
 ;;; Common Lisp Mode -- from clisp-2.38/editors.txt
 ;;;
