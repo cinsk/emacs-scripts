@@ -121,7 +121,8 @@
   (interactive "d")
   (let ((path (get-text-property pos 'fullpath))
         (lev (get-text-property pos 'level))
-        (expanded (get-text-property pos 'expanded)))
+        (expanded (get-text-property pos 'expanded))
+        nelems)
     (cond ((string-equal "." (file-name-nondirectory path)) 
            ;; Refresh the current view??
            nil)
@@ -130,14 +131,16 @@
            nil)
           ((eq expanded :contracted)
            (setq buffer-read-only nil)
-           (dirtree-set-expand-mark ?-)
-           (insert-dir-entries path (+ 1 lev))
+           (setq nelems (insert-dir-entries path (+ 1 lev)))
+           (if (= nelems 0)
+               (dirtree-set-expand-mark ?\ )
+             (dirtree-set-expand-mark ?-))
            (setq buffer-read-only t)))))
 
 (defun insert-dir-entries (dir lev)
   "Insert directory entries in the current line. If the
 current line is not empty, fill from the next line"
-  (let (start end lst)
+  (let (start end lst (nelems 0))
     (save-excursion
       ;; put-text-property start end prop value &optional object
       (set-buffer (get-buffer-create "*DirTree*"))
@@ -146,20 +149,24 @@ current line is not empty, fill from the next line"
                                         (file-directory-p path)) 
                                       t nil nil))
       (dolist (elm lst)
-        (if (not (line-empty-p))
-            (progn (end-of-line)
-                   (insert "\n")
-                   ))
-        (setq start (point))
-        (insert (format "%s [+] %s" 
-                        (make-string (* default-indent-spaces lev) ?\ ) 
-                        (file-name-nondirectory elm)))
-        (setq end (point))
-        (put-text-property start end 'fullpath elm)
-        (put-text-property start end 'level lev)
-        (put-text-property start end 'expanded :contracted)
-        (message "%d - %d" start end))
-      )))
+        (and (not (string-equal (file-name-nondirectory elm) "."))
+             (not (string-equal (file-name-nondirectory elm) ".."))
+             (progn
+               (if (not (line-empty-p))
+                   (progn (end-of-line)
+                          (insert "\n")
+                          ))
+               (setq start (point))
+               (insert (format "%s [+] %s" 
+                               (make-string (* default-indent-spaces lev) ?\ ) 
+                               (file-name-nondirectory elm)))
+               (setq nelems (1+ nelems))
+               (setq end (point))
+               (put-text-property start end 'fullpath elm)
+               (put-text-property start end 'level lev)
+               (put-text-property start end 'expanded :contracted)
+               ))))
+    nelems))
 
 (defun dirtree-view (dir)
   (interactive "DDirectory: ")
