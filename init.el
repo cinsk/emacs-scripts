@@ -27,8 +27,8 @@ supplied one, a warning message is generated."
 ;;; Set up the keyboard so the delete key on both the regular keyboard
 ;;; and the keypad delete the character under the cursor and to the right
 ;;; under X, instead of the default, backspace behavior.
-;;; (global-set-key [delete] 'delete-char)
-;;; (global-set-key [kp-delete] 'delete-char)
+;; (global-set-key [delete] 'delete-char)
+;; (global-set-key [kp-delete] 'delete-char)
 
 
 ;;;
@@ -721,7 +721,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
 (add-hook 'dired-mode-hook
 	  (lambda ()
 	    ;; Set dired-x buffer-local variables here.  For example:
-	    ;; (dired-omit-mode 1)
+	    (dired-omit-mode 1)
 	    ))
 
 (setq auto-mode-alist (cons '("[^/]\\.dired$" . dired-virtual-mode)
@@ -1150,7 +1150,13 @@ Prefix argument means switch to the Lisp buffer afterwards."
    (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode)))
 
 
+;;;
+;;; ESS(Emacs Speaks Statistics) setting for R.
+;;;
+(when (locate-library "ess-site")
+  (require 'ess-site))
 
+
 ;;; To save & load Emacs session, following lines should be the last line
 ;;; in this file. 
 ;;;
