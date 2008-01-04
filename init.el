@@ -936,6 +936,8 @@ This function works iff color-theme-history-max-length is not NIL"
 (when (and window-system
            (locate-library "color-theme"))
   (require 'color-theme)
+  (color-theme-initialize)
+
   (and (locate-library "pink-bliss")
        (require 'pink-bliss))
 
@@ -1047,10 +1049,13 @@ This function works iff color-theme-history-max-length is not NIL"
 
 
 ;;;
-;;; Display splash screen on startup
+;;; Do not display splash screen on startup
 ;;;
-(when window-system
-  (fancy-splash-screens))
+
+;;(when window-system
+;;  (fancy-splash-screens))
+;;(setq initial-buffer-choice t)
+(setq inhibit-splash-screen t)
 
 
 ;;;
@@ -1221,19 +1226,6 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 (global-set-key [f11] 'ecb-next-action)
 
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(ecb-options-version "2.32"))
-
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- )
 
 ;;; Local Variables:
 ;;; coding: utf-8
