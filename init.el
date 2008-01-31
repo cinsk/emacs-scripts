@@ -1210,15 +1210,16 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;;
 ;;; ecb settings
 ;;;
-(autoload 'ecb-activate "ecb" "Emacs Code Browser" t)
-(eval-after-load "ecb"
-  '(progn
-     (setq ecb-toggle-layout-sequence
-           '("left3" "left-symboldef" "left8"))
-     (setq ecb-tip-of-the-day nil)
-     (set-face-font 'ecb-default-general-face
-                    "-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*")
-     ))
+(when window-system
+  (autoload 'ecb-activate "ecb" "Emacs Code Browser" t)
+  (eval-after-load "ecb"
+    '(progn
+       (setq ecb-toggle-layout-sequence
+             '("left3" "left-symboldef" "left8"))
+       (setq ecb-tip-of-the-day nil)
+       (set-face-font 'ecb-default-general-face
+                      "-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*")
+       )))
 
 (defun ecb-next-action (arg)
   (interactive "P")
