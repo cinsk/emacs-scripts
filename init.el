@@ -23,6 +23,15 @@ supplied one, a warning message is generated."
 			    (symbol-name ',symbol) ,symbol)
 		   ,old-value)))))
 
+(defun move-key (keymap old-key new-key)
+  "Move the key definition from OLD-KEY to NEW-KEY in KEYMAP."
+  (let ((def (lookup-key keymap old-key))
+        (alt (lookup-key keymap new-key)))
+    (define-key keymap new-key def)
+    (define-key keymap old-key nil)
+    alt))
+
+
 
 ;;; Set up the keyboard so the delete key on both the regular keyboard
 ;;; and the keypad delete the character under the cursor and to the right
@@ -868,9 +877,9 @@ Prefix argument means switch to the Lisp buffer afterwards."
      ret))
 
 
-;;
-;; color-theme settings
-;;
+;;;
+;;; color-theme settings
+;;;
 (setq color-theme-history-max-length 32)
 
 (defun color-theme-select-random ()
@@ -1016,7 +1025,11 @@ This function works iff color-theme-history-max-length is not NIL"
      (define-key outline-mode-map [(control shift down)]
        'outline-forward-same-level)
      (define-key outline-mode-map [(control shift up)]
-       'outline-backward-same-level)))
+       'outline-backward-same-level)
+
+     ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
+     ;; since I use "C-<TAB>" for `smart-other-window'.
+     (move-key org-mode-map [(control tab)] [(control x) (control tab)])))
 
 
 ;;;
