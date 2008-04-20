@@ -686,7 +686,6 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 (define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
 
-
 ;;;
 ;;; psgml mode setup
 ;;;
@@ -711,6 +710,58 @@ Prefix argument means switch to the Lisp buffer afterwards."
                               auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.lzx\\'" . lzx-nxml-mode)
                               auto-mode-alist)))
+
+;;;
+;;; nxml mode
+;;;
+
+;; Make a slash automatically completes the end-tag
+(eval-after-load "nxml-mode"
+  '(progn
+     (setq nxml-slash-auto-complete-flag t)
+     (define-key nxml-mode-map [(control ?c) (control ?e)]
+       'nxml-enclose-paragraph)))
+
+
+
+(defun nxml-enclose-paragraph (start end prefix)
+  "Enclose each paragraph with the element in the region.
+By default, <para> element is used.  A prefix argument will give you a
+chance to change the name of the element."
+  (interactive "*r\nP")
+  (let (curpos 
+        (done nil) (elname "para"))
+    (if (not (eq (prefix-numeric-value prefix) 1))
+        (setq elname (read-string "Element name: "
+                                  "para" 'docbook-element-name-history)))
+    (save-excursion
+      (save-restriction
+        (narrow-to-region start end)
+        (goto-char (point-min))
+
+        (while (not done)
+          (setq curpos (point))
+          (forward-paragraph)
+          ;(message (format "curpos(%d) point(%d)" curpos (point)))
+          (if (>= curpos (point))
+              (progn
+                (setq done t)))
+          (backward-paragraph)
+          (if (eq (char-after) ?\n)
+              (goto-char (1+ (point))))
+
+          (if (not done)
+              (progn
+                (insert (concat "<" elname ">\n"))
+                (forward-paragraph)
+                (insert (if (eq (char-before) ?\n)
+                            (concat "</" elname ">\n")
+                          (concat "\n</" elname ">")))
+                ;(message (format "pt(%d) pt-max(%d)" (point) (point-max)))
+                (if (>= (point) (1- (point-max)))
+                    (setq done t))
+                )))))))
+
 
 ;;;
 ;;; Dired and dired-x setting
@@ -882,6 +933,17 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;;
 (setq color-theme-history-max-length 32)
 
+(defvar color-theme-favorites '(color-theme-deep-blue
+                                color-theme-cinsk-wood
+                                color-theme-charcoal-black
+                                color-theme-clarity
+                                color-theme-comidia
+                                color-theme-dark-blue2
+                                color-theme-dark-laptop
+                                color-theme-taylor
+                                color-theme-robin-hood)
+      "My favorite color theme list")
+
 (defun color-theme-select-random ()
   "Select random color theme"
   (interactive)
@@ -961,9 +1023,12 @@ This function works iff color-theme-history-max-length is not NIL"
 
   ;; color-theme-* is frame-local from now.
   (setq color-theme-is-global nil)
-  
-  ;(color-theme-deep-blue)
-  (color-theme-robin-hood)
+
+  ;; Select random color theme from my favorite list
+  (let ((theme (nth (random (length color-theme-favorites))
+                    color-theme-favorites))
+        (buf "*scratch*"))
+    (funcall theme))
   
   ;(set-face-font 'default "fontset-etl14")
   )
@@ -1068,7 +1133,10 @@ This function works iff color-theme-history-max-length is not NIL"
 ;;(when window-system
 ;;  (fancy-splash-screens))
 ;;(setq initial-buffer-choice t)
-(setq inhibit-splash-screen t)
+;;(setq inhibit-splash-screen t)
+
+(setq initial-buffer-choice t)
+
 
 
 ;;;
