@@ -699,25 +699,30 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;; LaTeX mode
 ;;;
 
-(defun current-word-range (&optional STRICT REALLY-WORD)
+(defun current-word-markers (&optional STRICT REALLY-WORD)
   "Return the position of the current word
 
 This function return the (start . end) dotted list of the current
-word.  Since this function override
-`buffer-substring-no-properties', it is very dangerous to call
-this function when `buffer-substring-no-properties' is heavily
-used.  Use at your own risk!!!
+word where START is the marker points the beginning of the
+current word, and END is the marker points the end of the current
+word.
+
+Since this function override `buffer-substring-no-properties', it
+is very dangerous to call this function when
+`buffer-substring-no-properties' is heavily used.  Use at your
+own risk!!!
 
 TODO: Could somebody reimplement this function to use the around-advice?"
     (let ((old (symbol-function 'buffer-substring-no-properties))
-          (saved-start 0)
-          (saved-end 0) ret)
+          (saved-start (make-marker))
+          (saved-end (make-marker))
+          ret)
 
     (fset 'buffer-substring-no-properties 
           (lambda (start end)
             (let (ret)
-              (setq saved-start start)
-              (setq saved-end end)
+              (set-marker saved-start start)
+              (set-marker saved-end end)
               (setq ret (funcall old start end))
               ret)))
     (setq ret (current-word STRICT REALLY-WORD))
@@ -727,11 +732,20 @@ TODO: Could somebody reimplement this function to use the around-advice?"
       nil)))
 
 (defun latex-enclose-word (&optional arg)
-  "Enclose current word with the supplied command name"
+  "Enclose current word with the supplied command name
+
+After enclosing the current word, this function set the marker at
+the beginning of the word, and move the point to the end of the
+word.
+
+If a prefix argument is given, this function uses the region
+instead of the current word."
   (interactive "P")
-  (let ((range (current-word-range))
-        (collect nil)
-        (default nil))
+  (let (range (collect nil) (default nil))
+    (if (null arg)
+        (setq range (current-word-markers))
+      (setq range (cons (set-marker (make-marker) (region-beginning))
+                        (set-marker (make-marker) (region-end)))))
     (if (boundp 'latex-command-name-history)
         (progn
           (setq collect latex-command-name-history)
@@ -743,11 +757,13 @@ TODO: Could somebody reimplement this function to use the around-advice?"
                           "Command name: ")
                         collect nil nil nil
                         'latex-command-name-history default)))
-          (save-excursion
-            (goto-char (cdr range))
-            (insert "}")
-            (goto-char (car range))
-            (insert (format "\\%s{" cmdname)))))))
+          (goto-char (car range))
+          (insert-before-markers (format "\\%s{" cmdname))
+          (goto-char (cdr range))
+          (insert "}")
+          (goto-char (car range))
+          (push-mark)
+          (goto-char (cdr range))))))
 
 (eval-after-load "tex-mode"
   '(progn
