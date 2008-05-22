@@ -380,6 +380,14 @@ appropriately."
 };" nil 0)))
 (add-hook 'c++-mode-hook (function (lambda nil (abbrev-mode 1))))
 
+(define-abbrev-table 'nxml-mode-abbrev-table 
+  ;; I don't know why `@' for abbreviation doesn't work.
+  ;; So I choose `$' for that.
+  '(("$doctypexhtml" 
+"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"
+	\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" nil 0)
+))
+(add-hook 'nxml-mode-hook (function (lambda nil (abbrev-mode 1))))
 
 
 ;;; imenu mode
@@ -686,6 +694,66 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 (define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
 
+
+;;;
+;;; LaTeX mode
+;;;
+
+(defun current-word-range (&optional STRICT REALLY-WORD)
+  "Return the position of the current word
+
+This function return the (start . end) dotted list of the current
+word.  Since this function override
+`buffer-substring-no-properties', it is very dangerous to call
+this function when `buffer-substring-no-properties' is heavily
+used.  Use at your own risk!!!
+
+TODO: Could somebody reimplement this function to use the around-advice?"
+    (let ((old (symbol-function 'buffer-substring-no-properties))
+          (saved-start 0)
+          (saved-end 0) ret)
+
+    (fset 'buffer-substring-no-properties 
+          (lambda (start end)
+            (let (ret)
+              (setq saved-start start)
+              (setq saved-end end)
+              (setq ret (funcall old start end))
+              ret)))
+    (setq ret (current-word STRICT REALLY-WORD))
+    (fset 'buffer-substring-no-properties old)
+    (if ret
+        (cons saved-start saved-end)
+      nil)))
+
+(defun latex-enclose-word (&optional arg)
+  "Enclose current word with the supplied command name"
+  (interactive "P")
+  (let ((range (current-word-range))
+        (collect nil)
+        (default nil))
+    (if (boundp 'latex-command-name-history)
+        (progn
+          (setq collect latex-command-name-history)
+          (setq default (car latex-command-name-history))))
+    (if range
+        (let ((cmdname (completing-read 
+                        (if default
+                            (format "Command name[%s]: " default)
+                          "Command name: ")
+                        collect nil nil nil
+                        'latex-command-name-history default)))
+          (save-excursion
+            (goto-char (cdr range))
+            (insert "}")
+            (goto-char (car range))
+            (insert (format "\\%s{" cmdname)))))))
+
+(eval-after-load "tex-mode"
+  '(progn
+     (define-key tex-mode-map [(control ?c) ?e] 'latex-enclose-word)))
+
+
 ;;;
 ;;; psgml mode setup
 ;;;
