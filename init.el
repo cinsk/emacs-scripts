@@ -91,6 +91,7 @@ supplied one, a warning message is generated."
       (kill-buffer "*Quail Completions*")))
   ;(set-selection-coding-system 'euc-kr)
   (set-selection-coding-system 'utf-8)
+  (setq x-select-request-type 'UTF8_STRING)
 
   ;;(unless window-system
   ;;(menu-bar-mode -1)
@@ -140,6 +141,11 @@ appropriately."
         (coding-system-for-write 'utf-8)
         (coding-system-require-warning t))
     (call-interactively 'shell)))
+
+;;;
+;;; Handle color output from shell commands
+;;;
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 
 ;;;
@@ -628,13 +634,13 @@ calls `iswitchb'"
 ;;;
 ;;; Quick Frame Configuration Load/Save
 ;;;
-(global-set-key [(control f2)] '(lambda ()
+(global-set-key [(control f3)] '(lambda ()
                                   "Quick frame load"
                                   (interactive)
                                   (jump-to-register ?\x3)
                                   (message "Load saved frame configuration")))
 
-(global-set-key [(control f3)] '(lambda ()
+(global-set-key [(control f4)] '(lambda ()
                                   "Quick frame save"
                                   (interactive)
                                   (frame-configuration-to-register ?\x3)
