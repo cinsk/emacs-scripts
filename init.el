@@ -705,37 +705,19 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;; LaTeX mode
 ;;;
 
-(defun current-word-markers (&optional STRICT REALLY-WORD)
-  "Return the position of the current word
+(defun bounds-of-word-markers (&optional no-region)
+  "Return the start and end buffer locations for the word at point.
 
-This function return the (start . end) dotted list of the current
-word where START is the marker points the beginning of the
-current word, and END is the marker points the end of the current
-word.
+The value is a cons cell (START-MARK . END-MARK) giving the start
+and end markers.  If NO-REGION is not nil and there is no word at point,
+this function returns a cons cell of current region."
+  (let ((bounds (bounds-of-thing-at-point 'word)))
+    (if (and (not bounds) (not no-region) mark-active)
+        (setq bounds (cons (region-beginning) (region-end))))
 
-Since this function override `buffer-substring-no-properties', it
-is very dangerous to call this function when
-`buffer-substring-no-properties' is heavily used.  Use at your
-own risk!!!
-
-TODO: Could somebody reimplement this function to use the around-advice?"
-    (let ((old (symbol-function 'buffer-substring-no-properties))
-          (saved-start (make-marker))
-          (saved-end (make-marker))
-          ret)
-
-    (fset 'buffer-substring-no-properties 
-          (lambda (start end)
-            (let (ret)
-              (set-marker saved-start start)
-              (set-marker saved-end end)
-              (setq ret (funcall old start end))
-              ret)))
-    (setq ret (current-word STRICT REALLY-WORD))
-    (fset 'buffer-substring-no-properties old)
-    (if ret
-        (cons saved-start saved-end)
-      nil)))
+    (if bounds
+        (cons (set-marker (make-marker) (car bounds))
+              (set-marker (make-marker) (cdr bounds))))))
 
 (defun latex-enclose-word (&optional arg)
   "Enclose current word with the supplied command name
@@ -747,11 +729,8 @@ word.
 If a prefix argument is given, this function uses the region
 instead of the current word."
   (interactive "P")
-  (let (range (collect nil) (default nil))
-    (if (null arg)
-        (setq range (current-word-markers))
-      (setq range (cons (set-marker (make-marker) (region-beginning))
-                        (set-marker (make-marker) (region-end)))))
+  (let ((range (bounds-of-word-markers))
+        (collect nil) (default nil))
     (if (boundp 'latex-command-name-history)
         (progn
           (setq collect latex-command-name-history)
