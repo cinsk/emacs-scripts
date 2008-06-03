@@ -406,12 +406,37 @@ appropriately."
 
 (which-function-mode 1)			; display function names in mode-line
 
+
 ;;;
 ;;; Switching between buffers using iswitchb
 ;;;
 (iswitchb-mode 1)			; smart buffer switching mode
 (setq iswitchb-default-method 'maybe-frame) ; ask to use another frame.
 
+
+;;;
+;;; ibuffer - advanced buffer menu
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+(autoload 'ibuffer "ibuffer" "List buffers." t)
+
+(setq ibuffer-saved-filter-groups
+      '(("default"
+         ("dired" (mode . dired-mode))
+         ("manual" (or
+                    (name . "^\\*info.*\\*$")
+                    (name . "^\\*Man.*\\*$")
+                    (name . "^\\*Help.*\\*$")))
+         ("emacs" (or
+                   (name . "^\\*scratch\\*$")
+                   (name . "^TAGS$")
+                   (name . "^\\*.*\\*$"))))))
+
+(add-hook 'ibuffer-mode-hook
+              (lambda ()
+                (ibuffer-switch-to-saved-filter-groups "default")))
+
+;;;
+
 
 (global-font-lock-mode 1)		; every buffer uses font-lock-mode
 (line-number-mode 1)			; show line number in mode-line
@@ -1356,7 +1381,19 @@ Prefix argument means switch to the Lisp buffer afterwards."
 (global-set-key [f2] 'ff-find-other-file)
 (global-set-key [f3] 'dired-jump)
 
+;;;
+;;; elscreen
+;;;
+(eval-after-load "elscreen"
+  '(progn
+     (define-key elscreen-map "\C-z" 'elscreen-toggle)
+     (setq elscreen-display-screen-number nil)
+     ))
 
+(when (locate-library "elscreen")
+  (require 'elscreen))
+
+
 ;;;
 ;;; ecb settings
 ;;;
