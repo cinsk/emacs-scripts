@@ -9,6 +9,8 @@
 (setq load-path (cons (expand-file-name "~/.emacs.d/") load-path))
 
 
+(defalias 'yes-or-no-p 'y-or-n-p)       ; Use y/n instead of yes/no
+
 (defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
   "setq-if-equal set SYMBOL to NEW-VALUE iff it has OLD-VALUE.
 It compare the old value with OLD-VALUE using `equal' then
