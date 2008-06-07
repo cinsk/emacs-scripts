@@ -145,7 +145,7 @@ appropriately."
     (call-interactively 'shell)))
 
 ;;;
-;;; Handle color output from shell commands
+;;; Allow shell mode to handle color output from shell commands (ANSI color)
 ;;;
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
@@ -702,7 +702,9 @@ calls `iswitchb'"
 ;;;
 ;;; It seems that Emacs already have `lisp-eval-last-sexp' that has
 ;;; the same feature of `
-(setq inferior-lisp-program "clisp -I -q -E utf-8")
+
+;;(setq inferior-lisp-program "clisp -I -q -E utf-8")
+(setq inferior-lisp-program "sbcl --noinform")
 
 (defun lisp-macroexpand-region (start end &optional and-go)
   "Macroexpand the current region in the inferior Lisp process.
@@ -1190,7 +1192,8 @@ This function works iff color-theme-history-max-length is not NIL"
 
      ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
      ;; since I use "C-<TAB>" for `smart-other-window'.
-     (move-key org-mode-map [(control tab)] [(control x) (control tab)])))
+     (move-key org-mode-map [(control tab)] [(control x) (control tab)])
+     (move-key org-mode-map [(control c) (control d)] [(control c) ?e])))
 
 
 ;;;
@@ -1247,35 +1250,6 @@ This function works iff color-theme-history-max-length is not NIL"
        (setq erc-user-full-name "Seong-Kook Shin")
        (setq erc-server "localhost:8668"))))
        
-
-;;;
-;;; CLISP -- See doc/editors.txt in the CLISP package.
-;;;
-(setq inferior-lisp-program "clisp -I -q -E utf-8")
-
-(defun lisp-macroexpand-region (start end &optional and-go)
-  "Macroexpand the current region in the inferior Lisp process.
-Prefix argument means switch to the Lisp buffer afterwards."
-  (interactive "r\nP")
-  (comint-send-string
-   (inferior-lisp-proc)
-   (format "(macroexpand-1 (quote %s))\n"
-	   (buffer-substring-no-properties start end)))
-  (if and-go (switch-to-lisp t)))
-
-(defun lisp-macroexpand-sexp (&optional and-go)
-  "Macroexpand the next sexp in the inferior Lisp process.
-Prefix argument means switch to the Lisp buffer afterwards."
-  (interactive "P")
-  (lisp-macroexpand-region (point) (scan-sexps (point) 1) and-go))
-
-(eval-after-load "inf-lisp"
-  '(progn
-     (define-key lisp-mode-map [(control ?x) (control ?m)]
-       'lisp-macroexpand-sexp)
-     (define-key inferior-lisp-mode-map [(control ?x) (control ?m)]
-       'lisp-macroexpand-sexp)))
-
 
 ;;;
 ;;; python-mode
