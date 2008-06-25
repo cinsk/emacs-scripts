@@ -34,6 +34,13 @@ supplied one, a warning message is generated."
     alt))
 
 
+;; Helpers for TAGS manipulation
+(setq tags-add-tables 't)               ; do not ask to add new tags table.
+
+(defun safe-visit-tags-table (file &optional local)
+  (and (file-readable-p file)
+       (visit-tags-table file local)))
+
 
 ;;; Set up the keyboard so the delete key on both the regular keyboard
 ;;; and the keypad delete the character under the cursor and to the right
@@ -272,12 +279,17 @@ appropriately."
 (global-set-key "\C-x\C-v" 'view-file)
 
 
-;;;(defun my-c-mode-hook ()
-;;;  (local-set-key "\C-cc" 'compile)
-;;;  (local-set-key "\C-cs" 'shell))
 ;;;
-;;;(add-hook 'c-mode-hook 'my-c-mode-hook)
+;;; cc-mode
+;;;
 
+(add-hook 'c-mode-hook
+          #'(lambda ()
+              (safe-visit-tags-table "~/.emacs.d/TAGS.sys" t)))
+             
+(add-hook 'c++-mode-hook
+          #'(lambda ()
+              (safe-visit-tags-table "~/.emacs.d/TAGS.sys" t)))
 
 
 (define-abbrev-table 'c-mode-abbrev-table 
@@ -687,9 +699,7 @@ calls `iswitchb'"
 
 (add-hook 'emacs-lisp-mode-hook 
           '(lambda ()
-             (let ((tagfile "/usr/share/emacs/TAGS"))
-               (and (file-readable-p tagfile)
-                    (visit-tags-table "/usr/share/emacs/TAGS")))))
+             (safe-visit-tags-table "~/.emacs.d/TAGS.emacs" t)))
 
 (eval-after-load "lisp-mode"
   '(progn
@@ -728,6 +738,11 @@ Prefix argument means switch to the Lisp buffer afterwards."
      'lisp-macro-expand-sexp))
 
 (define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
+
+(when (locate-library "slime")
+  (autoload 'slime "slime" "Slime" t)
+  (eval-after-load "slime"
+    '(slime-setup)))
 
 
 ;;;
