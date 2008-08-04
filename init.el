@@ -69,6 +69,12 @@ supplied one, a warning message is generated."
 ;; (setq-default make-backup-files nil)
 
 ;;;
+;;; Window-less system Configuration
+;;;
+(when window-system
+  (menu-bar-mode -1))
+
+;;;
 ;;; for emacs-20.4, korean
 ;;;
 
@@ -685,6 +691,25 @@ calls `iswitchb'"
                                   (frame-configuration-to-register ?\x3)
                                   (message "Frame configuration saved")))
 
+
+(defun line-numbers-on-region (&optional start)
+  "Insert line numbers on the current region.
+A numeric prefix argument specifies the starting number"
+  (interactive "P")
+  (let ((start (if (null start) 1 (prefix-numeric-value start)))
+        (begin (region-beginning))
+        (end (region-end)))
+    (save-restriction
+      (let* ((lines (count-lines begin end))
+             (width (length (format "%d" (1- (+ lines start)))))
+             (fmt (format "%%%dd: " width)))
+        (goto-char begin)
+        (beginning-of-line)
+        (dotimes (i lines)
+          (insert (format fmt (+ start i)))
+          (forward-line))))))
+
+(global-set-key [(control ?c) ?n] #'line-numbers-on-region)
 
 ;(require 'autofit-frame)
 ;(add-hook 'after-make-frame-functions 'fit-frame)
@@ -1411,7 +1436,18 @@ This function works iff color-theme-history-max-length is not NIL"
 
 (global-set-key [f11] 'ecb-next-action)
 
-
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(safe-local-variable-values (quote ((Syntax . ANSI-Common-Lisp) (Package . getopt)))))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
 ;;; Local Variables:
 ;;; coding: utf-8
 ;;; End:
