@@ -575,6 +575,9 @@ character to the spaces"
 (define-key c-mode-base-map [(control meta ?{)] 'c-up-conditional-with-else)
 (define-key c-mode-base-map [(control meta ?})] 'c-down-conditional-with-else)
 
+(global-set-key [(control meta ?\])] #'forward-page)
+(global-set-key [(control meta ?\[)] #'backward-page)
+
 
 ;;;
 ;;; Prompt for arguments to the preprocessor for `c-macro-expand'
@@ -674,6 +677,20 @@ calls `iswitchb'"
   (select-frame (new-frame))
   (call-interactively command))
 (global-set-key "\C-x5\M-x" 'run-command-other-frame)
+
+
+(defun pop-to-cvs-buffer (arg)
+  "Select \"*cvs*\" buffer in some window, preferably a different one.
+If the buffer is not found, call `cvs-examine' interactively.
+With a prefix argument, call `cvs-examine' with the prefix argument, 16."
+  (interactive "P")
+  (let ((buf (get-buffer "*cvs*")))
+    (if arg
+        (let ((prefix-arg '(16)))       ; C-u C-u
+          (call-interactively #'cvs-examine))
+      (if buf
+          (pop-to-buffer buf)
+        (call-interactively #'cvs-examine)))))
 
 
 ;;;
@@ -1394,8 +1411,10 @@ This function works iff color-theme-history-max-length is not NIL"
 
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 
-(global-set-key [f2] 'ff-find-other-file)
-(global-set-key [f3] 'dired-jump)
+
+;;(global-set-key [f2] 'ff-find-other-file)
+;;(global-set-key [f3] 'dired-jump)
+(global-set-key [f2] #'pop-to-cvs-buffer)
 
 ;;;
 ;;; elscreen
@@ -1434,20 +1453,8 @@ This function works iff color-theme-history-max-length is not NIL"
                (ecb-toggle-layout)
              (ecb-deactivate)))))
 
-(global-set-key [f11] 'ecb-next-action)
+;;(global-set-key [f11] 'ecb-next-action)
 
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(safe-local-variable-values (quote ((Syntax . ANSI-Common-Lisp) (Package . getopt)))))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- )
 ;;; Local Variables:
 ;;; coding: utf-8
 ;;; End:
