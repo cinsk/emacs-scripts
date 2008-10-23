@@ -1250,7 +1250,10 @@ This function works iff color-theme-history-max-length is not NIL"
      ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
      ;; since I use "C-<TAB>" for `smart-other-window'.
      (move-key org-mode-map [(control tab)] [(control x) (control tab)])
-     (move-key org-mode-map [(control c) (control d)] [(control c) ?e])))
+     (move-key org-mode-map [(control c) (control d)] [(control c) ?e])
+
+     (add-to-list 'org-file-apps '("pdf" . "acroread %s") t)
+     (add-to-list 'org-file-apps '("ps" . "ggv %s") t)))
 
 
 ;;;
