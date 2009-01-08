@@ -841,6 +841,29 @@ instead of the current word."
      (define-key tex-mode-map [(control ?c) ?e] 'latex-enclose-word)))
 
 
+(defun fill-text-line-paragraph (begin end)
+  "Convert each line in the region to a filled-paragraph"
+  (interactive "r")
+  (save-excursion
+    (save-restriction
+      (narrow-to-region begin end)
+
+      (let ((begin (set-marker (make-marker) begin))
+            (end (set-marker (make-marker) end)))
+        (set-marker-insertion-type end t)
+        (beginning-of-line)
+        (goto-char begin)
+        (while (eq (forward-line) 0)
+          (newline))
+
+        (goto-char begin)
+        (while (progn
+                 (fill-paragraph nil)
+                 (eq (forward-line) 0)))))))
+
+(global-set-key [(control ?c) ?q] 'fill-text-line-paragraph)
+
+
 ;;;
 ;;; psgml mode setup
 ;;;
@@ -1236,6 +1259,37 @@ This function works iff color-theme-history-max-length is not NIL"
 (global-set-key [(control c) ?a] 'org-agenda)
 (global-set-key [(control c) ?l] 'org-store-link)
 
+(defvar org-table-convert-last-nrows	3
+  "Default number of columns per row.  This is changed if user used
+another value")
+
+(defun org-table-convert-from-lines (&optional nrows)
+  "Convert lines to the org table. Each line contains one column so that
+users need to specify the number of columns per row."
+  (interactive "P")
+  (if (null nrows)
+      (let ((nrows (string-to-number
+                    (read-string
+                     (format "Number of columns per row[%d]: " 
+                             org-table-convert-last-nrows)
+                     nil nil 
+                     (number-to-string org-table-convert-last-nrows)))))
+        (setq org-table-convert-last-nrows nrows)
+        (save-excursion
+          (save-restriction
+            (let ((start (set-marker (make-marker) (region-beginning)))
+                  (end (set-marker (make-marker) (region-end))))
+              ;;(message "nrows(%S) start(%S) end(%S)" nrows start end)
+              (set-marker-insertion-type end t)
+              (narrow-to-region start end)
+              (goto-char start)
+              (while (progn
+                       (dotimes (i (1- nrows))
+                         (end-of-line) (zap-to-nonspace) (insert "\t"))
+                       (beginning-of-line)
+                       (and (eq (forward-line) 0) (< (point) end))))
+              (org-table-convert-region start end '(16))))))))
+
 (eval-after-load "org"
   '(progn
      (define-key outline-mode-map [(control down)]
@@ -1251,6 +1305,9 @@ This function works iff color-theme-history-max-length is not NIL"
      ;; since I use "C-<TAB>" for `smart-other-window'.
      (move-key org-mode-map [(control tab)] [(control x) (control tab)])
      (move-key org-mode-map [(control c) (control d)] [(control c) ?e])
+
+     (define-key org-mode-map [(control c) (control ?\\)]
+       'org-table-convert-from-lines)
 
      (add-to-list 'org-file-apps '("pdf" . "acroread %s") t)
      (add-to-list 'org-file-apps '("ps" . "ggv %s") t)))
