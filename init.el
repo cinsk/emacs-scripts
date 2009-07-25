@@ -780,11 +780,15 @@ Prefix argument means switch to the Lisp buffer afterwards."
      'lisp-macro-expand-sexp))
 
 (define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
-
+
+;;;
+;;; slime
+;;;
 (when (locate-library "slime")
-  (autoload 'slime "slime" "Slime" t)
-  (eval-after-load "slime"
-    '(slime-setup)))
+  (eval-after-load "slime" '(slime-setup))
+  (autoload 'slime "slime"
+    "Start an inferior lisp and connect to its Swank server" t))
+
 
 
 ;;;
@@ -1492,28 +1496,30 @@ users need to specify the number of columns per row."
 ;;;
 ;;; ecb settings
 ;;;
-(when window-system
-  (autoload 'ecb-activate "ecb" "Emacs Code Browser" t)
-  (eval-after-load "ecb"
-    '(progn
-       (setq ecb-toggle-layout-sequence
-             '("left3" "left-symboldef" "left8"))
-       (setq ecb-tip-of-the-day nil)
-       (set-face-font 'ecb-default-general-face
-                      "-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*")
-       )))
+(when nil
+  (when window-system
+    (autoload 'ecb-activate "ecb" "Emacs Code Browser" t)
+    (eval-after-load "ecb"
+      '(progn
+         (setq ecb-toggle-layout-sequence
+               '("left3" "left-symboldef" "left8"))
+         (setq ecb-tip-of-the-day nil)
+         (set-face-font 'ecb-default-general-face
+                        "-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*")
+         )))
 
-(defun ecb-next-action (arg)
-  (interactive "P")
-  (or (featurep 'ecb)
-      (progn (require 'cedet)
-             (require 'ecb)))           ; load required packages
-  (cond ((null ecb-minor-mode) (ecb-activate))
-        (t (if (null arg) 
-               (ecb-toggle-layout)
-             (ecb-deactivate)))))
+  (defun ecb-next-action (arg)
+    (interactive "P")
+    (or (featurep 'ecb)
+        (progn (require 'cedet)
+               (require 'ecb)))         ; load required packages
+    (cond ((null ecb-minor-mode) (ecb-activate))
+          (t (if (null arg) 
+                 (ecb-toggle-layout)
+               (ecb-deactivate)))))
 
-;;(global-set-key [f11] 'ecb-next-action)
+  ;;(global-set-key [f11] 'ecb-next-action)
+  )
 
 ;;; Local Variables:
 ;;; coding: utf-8
