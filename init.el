@@ -6,6 +6,12 @@
 ;;; Seong-Kook Shin's .emacs initialization file.
 ;;;
 
+(when nil
+  ; "NanumGothic_Coding-12"
+  (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-12"))
+  (set-fontset-font "fontset-default" 'hangul
+		    '("NanumGothic_Coding-12" . "unicode-bmp")))
+
 (setq load-path (cons (expand-file-name "~/.emacs.d/") load-path))
 
 
@@ -755,6 +761,7 @@ A numeric prefix argument specifies the starting number"
 ;;; It seems that Emacs already have `lisp-eval-last-sexp' that has
 ;;; the same feature of `
 
+;; clisp does not work with slime package for now -- cinsk
 ;;(setq inferior-lisp-program "clisp -I -q -E utf-8")
 (setq inferior-lisp-program "sbcl --noinform")
 
@@ -789,6 +796,16 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (autoload 'slime "slime"
     "Start an inferior lisp and connect to its Swank server" t))
 
+
+
+;;;
+;;; quack (enhanced suport for scheme-mode)
+;;;
+(when (locate-library "quack")
+  (require 'quack)
+  (setq quack-browse-url-browser-function 'quack-w3m-browse-url-other-window)
+  (setq quack-fontify-style 'emacs)
+  (setq quack-default-program "mzscheme"))
 
 
 ;;;
