@@ -807,6 +807,32 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (setq quack-fontify-style 'emacs)
   (setq quack-default-program "mzscheme"))
 
+(defun scheme-grep-symbols-on-region ()
+  "Insert all global symbols into the selected buffer"
+  (interactive)
+  (let ((src (current-buffer))
+        (dst (get-buffer-create "*scheme-tmp*"))
+        (begin (region-beginning))
+        (end (region-end)))
+    (save-excursion
+      (set-buffer dst)
+      (erase-buffer)
+      (scheme-mode)
+      (insert "(provide "))
+    (save-excursion
+      (narrow-to-region begin end)
+      (goto-char (point-min))
+      (while (re-search-forward
+              "(define[ \t\v\n]+(?[ \t\v\n]*\\([^ )\t\v\n]*\\)" nil t)
+        (let ((word (match-string-no-properties 1)))
+          (set-buffer dst)
+          (insert word)
+          ;;(indent-according-to-mode)
+          ;;(newline)
+          (newline-and-indent)
+          (set-buffer src))))
+))
+
 
 ;;;
 ;;; LaTeX mode
