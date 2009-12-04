@@ -336,6 +336,8 @@ appropriately."
 ;;; cc-mode
 ;;;
 
+(require 'cc-mode)
+
 (add-hook 'c-mode-hook
           #'(lambda ()
               (safe-visit-tags-table "~/.emacs.d/TAGS.sys" t)))
