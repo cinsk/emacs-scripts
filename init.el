@@ -6,16 +6,99 @@
 ;;; Seong-Kook Shin's .emacs initialization file.
 ;;;
 
-(when nil
-  ; "NanumGothic_Coding-12"
-  (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-12"))
-  (set-fontset-font "fontset-default" 'hangul
-		    '("NanumGothic_Coding-12" . "unicode-bmp")))
-
+;;;
+;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
+;;;
 (setq load-path (cons (expand-file-name "~/.emacs.d/") load-path))
 
+
+;;;
+;;; Due to my preference, I configure fonts of Emacs using X
+;;; resources.  If you are not sure, insert following configuration in
+;;; your $HOME/.Xdefaults-hostname where hostname is the name of the
+;;; host, or the file specified in $XENVIRONMENT.  See X(7) for more.
+;;;
+;;; Emacs.Fontset-0:-*-DejaVu Sans Mono-*-*-*-*-14-*-*-*-*-*-fontset-dejavu,\
+;;;           latin:-*-DejaVu Sans Mono-*-*-*-*-14-*-*-*-*-*-*-*, \
+;;;          hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-*-*-*-*
+;;;
+;;; Emacs*Fontset-2:-*-Consolas-*-*-*-*-14-*-*-*-*-*-fontset-consolas,\
+;;;           latin:-*-Consolas-*-*-*-*-14-*-*-*-*-*-*,\
+;;;         hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-*-*-*
+;;;
+;;; Emacs.Font: fontset-dejavu
+;;;
 
-(defalias 'yes-or-no-p 'y-or-n-p)       ; Use y/n instead of yes/no
+(defun xftp (&optional frame)
+  "Return t if FRAME support XFT font backend."
+  (let ((xft-supported))
+    (mapc (lambda (x) (if (eq x 'xft) (setq xft-supported t)))
+          (frame-parameter frame 'font-backend))
+    xft-supported))
+
+(defun scale-default-font-height (factor &optional frame)
+  "Scale the height of the default face
+New height will be calculated by (* FACTOR old-face-height)"
+  (let ((height (face-attribute 'default :height)))
+    (set-face-attribute 'default frame :height (round (* height factor)))))
+
+
+(when (xftp)
+  ;; When Emacs uses Xft font backend, "control + mouse wheel up"
+  ;; increases the default font size whereas "control + mouse wheel
+  ;; down " decreases the size.
+
+  ;; Note that if you call `mwheel-install' after this configuration,
+  ;; both [C-mouse-4] and [C-mouse-5] bindings are cleared.
+  ;;
+  ;; It seems that mwheel package is automatically loaded in Emacs 22
+  ;; or higher.  Thus, I do not need to call `mwheel-install' any longer.
+  (global-set-key [C-mouse-4] (lambda ()
+                                (interactive)
+                                (scale-default-font-height 1.1
+                                                           (selected-frame))
+                                (message "New face height: %d" 
+                                         (face-attribute 'default :height))))
+  (global-set-key [C-mouse-5] (lambda ()
+                                (interactive)
+                                (scale-default-font-height 0.9
+                                                           (selected-frame))
+                                (message "New face height: %d" 
+                                         (face-attribute 'default :height)))))
+
+;;; Although it is possible to set font faces in lisp code, I prefer
+;;; to use X resource configuration.
+;;;
+(when nil
+  ; "NanumGothic_Coding-12"
+  ;(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-12"))
+  ;(set-fontset-font "fontset-default" 'hangul
+  ;'("NanumGothic_Coding-12" . "unicode-bmp"))
+  (set-face-font 'default "fontset-default")
+  (set-fontset-font "fontset-default" '(#x1100. #xffdc)
+                    '("NanumGothic_Coding" . "unicode-bmp"))
+  (set-fontset-font "fontset-default" 'ascii
+                    '("NanumGothic_Coding" . "unicode-bmp"))
+  (set-fontset-font "fontset-default" 'latin-iso8859-1
+                    '("NanumGothic_Coding" . "unicode-bmp"))
+  (set-fontset-font "fontset-default" 'hangul
+                    '("NanumGothic_Coding" . "unicode-bmp"))
+  (set-fontset-font "fontset-default" '(#xe0bc. #xf66e)
+                    '("NanumGothic_Coding" . "unicode-bmp"))
+  (set-fontset-font "fontset-default" 'kana
+                    '("NanumGothic_Coding" . "unicode-bmp"))
+  (set-fontset-font "fontset-default" 'han
+                    '("NanumGothic_Coding" . "unicode-bmp"))
+)
+
+;;; Sometimes, Emacs asks for the confirmation of a command such as
+;;; killing a buffer.  In that case, user should type "yes" or "no"
+;;; directly.
+;;; 
+;;; Below configuration let the user uses "y" or "n" instead of using
+;;; longer version.
+(defalias 'yes-or-no-p 'y-or-n-p)
+
 
 (defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
   "setq-if-equal set SYMBOL to NEW-VALUE iff it has OLD-VALUE.
@@ -38,12 +121,13 @@ supplied one, a warning message is generated."
     (define-key keymap new-key def)
     (define-key keymap old-key nil)
     alt))
+
 
-
-;; Helpers for TAGS manipulation
+;;; Helpers for TAGS manipulation
 (setq tags-add-tables 't)               ; do not ask to add new tags table.
 
 (defun safe-visit-tags-table (file &optional local)
+  "Call `visit-tags-table' iff FILE is readable"
   (and (file-readable-p file)
        (visit-tags-table file local)))
 
@@ -51,6 +135,7 @@ supplied one, a warning message is generated."
 ;;; Set up the keyboard so the delete key on both the regular keyboard
 ;;; and the keypad delete the character under the cursor and to the right
 ;;; under X, instead of the default, backspace behavior.
+;;;
 ;; (global-set-key [delete] 'delete-char)
 ;; (global-set-key [kp-delete] 'delete-char)
 
@@ -72,22 +157,21 @@ supplied one, a warning message is generated."
 
 
 
+;;; Emacs generates a backup file (filename plus "~") whenever a file
+;;; the first time it is saved.  Uncomment below line to prevents it.
+;;;
 ;; (setq-default make-backup-files nil)
 
 ;;;
 ;;; Window-less system Configuration
 ;;;
 (when window-system
-  (menu-bar-mode -1))
-
-;;;
-;;; for emacs-20.4, korean
-;;;
+  (menu-bar-mode 1)                    ; -1 to hide, 1 to show
+  (tool-bar-mode -1)                   ; -1 to hide, 1 to show
+  )
 
 ;;; set input method toggle key to 'Shift-Space'
 (global-set-key [?\S- ] 'toggle-input-method)
-(setq-default default-korean-keyboard "3")
-
 
 ;;; From Mr. Shin's FAQ
 ;;; and jay's setup <http://pllab.kaist.ac.kr/~jay>
@@ -97,12 +181,17 @@ supplied one, a warning message is generated."
   (set-language-environment "Korean")
   ; (setq-default file-name-coding-system 'utf-8)
 
-  ;; comment out if you use 3 bulsik
-  (setq default-korean-keyboard "3")
+  ;; Default korean keyboard layout
+  ;;
+  ;; "" for 2 (du-bul-sik), "3" for 3 (se-bul-sik)
+  (setq-default default-korean-keyboard "3")
+
   (setq default-input-method "korean-hangul3")
+
   (setq input-method-verbose-flag nil
         input-method-highlight-flag nil)
-  ;;;; give highest priority to euc-kr
+
+  ;;;; give highest priority to utf-8
   (prefer-coding-system 'utf-8)
   (set-default-coding-systems 'utf-8)
 
@@ -115,7 +204,7 @@ supplied one, a warning message is generated."
   (setq x-select-request-type 'UTF8_STRING)
 
   ;;(unless window-system
-  ;;(menu-bar-mode -1)
+
   ;;(set-keyboard-coding-system 'nil)
   ;;(set-terminal-coding-system 'euc-kr))
 
@@ -146,150 +235,102 @@ supplied one, a warning message is generated."
   (add-hook 'dired-before-readin-hook
             (lambda ()
               (set (make-local-variable 'coding-system-for-read) 'utf-8)))
-
-  (prefer-coding-system 'cp949)
-  (prefer-coding-system 'utf-8)
-
 )
 
 
-(defun unicode-shell ()
+;;;
+;;; Shell configuration
+;;;
+
+;; `shell' runs an inferior shell in ASCII coding system.
+;; `unicode-shell' behaves the same as `shell' except it runs an inferior
+;; shell in UTF-8 coding system.
+
+(defun unicode-shell (&optional encoding)
   "Execute the shell buffer in UTF-8 encoding.
 Note that you'll need to set the environment variable LANG and others 
 appropriately."
   (interactive)
-  (let ((coding-system-for-read 'utf-8)
-        (coding-system-for-write 'utf-8)
+  (let ((coding-system-for-read (or encoding 'utf-8))
+        (coding-system-for-write (or encoding 'utf-8))
         (coding-system-require-warning t))
     (call-interactively 'shell)))
 
-;;;
-;;; Allow shell mode to handle color output from shell commands (ANSI color)
-;;;
+(global-set-key "\C-cd" 'unicode-shell)
+
+;; Allow shell mode to handle color output from shell commands
+;; (notably from ls --color command)
+;;
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+
+;;
+;; Make the inferior shell a login shell.
+;;
+(setq explicit-bash-args (quote ("--noediting" "-i" "-l")))
 
 
 ;;;
 ;;; Buffer Menu
 ;;;
-;;; Sort by the 2nd column (buffer name) in Buffer list
+
+;; Sort by the 2nd column (buffer name) in Buffer list
 (setq Buffer-menu-sort-column 2)
 
-
-;;; for wheel mouse
-;;;
-;;;  http://www.inria.fr/koala/colas/mouse-wheel-scroll/#gnuemacs
-;;;
-;;(defun up-slightly () (interactive) (scroll-up 5))
-;;(defun down-slightly () (interactive) (scroll-down 5))
-;;(global-set-key [mouse-4] 'down-slightly)
-;;(global-set-key [mouse-5] 'up-slightly)
-;;(defun up-one () (interactive) (scroll-up 1))
-;;(defun down-one () (interactive) (scroll-down 1))
-;;(global-set-key [S-mouse-4] 'down-one)
-;;(global-set-key [S-mouse-5] 'up-one)
-(cond (window-system
-       (mwheel-install)
-       ))
+;; ibuffer - advanced buffer menu
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+(autoload 'ibuffer "ibuffer" "List buffers." t)
 
-;;;
-;;; Force mouse yanks at point not at cursor.
-;;;
+(setq ibuffer-saved-filter-groups
+      '(("default"
+         ("dired" (mode . dired-mode))
+         ("manual" (or
+                    (name . "^\\*info.*\\*$")
+                    (name . "^\\*Man.*\\*$")
+                    (name . "^\\*Help.*\\*$")))
+         ("emacs" (or
+                   (name . "^\\*scratch\\*$")
+                   (name . "^TAGS$")
+                   (name . "^\\*.*\\*$"))))))
+
+(add-hook 'ibuffer-mode-hook
+              (lambda ()
+                (ibuffer-switch-to-saved-filter-groups "default")))
+
+
+;;; When a user paste clipboard content in Emacs using mouse button 2,
+;;; the content will be pasted in the place at mouse click.  Comment
+;;; below line for the default behavior (at mouse click).
 (setq mouse-yank-at-point t)
 
 
-;; frame title : set to buffer name
-;;(setq frame-title-format "Emacs - %f ")  
-(setq frame-title-format (if window-system
-			     "%F - %f"
-			   "Emacs - %f"))
+;;; Set the default value for the title bar of the Emacs frame.  
+;;;
+;;; The possible format specifiers (e.g. %F or %b) are explained in
+;;; the documentation of `mode-line-format'.
+(setq frame-title-format "%F - %b")
 (setq icon-title-format  "%b")
 
 
-;;(defun up-a-lot () (interactive) (scroll-up))
-;;(defun down-a-lot () (interactive) (scroll-down))
-;;(global-set-key [C-mouse-4] 'down-a-lot)
-;;(global-set-key [C-mouse-5] 'up-a-lot)
-
-;;;
-;;; If you want to scroll by half a page instead of only 5 lines as above,
-;;; John Rowe sent this GNU Emacs code: 
-;;;
-;;(defun scroll-up-half ()
-;;  "Scroll up half a page."
-;;  (interactive)
-;;  (scroll-up (/ (window-height) 2)))
-;;
-;;(defun scroll-down-half ()
-;;  "Scroll down half a page."
-;;  (interactive)
-;;  (scroll-down (/ (window-height) 2)))
-;;
-;;(global-set-key [(mouse-5)] 'scroll-up-half)
-;;(global-set-key [(mouse-4)] 'scroll-down-half)
-
-
 ;;;
 ;;; If you are intended BS (backspace) key to work
 ;;; correctly on some terminals, uncomment one of below s-exp.
 ;;;                                                 -- cinsk
 ;;(global-set-key [C-?] 'backward-delete-char)
-;;(global-set-key [C-h] 'backward-delete-char);
+;;(global-set-key [C-h] 'backward-delete-char)
 
-;;;
-;;; Emacs Lisp escape sequence in a string:
-;;; <TAB> - `\t'  <RET> - `\r'  <ESC> - `\e'  <DEL> - `\d'
-;;;
-;;; To use function keys, mouse button, or non-ASCII character such
-;;; as `C-=' or `H-a', use a vector(`[..]') to specify the key sequence.
-;;;
-;;;  - If a vector element is a character, use the Lisp character constant,
-;;;    `?'. e.g. `?\C-='
-;;;  - For example, below two statements are the same:
-;;;     (global-set-key "\C-x\e\e" 'repeat-complex-command)
-;;;     (global-set-key [?\C-x ?\e ?\e] 'repeat-complex-command)
-;;;
-;;; Lisp Symbols for the function keys:
-;;;  `left', `up', `right', `down'
-;;;       Cursor arrow keys.
-;;;  
-;;;  `begin', `end', `home', `next', `prior'
-;;;       Other cursor repositioning keys.
-;;;  
-;;;  `select', `print', `execute', `backtab'
-;;;  `insert', `undo', `redo', `clearline'
-;;;  `insertline', `deleteline', `insertchar', `deletechar'
-;;;       Miscellaneous function keys.
-;;;  
-;;;  `f1', `f2', ... `f35'
-;;;       Numbered function keys (across the top of the keyboard).
-;;;  
-;;;  `kp-add', `kp-subtract', `kp-multiply', `kp-divide'
-;;;  `kp-backtab', `kp-space', `kp-tab', `kp-enter'
-;;;  `kp-separator', `kp-decimal', `kp-equal'
-;;;       Keypad keys (to the right of the regular keyboard), with names or
-;;;       punctuation.
-;;;  
-;;;  `kp-0', `kp-1', ... `kp-9'
-;;;       Keypad keys with digits.
-;;;  
-;;;  `kp-f1', `kp-f2', `kp-f3', `kp-f4'
-;;;       Keypad PF keys.
-;;;
 
 (global-set-key "\C-cc" 'compile)
-(global-set-key "\C-cd" 'unicode-shell)
 
-(global-set-key [(control ?c) (control ?d)] 'zap-to-nonspace)
+
 (global-set-key [?\C-.] 'find-tag-other-window) ; C-x o 
 
-;; C-c C-l is used for c-toggle-electric-state
-;(global-set-key [(control c) ?l] 'goto-line) ; M-g M-g is binded to goto-line
+
 (global-set-key [(control c) ?i] 'indent-region)
 
-;;; C-x C-v is binded find-alternate-file by default.
-(global-set-key "\C-x\C-v" 'view-file)
-
+;;;
+;;; ICE setup
+;;;
+(add-to-list 'auto-mode-alist '(".*\\.ice$" . java-mode))
 
 ;;;
 ;;; cc-mode
@@ -303,7 +344,6 @@ appropriately."
           #'(lambda ()
               (safe-visit-tags-table "~/.emacs.d/TAGS.sys" t)))
 
-
 (define-abbrev-table 'c-mode-abbrev-table 
   ;; I don't know why `@' for abbreviation doesn't work.
   ;; So I choose `$' for that.
@@ -355,7 +395,7 @@ appropriately."
 };" nil 0)))
 (add-hook 'c-mode-hook (function (lambda nil (abbrev-mode 1))))
 
-
+
 (define-abbrev-table 'c++-mode-abbrev-table 
   ;; I don't know why `@' for abbreviation doesn't work.
   ;; So I choose `$' for that.
@@ -411,26 +451,27 @@ appropriately."
   \"under certain conditions; type `show c' for details.\",
 };" nil 0)))
 (add-hook 'c++-mode-hook (function (lambda nil (abbrev-mode 1))))
-
-(define-abbrev-table 'nxml-mode-abbrev-table 
-  ;; I don't know why `@' for abbreviation doesn't work.
-  ;; So I choose `$' for that.
-  '(("$doctypexhtml" 
-"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"
-	\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" nil 0)
-))
-(add-hook 'nxml-mode-hook (function (lambda nil (abbrev-mode 1))))
 
+;; navigation
 
-;;; imenu mode
-;;;(add-hook 'c-mode-hook (function (lambda nil (imenu-add-to-menubar))))
-;;;(add-hook 'c++-mode-hook (function (lambda nil (imenu-add-to-menubar))))
+(when (locate-library "cc-subword")
+  (require 'cc-subword)
+  (define-key c-mode-base-map [(meta ?F)] 'c-forward-subword)
+  (define-key c-mode-base-map [(meta ?B)] 'c-backward-subword)
+  (define-key c-mode-base-map [(meta ?D)] 'c-kill-subword))
 
-;;; which-function mode
-;;;(add-hook 'c-mode-hook (function (lambda nil (which-function-mode))))
-;;;(add-hook 'c++-mode-hook (function (lambda nil (which-function-mode))))
+(define-key c-mode-base-map [(meta ?{)] 'c-beginning-of-defun)
+(define-key c-mode-base-map [(meta ?})] 'c-end-of-defun)
 
-(which-function-mode 1)			; display function names in mode-line
+(define-key c-mode-base-map [(control meta ?{)] 'c-up-conditional-with-else)
+(define-key c-mode-base-map [(control meta ?})] 'c-down-conditional-with-else)
+
+;; Highlights suspicious C/C++ constructions
+(add-hook 'c-mode-common-hook (lambda () (cwarn-mode 1)))
+
+;;; Prompt for arguments to the preprocessor for `c-macro-expand'
+(setq c-macro-prompt-flag t)
+
 
 
 ;;;
@@ -441,45 +482,34 @@ appropriately."
 
 
 ;;;
-;;; ibuffer - advanced buffer menu
-(global-set-key (kbd "C-x C-b") 'ibuffer)
-(autoload 'ibuffer "ibuffer" "List buffers." t)
-
-(setq ibuffer-saved-filter-groups
-      '(("default"
-         ("dired" (mode . dired-mode))
-         ("manual" (or
-                    (name . "^\\*info.*\\*$")
-                    (name . "^\\*Man.*\\*$")
-                    (name . "^\\*Help.*\\*$")))
-         ("emacs" (or
-                   (name . "^\\*scratch\\*$")
-                   (name . "^TAGS$")
-                   (name . "^\\*.*\\*$"))))))
-
-(add-hook 'ibuffer-mode-hook
-              (lambda ()
-                (ibuffer-switch-to-saved-filter-groups "default")))
-
-;;;
 
+;;;
+;;; Minor Mode configuration
+;;;
 
-(global-font-lock-mode 1)		; every buffer uses font-lock-mode
-(line-number-mode 1)			; show line number in mode-line
-(column-number-mode 1)			; show column number in mode-line
+;; imenu mode
+;;(add-hook 'c-mode-hook (function (lambda nil (imenu-add-to-menubar))))
+;;(add-hook 'c++-mode-hook (function (lambda nil (imenu-add-to-menubar))))
+
+;;(add-hook 'c-mode-hook (function (lambda nil (which-function-mode))))
+;;(add-hook 'c++-mode-hook (function (lambda nil (which-function-mode))))
+
+(which-function-mode 1)          ; display function names in mode-line
+
+(global-font-lock-mode 1)           ; every buffer uses font-lock-mode
+(line-number-mode 1)                ; show line number in mode-line
+(column-number-mode 1)              ; show column number in mode-line
 
 (setq resize-minibuffer-mode t)		; ensure all contents of mini
 					; buffer visible
 
-(tool-bar-mode -1)			; hide tool bar
+(ffap-bindings)                         ; context-sensitive find-file
 
-;;(when window-system
-;;  (setq special-display-buffer-names
-;;        '("*Completions*" "*grep*" "*Buffer List*")))
-
+;;;
+;;; TAB & space setting
+;;;
 (setq-default indent-tabs-mode nil)	; do not insert tab character.
 
-
 (defun source-untabify ()
   "Stealed from Jamie Zawinski's homepage,
 http://www.jwz.org/doc/tabs-vs-spaces.html
@@ -494,6 +524,8 @@ character to the spaces"
         (untabify (1- (point)) (point-max))))
   nil)
 
+;; These hook configuration ensures that all tab characters in C, C++
+;; source files are automatically converted to spaces on saving.
 (add-hook 'c-mode-hook '(lambda () 
                           (make-local-variable 'write-contents-hooks)
                           (add-hook 'write-contents-hooks 'source-untabify)))
@@ -501,7 +533,7 @@ character to the spaces"
                             (make-local-variable 'write-contents-hooks)
                             (add-hook 'write-contents-hooks 'source-untabify)))
 
-
+
 (defun zap-to-nonspace ()
   "Delete all whitespace up to the next non-whitespace char."
   (interactive)
@@ -511,6 +543,13 @@ character to the spaces"
       (if (re-search-forward "[^ \n\t\v]" nil t)
           (setq end (min (1- (point)) end)))
       (kill-region start end))))
+
+;;
+;; C-c C-d deletes all whitespaces up to the next non-whitespace character.
+;;
+(global-set-key [(control ?c) (control ?d)] 'zap-to-nonspace)
+
+
 
 (when nil
   ;; Support for GNU global, the source code tag system
@@ -521,29 +560,25 @@ character to the spaces"
 ;;;
 ;;; Colors
 ;;;
-;;;(set-background-color "rgb:0000/1500/8000")
-;;;(set-foreground-color "white")
-;;;(set-cursor-color "")
-;;;(set-mouse-color "")
-;;;(set-face-foreground 'highlight "white")
-;;;(set-face-background 'highlight "slate blue")
-;;;(set-face-background 'region "slate blue")
-;;;(set-face-background 'secondary-selection "turquoise")
+;;(set-background-color "rgb:0000/1500/8000")
+;;(set-foreground-color "white")
+;;(set-cursor-color "")
+;;(set-mouse-color "")
+;;(set-face-foreground 'highlight "white")
+;;(set-face-background 'highlight "slate blue")
+;;(set-face-background 'region "slate blue")
+;;(set-face-background 'secondary-selection "turquoise")
 
 ;;;
 ;;; emacs server
 ;;;
-;;;(load "/usr/share/emacs/21.2/lisp/gnuserv")
-(server-start)
-;;;(load "gnuserv")
-;;;(gnuserv-start)
+;;(server-start)
 
 ;;;
 ;;; I prefer case-sensitive search & replace
 ;;;
 (setq-default case-fold-search nil)
 (setq-default tags-case-fold-search nil)
-
 
 (fset 'find-next-tag "\C-u\256")        ; macro for C-u M-.
 (fset 'find-prev-tag "\C-u-\256")       ; macro for C-u - M-. 
@@ -561,34 +596,9 @@ character to the spaces"
 (global-set-key [(meta shift next)] 'scroll-other-frame)
 
 
-;;;
-;;; navigation customization
-;;;
-
-(require 'cc-mode)
-
-(when (locate-library "cc-subword")
-  (require 'cc-subword)
-  (define-key c-mode-base-map [(meta ?F)] 'c-forward-subword)
-  (define-key c-mode-base-map [(meta ?B)] 'c-backward-subword)
-  (define-key c-mode-base-map [(meta ?D)] 'c-kill-subword))
-
-(add-hook 'c-mode-common-hook (lambda () (cwarn-mode 1)))
-
-(define-key c-mode-base-map [(meta ?{)] 'c-beginning-of-defun)
-(define-key c-mode-base-map [(meta ?})] 'c-end-of-defun)
-
-(define-key c-mode-base-map [(control meta ?{)] 'c-up-conditional-with-else)
-(define-key c-mode-base-map [(control meta ?})] 'c-down-conditional-with-else)
 
 (global-set-key [(control meta ?\])] #'forward-page)
 (global-set-key [(control meta ?\[)] #'backward-page)
-
-
-;;;
-;;; Prompt for arguments to the preprocessor for `c-macro-expand'
-;;;
-(setq c-macro-prompt-flag t)
 
 
 (defun reverse-other-window (arg) 
@@ -733,6 +743,7 @@ A numeric prefix argument specifies the starting number"
           (forward-line))))))
 
 (global-set-key [(control ?c) ?n] #'line-numbers-on-region)
+
 
 ;(require 'autofit-frame)
 ;(add-hook 'after-make-frame-functions 'fit-frame)
@@ -787,6 +798,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
      'lisp-macro-expand-sexp))
 
 (define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
+
 
 ;;;
 ;;; slime
@@ -799,7 +811,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 
 ;;;
-;;; quack (enhanced suport for scheme-mode)
+;;; quack (enhanced support for scheme-mode)
 ;;;
 (when (locate-library "quack")
   (require 'quack)
@@ -912,11 +924,8 @@ instead of the current word."
 
 
 ;;;
-;;; psgml mode setup
+;;; XML configuration
 ;;;
-;(autoload 'sgml-mode "psgml" "Major mode to edit SGML files." t)
-;(autoload 'xml-mode "psgml" "Major mode to edit XML files." t)
-
 (defun lzx-nxml-mode ()
   "OpenLaszlo XML Mode"
   (interactive)
@@ -935,10 +944,15 @@ instead of the current word."
                               auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.lzx\\'" . lzx-nxml-mode)
                               auto-mode-alist)))
-
-;;;
-;;; nxml mode
-;;;
+
+(define-abbrev-table 'nxml-mode-abbrev-table 
+  ;; I don't know why `@' for abbreviation doesn't work.
+  ;; So I choose `$' for that.
+  '(("$doctypexhtml" 
+"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"
+	\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" nil 0)
+))
+(add-hook 'nxml-mode-hook (function (lambda nil (abbrev-mode 1))))
 
 ;; Make a slash automatically completes the end-tag
 (eval-after-load "nxml-mode"
@@ -946,7 +960,6 @@ instead of the current word."
      (setq nxml-slash-auto-complete-flag t)
      (define-key nxml-mode-map [(control ?c) (control ?e)]
        'nxml-enclose-paragraph)))
-
 
 
 (defun nxml-enclose-paragraph (start end prefix)
@@ -1086,62 +1099,16 @@ chance to change the name of the element."
 (global-set-key [(control x) (control q)] 'vc-toggle-read-only)
 
 
-;;(when window-system
-(when nil
-  (setq same-window-buffer-names 
-        (append '(;"*compilation*"
-                  "*Process List*")
-                  same-window-buffer-names))
-
-  (setq special-display-regexps 
-        '(("\\*Buffer List\\*"
-           (font . "fixed")
-           (left . 0)                   ; in pixels
-           (top . -30)
-           (auto-raise . t)
-           (width . 70)
-           (height . 10)                ; in characters
-           (vertical-scroll-bars . nil)
-           (tool-bar-lines . nil)
-           (menu-bar-lines . nil))
-          (("\\*Completions\\*"
-           (font . "fixed")
-           (left . 0)                   ; in pixels
-           (top . -30)
-           (auto-raise . f)
-           (width . 70)
-           (height . 10)                ; in characters
-           (vertical-scroll-bars . nil)
-           (tool-bar-lines . nil)
-           (menu-bar-lines . nil))
-          ("\\*cscope\\*"
-           (font . "fixed")
-           (left . 0)
-           (top . 0)
-           (auto-raise . t)
-           (width . 80)
-           (height . 20)
-           (vertical-scroll-bars . nil)
-           (tool-bar-lines . nil)
-           (menu-bar-lines . nil))
-          ("\\*.*\\*"
-           (tool-bar-lines . nil)
-           (menu-bar-lines . nil))
-))))
-
-
-
-;;(load "~/.emacs.d/theme")
-
 ;;(split-window-horizontally)
 
-;;
-;; Make the inferior shell a login shell.
-;;
-(setq explicit-bash-args (quote ("--noediting" "-i" "-l")))
+
+;;;
+;;; News Reader
+;;;
+;(setq gnus-select-method '(nntp "news.kornet.net"))
+(setq gnus-select-method '(nntp "public.teranews.com"))
 
-(setq gnus-select-method '(nntp "news.kornet.net"))
-
+
 
 (defmacro save-font-excursion (face &rest body)
   "Save the :font property of given FACE during the execution of BODY."
@@ -1254,11 +1221,12 @@ This function works iff color-theme-history-max-length is not NIL"
                     color-theme-favorites))
         (buf "*scratch*"))
     (funcall theme))
-  
-  ;(set-face-font 'default "fontset-etl14")
   )
 
 
+;;;
+;;; CSS mode
+;;;
 (autoload 'css-mode "css-mode" "CSS editing major mode" t)
 (eval-after-load "css-mode"
   '(setq cssm-indent-function #'cssm-c-style-indenter))
@@ -1312,8 +1280,17 @@ another value")
 
 (defun org-table-convert-from-lines (&optional nrows)
   "Convert lines to the org table. Each line contains one column so that
-users need to specify the number of columns per row."
+users need to specify the number of columns per row.
+
+For example, if the region contains 9 lines and each line contains the digit from
+1 to 9, calling `org-table-convert-from-lines' with the column number 3 makes the
+following:
+
+| 1 | 2 | 3 |
+| 4 | 5 | 6 |
+| 7 | 8 | 9 |"
   (interactive "P")
+  (require 'org)
   (if (null nrows)
       (let ((nrows (string-to-number
                     (read-string
@@ -1356,8 +1333,11 @@ users need to specify the number of columns per row."
      (define-key org-mode-map [(control c) (control ?\\)]
        'org-table-convert-from-lines)
 
-     (add-to-list 'org-file-apps '("pdf" . "acroread %s") t)
-     (add-to-list 'org-file-apps '("ps" . "ggv %s") t)))
+     ;; When opening a link with `org-open-at-point' (C-c C-o), These
+     ;; settings allow to use acroread for pdf files and to use ggv
+     ;; for ps files.
+     (add-to-list 'org-file-apps '("pdf" . "acroread %s"))
+     (add-to-list 'org-file-apps '("ps" . "ggv %s"))))
 
 
 ;;;
@@ -1393,12 +1373,11 @@ users need to specify the number of columns per row."
 ;;; Do not display splash screen on startup
 ;;;
 
-;;(when window-system
-;;  (fancy-splash-screens))
-;;(setq initial-buffer-choice t)
-;;(setq inhibit-splash-screen t)
-
+;; Show the `*scratch*' buffer 
 (setq initial-buffer-choice t)
+
+;; Disable the startup screen
+(setq inhibit-splash-screen t)
 
 
 
@@ -1491,33 +1470,21 @@ users need to specify the number of columns per row."
 ;;(desktop-load-default)
 ;;(desktop-read)
 
+
+;;; I frequently uses `narrow-to-region', which is disabled by default
+;;; because it confuse users who do not understand it.  If you do not
+;;; use it or do not understand it, comment below lines.
 (put 'narrow-to-region 'disabled nil)
 
-
-(when nil
-  (require 'kmacro)
-  (fset 'next-visible-outline-other-window
-        (lambda (&optional arg) 
-          "Keyboard macro." 
-          (interactive "p") 
-          (kmacro-exec-ring-item (quote ([C-tab 3 14 12 C-tab] 0 "%d")) arg)))
-
-  (fset 'prev-visible-outline-other-window
-        (lambda (&optional arg) 
-          "Keyboard macro." 
-          (interactive "p") 
-          (kmacro-exec-ring-item (quote ([C-tab 3 16 12 C-tab] 0 "%d")) arg)))
-
-  (global-set-key [f3] 'prev-visible-outline-other-window)
-  (global-set-key [f4] 'next-visible-outline-other-window))
-
-
+
+;;;
+;;; GNU Emacs Calculator Configuration
+;;;
 (autoload 'calc "calc" "The Emacs Calculator" t)
 (global-set-key [f12] 'calc)
 (global-set-key [(control f12)] 'quick-calc)
 
-(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-
+
 
 ;;(global-set-key [f2] 'ff-find-other-file)
 ;;(global-set-key [f3] 'dired-jump)
@@ -1532,12 +1499,16 @@ users need to specify the number of columns per row."
      (setq elscreen-display-screen-number nil)
      ))
 
-(when (locate-library "elscreen")
-  (require 'elscreen))
+(when nil
+  ;; Don't know why, but in my system configuration,
+  ;; when Emacs 23.1.50 autoloads elscreen 1.4.6, launching emacs
+  ;; with filename causes "Symbol's value as variable is void: dir" error.
+  (when (locate-library "elscreen")
+    (require 'elscreen)))
 
 
 ;;;
-;;; ecb settings
+;;; ecb settings; I do not use ECB any more -- cinsk.
 ;;;
 (when nil
   (when window-system
