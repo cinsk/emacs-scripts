@@ -477,6 +477,13 @@ appropriately."
 
 
 ;;;
+;;; Use hippie expansion for dynamic abbreviation
+;;;
+(when (locate-library "hippie-exp")
+  (global-set-key [(meta ?/)] 'hippie-expand))
+
+
+;;;
 ;;; Switching between buffers using iswitchb
 ;;;
 (iswitchb-mode 1)			; smart buffer switching mode
@@ -603,6 +610,9 @@ character to the spaces"
 (global-set-key [(control meta ?\[)] #'backward-page)
 
 
+;;;
+;;; Window/Frame configuration
+;;;
 (defun reverse-other-window (arg) 
   "Reverse `other-window' with no argument"
   (interactive "p")
@@ -709,6 +719,24 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
       (if buf
           (pop-to-buffer buf)
         (call-interactively #'cvs-examine)))))
+
+
+(when (locate-library "winner")
+  ;; A history manager for window configuration.
+  ;; `C-c left' for undo, `C-c right' for redo
+  (require 'winner)
+  (winner-mode 1))
+
+(when (locate-library "windmove")
+  ;; Select a window by pressing arrow keys.
+  (require 'windmove)
+  ;; The default modifier is 'shift which is not suitable for me since
+  ;; I use `shift-left' and `shift-right' bindings in org-mode.
+  ;;
+  ;; Since my keyboard (HHK) has separate Alt key (apart from Meta
+  ;; key), I use the 'alt instead of 'shift -- cinsk
+  (windmove-default-keybindings 'alt))
+
 
 
 ;;;
@@ -1238,11 +1266,20 @@ This function works iff color-theme-history-max-length is not NIL"
 ;;;
 ;;; Calender
 ;;;
+(require 'calendar)
+
+(let ((my-diary-file "~/.emacs.d/diary"))
+  (if (file-readable-p my-diary-file)
+      (setq diary-file my-diary-file)))
+
 (setq calendar-date-display-form
       '(year "-" month "-" day (if dayname (concat ", " dayname))))
 (setq mark-holidays-in-calendar t)
 (setq mark-diary-entries-in-calendar t)
 (add-hook 'diary-display-hook 'fancy-diary-display)
+
+;; Weeks begin on Monday
+(setq calendar-week-start-day 1)
 
 (setq general-holidays
       '((holiday-fixed 1 1 "설날")
@@ -1266,6 +1303,7 @@ This function works iff color-theme-history-max-length is not NIL"
 ;;;
 ;;; Org mode
 ;;;
+(require 'org-install)
 
 ;; org-hide-leading-stars should be set before loading org-mode.
 (setq org-hide-leading-stars t)
@@ -1273,8 +1311,11 @@ This function works iff color-theme-history-max-length is not NIL"
 (setq org-agenda-include-diary t)
 
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+
 (global-set-key [(control c) ?a] 'org-agenda)
 (global-set-key [(control c) ?l] 'org-store-link)
+
+;; (add-to-list 'org-agenda-files "~/.emacs.d/personal.org")
 
 (defvar org-table-convert-last-nrows	3
   "Default number of columns per row.  This is changed if user used
@@ -1364,10 +1405,12 @@ following:
 ;;;
 (eval-after-load "ediff"
   '(progn
-     ;; ignore whitespaces and newlines
+     ;; ignore whitespaces and newlines. (can be toggled on/off via `##')
      (setq ediff-ignore-similar-regions t)
      ;; do not create new frame for the control panel
      (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+     ;; If nil, ask the user to kill the buffers on exit.
+     ;; (setq ediff-keep-variants nil)
      ))
 
 
@@ -1537,6 +1580,18 @@ following:
   ;;(global-set-key [f11] 'ecb-next-action)
   )
 
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(org-agenda-files (quote ("~/.emacs.d/ucx.org" "~/.emacs.d/personal.org"))))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
 ;;; Local Variables:
 ;;; coding: utf-8
 ;;; End:
