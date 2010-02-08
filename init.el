@@ -1403,8 +1403,64 @@ following:
 ;;;
 ;;; Ediff customization
 ;;;
+(defun frame-max-available-width (&optional frame)
+  "Return the maximum value for the possible frame width regards
+to the display width"
+  (let ((width (frame-width frame))
+        (char-width (frame-char-width frame))
+        (pwidth (frame-pixel-width frame)))
+    (- (/ (- (display-pixel-width) (- pwidth (* width char-width)))
+          char-width) 2)))
+
+(defun ediff-widen-frame-for-vertical-setup ()
+  "Widens the current frame iff the current ediff windows are 
+splitted vertically.
+
+This function is best used for `ediff-before-setup-windows-hook'.
+
+This function saves some of the frame parameters (left, top,
+width) before widening the frame.  The saved information is used
+in `ediff-narrow-frame-for-vertical-setup' which is best used for
+`ediff-suspend-hook' and `ediff-quit-hook'.
+"
+  (let ((modifier (if (ediff-3way-job) 3 2)))
+    (if (eq ediff-split-window-function 'split-window-horizontally)
+        (let ((width (frame-width))
+              (left (frame-parameter nil 'left))
+              (top (frame-parameter nil 'top)))
+          (if (< width (min (* (default-value 'fill-column) modifier)
+                            (frame-max-available-width)))
+              (let ((new-width (round (* width 1.14 modifier))))
+                (set-frame-parameter nil 'old-width width)
+                (set-frame-parameter nil 'old-left left)
+                (set-frame-parameter nil 'old-top top)
+                (set-frame-width nil new-width)
+                (message "Set frame width to %S" new-width))))
+      (ediff-narrow-frame-for-vertical-setup))))
+
+(defun ediff-narrow-frame-for-vertical-setup ()
+  "Restore the saved frame parameters from
+`ediff-widen-frame-for-vertical-setup'."
+  (let ((old-width (frame-parameter nil 'old-width))
+        (old-left (frame-parameter nil 'old-left))
+        (old-top (frame-parameter nil 'old-top)))
+    (if (integerp old-width)
+        (progn
+          (set-frame-width nil old-width)
+          ;;(message "Restore frame width to %S" old-width)
+          (modify-frame-parameters nil (list (cons 'left old-left)
+                                             (cons 'top old-top)))
+          ;;(message "Restore frame position (%S, %S)" old-left old-top)
+          ))))
+
 (eval-after-load "ediff"
   '(progn
+     (add-hook 'ediff-before-setup-windows-hook
+               'ediff-widen-frame-for-vertical-setup)
+     (add-hook 'ediff-suspend-hook
+               'ediff-narrow-frame-for-vertical-setup)
+     (add-hook 'ediff-quit-hook
+               'ediff-narrow-frame-for-vertical-setup)
      ;; ignore whitespaces and newlines. (can be toggled on/off via `##')
      (setq ediff-ignore-similar-regions t)
      ;; do not create new frame for the control panel
