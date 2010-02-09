@@ -1445,13 +1445,13 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
         (old-left (frame-parameter nil 'old-left))
         (old-top (frame-parameter nil 'old-top)))
     (if (integerp old-width)
-        (progn
-          (set-frame-width nil old-width)
-          ;;(message "Restore frame width to %S" old-width)
-          (modify-frame-parameters nil (list (cons 'left old-left)
-                                             (cons 'top old-top)))
-          ;;(message "Restore frame position (%S, %S)" old-left old-top)
-          ))))
+        (set-frame-width nil old-width))
+    (if (and (integerp old-left) (integerp old-top))
+        (modify-frame-parameters nil (list (cons 'left old-left)
+                                           (cons 'top old-top))))
+    (modify-frame-parameters nil '((old-left . nil)
+                                   (old-top . nil)
+                                   (old-width . nil)))))
 
 (eval-after-load "ediff"
   '(progn
