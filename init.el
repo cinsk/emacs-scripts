@@ -503,7 +503,8 @@ appropriately."
 ;;(add-hook 'c-mode-hook (function (lambda nil (which-function-mode))))
 ;;(add-hook 'c++-mode-hook (function (lambda nil (which-function-mode))))
 
-(which-function-mode 1)          ; display function names in mode-line
+(when window-system
+  (which-function-mode 1))          ; display function names in mode-line
 
 (global-font-lock-mode 1)           ; every buffer uses font-lock-mode
 (line-number-mode 1)                ; show line number in mode-line
@@ -1133,10 +1134,91 @@ chance to change the name of the element."
 
 
 ;;;
-;;; News Reader
+;;; gnus (news/e-mail) accounts settings
 ;;;
-;(setq gnus-select-method '(nntp "news.kornet.net"))
-(setq gnus-select-method '(nntp "public.teranews.com"))
+(require 'smtpmail)
+(require 'starttls)
+
+(defvar default-imap-port 993
+  "Default port number for the IMAP4 protocol")
+
+(defvar default-smtp-ssl-port 587
+  "Default port number for the encrypted SMTP protocol.
+Best used for `smtpmail-smtp-service' as the default value.")
+
+(defvar default-smtp-port 25
+  "Default port number for the SMTP protocol.
+Best used for `smtpmail-smtp-service' as the default value.")
+
+;; Since `gnus-nntp-server' will override `gnus-select-method', force
+;; `gnus-nntp-server' to nil.
+(setq gnus-nntp-server nil)
+
+;;(setq gnus-select-method '(nntp "news.kornet.net"))
+;;(setq gnus-select-method '(nntp "public.teranews.com"))
+
+;; The select method for `M-x gnus'.
+(setq gnus-select-method `(nnimap "gmail"
+                                  (nnimap-address "imap.gmail.com")
+                                  (nnimap-server-port ,default-imap-port)
+                                  (nnimap-stream ssl)))
+
+;; `C-u M-x gnus' will use the secondary select method.
+;;(setq gnus-secondary-select-methods '(nntp "news.kornet.net"))
+
+;; If you need to use multiple SMTP accounts, read the
+;; following articles:
+;;
+;;   http://linil.wordpress.com/2008/01/18/gnus-gmail/
+
+(setq send-mail-function 'smtpmail-send-it
+      message-send-mail-function 'smtpmail-send-it
+      mail-from-style nil
+      user-full-name "Seong-Kook Shin"
+      user-mail-address "cinsky@gmail.com"
+      message-signature-file "~/.signature"
+      smtpmail-debug-info t
+      smtpmail-debug-verb t)
+
+;;
+;; TODO: 1. set T if the external `gnutls-cli' exists
+;;       2. set nil if the external `starttls' exists
+;;       3. show warning message that SMTP will be not working.
+(setq starttls-use-gnutls t)
+
+(if starttls-use-gnutls
+    (let ((tls (locate-file "gnutls-cli" exec-path)))
+      (if (and tls (file-executable-p tls))
+          (setq starttls-gnutls-program tls)
+        (progn
+          (lwarn '(dot-emacs) :warning
+                 "GNUTLS command is not found, SMTP may not work correctly")
+          (setq starttls-use-gnutls nil)))))
+
+(if (not starttls-use-gnutls)
+    (let ((tls (locate-file "starttls" exec-path)))
+      (if (and tls (file-executable-p tls))
+          (setq starttls-program tls)
+        (lwarn '(dot-emacs) :warning
+               "STARTTLS command is not found, SMTP may not work correctly"))))
+  
+
+;; Extra argument to "gnutls-cli"
+(setq starttls-extra-arguments nil)
+
+(setq smtpmail-smtp-server "smtp.gmail.com")
+(setq smtpmail-smtp-service default-smtp-ssl-port)
+
+;; SMTP Username and password is located in seperated file for the security.
+(let ((netrc "~/.authinfo"))
+  (if (file-readable-p netrc)
+      (setq smtpmail-auth-credentials netrc)
+    (lwarn '(dot-emacs) :warning
+           "NETRC auth. file is not exist, SMTP may not work correctly")))
+    
+(setq smtpmail-starttls-credentials `((,smtpmail-smtp-server
+                                       ,default-smtp-ssl-port
+                                       nil nil)))
 
 
 
