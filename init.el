@@ -1142,6 +1142,9 @@ chance to change the name of the element."
 (defvar default-imap-port 993
   "Default port number for the IMAP4 protocol")
 
+(defvar default-pop3-ssl-port 995
+  "Default port number for the POP3 protocol over TSL/SSL")
+
 (defvar default-smtp-ssl-port 587
   "Default port number for the encrypted SMTP protocol.
 Best used for `smtpmail-smtp-service' as the default value.")
@@ -1221,6 +1224,13 @@ Best used for `smtpmail-smtp-service' as the default value.")
                                        nil nil)))
 
 
+(defmacro time-loop (n &rest body)
+  "Return time before and after N iteration of BODY."
+  (declare (indent 1) (debug t))
+  `(let ((t1 (current-time)))
+     (dotimes (i ,n)
+       ,@body)
+     (time-subtract (current-time) t1)))
 
 (defmacro save-font-excursion (face &rest body)
   "Save the :font property of given FACE during the execution of BODY."
@@ -1231,7 +1241,7 @@ Best used for `smtpmail-smtp-service' as the default value.")
          (set-face-attribute ,face nil :font oldfont))
      ret))
 
-
+
 ;;;
 ;;; color-theme settings
 ;;;
