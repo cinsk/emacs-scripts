@@ -1247,6 +1247,9 @@ Best used for `smtpmail-smtp-service' as the default value.")
 ;;;
 (setq color-theme-history-max-length 32)
 
+;; New color theme will undo all settings made by previous theme
+(setq color-theme-is-cumulative nil)
+
 (defvar color-theme-favorites '(color-theme-deep-blue
                                 color-theme-cinsk-wood
                                 color-theme-charcoal-black
