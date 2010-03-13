@@ -7,6 +7,20 @@
 ;;;
 
 ;;;
+;;; You can download the latest version of this script at cinsk.org
+;;; 
+;;; $ cvs -d :pserver:anonymous@www.cinsk.org:/root login
+;;; CVS password: <RET>
+;;; $ cvs -d :pserver:anonymous@www.cinsk.org:/root co emacs-script
+;;; $ cvs -d :pserver:anonymous@www.cinsk.org:/root logouta
+;;;
+;;; Then, you may create a symbolic link .emacs from dot-emacs.el
+;;; You may browse dot-emacs.el in 
+;;;
+;;;   http://www.cinsk.org/viewvc/cvsroot/emacs-scripts/dot-emacs.el
+;;;
+
+;;;
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 ;;;
 (setq load-path (cons (expand-file-name "~/.emacs.d/") load-path))
@@ -307,8 +321,17 @@ appropriately."
 ;;;
 ;;; The possible format specifiers (e.g. %F or %b) are explained in
 ;;; the documentation of `mode-line-format'.
-(setq frame-title-format "%F - %b")
-(setq icon-title-format  "%b")
+
+(setq frame-title-format
+      (if (= (user-uid) 0)
+          ;; If Emacs running as root, print "ROOT" just in case
+          "%F - ROOT - %b"
+        "%F - %b"))
+
+(setq icon-title-format
+      (if (= (user-uid) 0)
+          "%F - ROOT"
+        "%F"))
 
 
 ;;;
