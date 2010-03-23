@@ -999,6 +999,21 @@ instead of the current word."
   (setq auto-mode-alist (cons '("\\.lzx\\'" . lzx-nxml-mode)
                               auto-mode-alist)))
 
+(when (boundp 'rng-schema-locating-files-default)
+  ;; Current nxml-mode package (nxml-mode-20041004-r3) in Gentoo Linux
+  ;; install schema files (schemas.xml) in
+  ;; "/usr/share/emacs/etc/nxml-mode/schema/", although
+  ;; `rng-schema-locating-files-default' points to
+  ;; "/usr/share/emacs/site-lisp/nxml-mode/schema/".
+  ;;
+  ;; If `rng-schema-locating-files-default' points wrong place, warn
+  ;; for malfunction of nxml-mode's auto-completion (C-RET)
+  (dolist (file rng-schema-locating-files-default)
+    (if (string-match "^/usr/" file)
+        (if (not (file-readable-p file))
+            (lwarn '(dot-emacs) :warning
+                   (format "cannot access default schema for nxml-mode"))))))
+
 (define-abbrev-table 'nxml-mode-abbrev-table 
   ;; I don't know why `@' for abbreviation doesn't work.
   ;; So I choose `$' for that.
