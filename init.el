@@ -978,6 +978,39 @@ instead of the current word."
 
 
 ;;;
+;;; MMM mode
+;;;
+(when (locate-library "mmm-auto")
+  (require 'mmm-auto)
+
+  (eval-after-load "mmm-mode"
+    ;; It seems that mmm-mode 0.4.8 will reset the mmm-related face
+    ;; attributes after loading mmm-mode.el.  To prevent resetting,
+    ;; set the background of the faces AFTER loading mmm-mode.el 
+    '(progn
+       (set-face-background 'mmm-code-submode-face nil)
+       (set-face-background 'mmm-default-submode-face nil)))
+
+  ;; DO NOT SET `mmm-global-mode' to t!!!  If you do in mmm-mode
+  ;; 0.4.8, some mysterious bugs will happen.  Particularly, on ediff
+  ;; control panel will not listen to your key input on ediff-patch-*
+  ;; command.
+  (setq mmm-global-mode 'maybe)
+
+  (setq mmm-mode-ext-classes-alist 
+        '((xhtml-mode nil html-js)
+          (xhtml-mode nil embedded-css)
+          (html-mode nil html-js)
+          (html-mode nil embedded-css)
+          (nxml-mode nil html-js)
+          (nxml-mode nil embedded-css)
+          ))
+
+)
+
+
+
+;;;
 ;;; XML configuration
 ;;;
 (defun lzx-nxml-mode ()
@@ -1251,11 +1284,18 @@ Best used for `smtpmail-smtp-service' as the default value.")
 (setq smtpmail-smtp-service default-smtp-ssl-port)
 
 ;; SMTP Username and password is located in seperated file for the security.
+;; The format of ~/.authinfo looks like:
+;;
+;;   machine imap.gmail.com login USER@gmail.com password PASSWORD port 993
+;;   machine smtp.gmail.com login USER@gmail.com password PASSWORD port 587
+;;
+;; Make sure that ~/.authinfo has access mode 600.
+
 (let ((netrc "~/.authinfo"))
   (if (file-readable-p netrc)
       (setq smtpmail-auth-credentials netrc)
     (lwarn '(dot-emacs) :warning
-           "NETRC auth. file is not exist, SMTP may not work correctly")))
+           "NETRC auth. file not exist, SMTP may not work correctly")))
     
 (setq smtpmail-starttls-credentials `((,smtpmail-smtp-server
                                        ,default-smtp-ssl-port
@@ -1263,7 +1303,9 @@ Best used for `smtpmail-smtp-service' as the default value.")
 
 
 (defmacro time-loop (n &rest body)
-  "Return time before and after N iteration of BODY."
+  "Return time before and after N iteration of BODY.
+
+DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   (declare (indent 1) (debug t))
   `(let ((t1 (current-time)))
      (dotimes (i ,n)
