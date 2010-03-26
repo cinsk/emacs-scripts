@@ -1021,18 +1021,24 @@ instead of the current word."
   (setq nxml-child-indent 4))
 
 (when (locate-library "rng-auto")
+  ;; Strangely, nxml-mode does not provide a package to be used with
+  ;; `require'.
   (load (locate-library "rng-auto"))
+
   ;; `sgml-mode' adds an entry to `magic-mode-alist' so that
   ;; `auto-mode-alist' to `nxml-mode' might not work.  To work around
   ;; this, define an alias for `xml-mode' to `nxml-mode'.
   (defalias 'xml-mode 'nxml-mode)
-  ;(autoload 'nxml-mode "nxml-mode" "new XML major mode" t)
+
   (setq auto-mode-alist (cons '("\\.\\(xml\\|pvm\\|rss\\)\\'" . nxml-mode)
                               auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.lzx\\'" . lzx-nxml-mode)
-                              auto-mode-alist)))
+                              auto-mode-alist))
 
-(when (boundp 'rng-schema-locating-files-default)
+  ;; All .html files that I(cinsk) generate are XHTML files.
+  ;; Thus, I choose `nxml-mode' over other major modes.
+  (add-to-list 'auto-mode-alist '("/public_html/.*\\.s?html?\\'" . nxml-mode))
+
   ;; Current nxml-mode package (nxml-mode-20041004-r3) in Gentoo Linux
   ;; install schema files (schemas.xml) in
   ;; "/usr/share/emacs/etc/nxml-mode/schema/", although
@@ -1054,14 +1060,16 @@ instead of the current word."
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"
 	\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" nil 0)
 ))
-(add-hook 'nxml-mode-hook (function (lambda nil (abbrev-mode 1))))
 
-;; Make a slash automatically completes the end-tag
 (eval-after-load "nxml-mode"
   '(progn
+     ;; Make a slash automatically completes the end-tag
      (setq nxml-slash-auto-complete-flag t)
      (define-key nxml-mode-map [(control ?c) (control ?e)]
-       'nxml-enclose-paragraph)))
+       'nxml-enclose-paragraph)
+
+     ;; install abbrev table
+     (add-hook 'nxml-mode-hook (function (lambda nil (abbrev-mode 1))))))
 
 
 (defun nxml-enclose-paragraph (start end prefix)
