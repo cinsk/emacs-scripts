@@ -1498,6 +1498,15 @@ This function works iff color-theme-history-max-length is not NIL"
 (global-set-key [(control c) ?a] 'org-agenda)
 (global-set-key [(control c) ?l] 'org-store-link)
 
+(let ((my-org-directory "~/doc/agendum"))
+  ;; All of my org agena files are located in `my-org-directory'.
+  (if (file-accessible-directory-p my-org-directory)
+      ;; Install all .org files in `my-org-directory' if exists
+      (setq org-agenda-files
+            (directory-files my-org-directory t ".*\\.org\\'"))
+    (lwarn '(dot-emacs) :warning
+           (format "cannot access org files in %s." my-org-directory))))
+
 ;; (add-to-list 'org-agenda-files "~/.emacs.d/personal.org")
 
 (defvar org-table-convert-last-nrows	3
@@ -1505,11 +1514,12 @@ This function works iff color-theme-history-max-length is not NIL"
 another value")
 
 (defun org-table-convert-from-lines (&optional nrows)
-  "Convert lines to the org table. Each line contains one column so that
-users need to specify the number of columns per row.
+  "Convert lines to the org table. Each line contains one column
+so that users need to specify the number of columns per row.
 
-For example, if the region contains 9 lines and each line contains the digit from
-1 to 9, calling `org-table-convert-from-lines' with the column number 3 makes the
+For example, if the region contains 9 lines and each line
+contains the digit from 1 to 9, calling
+`org-table-convert-from-lines' with the column number 3 makes the
 following:
 
 | 1 | 2 | 3 |
@@ -1735,21 +1745,23 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
   (require 'ess-site))
 
 
-;;; To save & load Emacs session, following lines should be the last line
-;;; in this file. 
+;;; To save & load Emacs session, following lines should be the last
+;;; line in this file.
 ;;;
-;;; The first time you save the state of the Emacs session, you must do it
-;;; manually, with the command `M-x desktop-save'. Once you have done that,
-;;; exiting Emacs will save the state again--not only the present Emacs
-;;; session, but also subsequent sessions. You can also save the state at
-;;; any time, without exiting Emacs, by typing `M-x desktop-save' again.
+;;; The first time you save the state of the Emacs session, you must
+;;; do it manually, with the command `M-x desktop-save'. Once you have
+;;; done that, exiting Emacs will save the state again--not only the
+;;; present Emacs session, but also subsequent sessions. You can also
+;;; save the state at any time, without exiting Emacs, by typing `M-x
+;;; desktop-save' again.
 ;;;
-;;; In order for Emacs to recover the state from a previous session, you
-;;; must start it with the same current directory as you used when you
-;;; started the previous session.  This is because `desktop-read' looks in
-;;; the current directory for the file to read.  This means that you can have
-;;; separate saved sessions in different directories; the directory in which
-;;; you start Emacs will control which saved session to use.
+;;; In order for Emacs to recover the state from a previous session,
+;;; you must start it with the same current directory as you used when
+;;; you started the previous session.  This is because `desktop-read'
+;;; looks in the current directory for the file to read.  This means
+;;; that you can have separate saved sessions in different
+;;; directories; the directory in which you start Emacs will control
+;;; which saved session to use.
 
 ;;(desktop-load-default)
 ;;(desktop-read)
@@ -1819,18 +1831,6 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
   ;;(global-set-key [f11] 'ecb-next-action)
   )
 
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(org-agenda-files (quote ("~/.emacs.d/ucx.org" "~/.emacs.d/personal.org"))))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- )
 ;;; Local Variables:
 ;;; coding: utf-8
 ;;; End:
