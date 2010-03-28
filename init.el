@@ -1189,10 +1189,13 @@ chance to change the name of the element."
 (defun smart-view-mode ()
   (let ((file (buffer-file-name)))
     (and (not (eq (file-uid file) (user-uid)))
+         (not (eq (user-uid) 0))        ; not root
          (view-mode 1))))
 
-;(add-hook 'find-file-hook 'smart-view-mode)
+(add-hook 'find-file-hook 'smart-view-mode)
 
+
+
 ;;;
 ;;; cscope binding
 ;;;
