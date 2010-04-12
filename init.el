@@ -1694,6 +1694,8 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;;
 ;;; python-mode
 ;;;
+;;; Note that this configuration is for `python-mode.el' not for
+;;; `python.el' in GNU Emacs distribution.
 
 (when (locate-library "python-mode")
   (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
@@ -1701,15 +1703,19 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
                                      interpreter-mode-alist))
   (autoload 'python-mode "python-mode" "Python editing mode." t))
 
-
 (eval-after-load "python-mode"
   '(progn
      ;; python-mode uses `C-c C-c' for `py-execute-buffer' where most
      ;; major modes uses that for `comment-region'.  Thus, I'll uses
      ;; `C-c C-e' bindings for py-execute-buffer.  It makes sense
      ;; because cc-mode uses this for `c-macro-expand'.
-     (define-key py-mode-map [(control ?c) (control ?c)] 'comment-region)
+     (define-key py-mode-map [(control ?c) (control ?c)] 'py-comment-region)
      (define-key py-mode-map [(control ?c) (control ?e)] 'py-execute-buffer)
+
+     (define-key py-mode-map [(control ?c) ?i] 'py-indent-region)
+
+     (when (locate-file "pychecker" exec-path)
+       (define-key py-mode-map [(control ?c) ?c] 'py-pychecker-run))
 
      ;; python-mode uses `C-c C-d' for `py-pdbtrack-toggle-stack-tracking'
      (define-key py-mode-map [(control ?c) (control ?d)] 'zap-to-nonspace)))
