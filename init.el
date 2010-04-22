@@ -567,6 +567,9 @@ character to the spaces"
                             (add-hook 'write-contents-hooks 'source-untabify)))
 
 
+;;;
+;;; hungray Delete
+;;; 
 (defun zap-to-nonspace ()
   "Delete all whitespace up to the next non-whitespace char."
   (interactive)
@@ -577,10 +580,35 @@ character to the spaces"
           (setq end (min (1- (point)) end)))
       (kill-region start end))))
 
-;;
-;; C-c C-d deletes all whitespaces up to the next non-whitespace character.
-;;
-(global-set-key [(control ?c) (control ?d)] 'zap-to-nonspace)
+(defun delete-chars-forward-with-syntax ()
+  "Delete forward all characters that have the same syntax element."
+  (interactive)
+  (let ((beg (point-marker))
+        (chr (char-after)))
+    (if (not (null chr))
+        (progn
+          (skip-syntax-forward (string (char-syntax (char-after))))
+          (if (not (= beg (point)))
+              (kill-region beg (point)))))))
+
+(defun delete-chars-backward-with-syntax ()
+  "Delete backward all characters that have the same syntax element.
+
+NOTE: not fully implemented yet."
+  (interactive)
+  (let ((beg (point-marker))
+        (chr (char-after)))
+    (if (not (null chr))
+        (progn
+          (skip-syntax-backward (string (char-syntax chr)))
+          ;(message (buffer-substring-no-properties beg (point)))))))
+          (message "%s %s" beg (point))
+          (if (not (= beg (point)))
+              (kill-region (+ beg 1) (point))
+            (delete-char 1))
+          (goto-char (- beg 1))))))
+
+(global-set-key [(control ?c) (control ?d)] 'delete-chars-forward-with-syntax)
 
 
 
@@ -1187,10 +1215,13 @@ chance to change the name of the element."
   (caddr (file-attributes (expand-file-name filename))))
 
 (defun smart-view-mode ()
-  (let ((file (buffer-file-name)))
-    (and (not (eq (file-uid file) (user-uid)))
-         (not (eq (user-uid) 0))        ; not root
-         (view-mode 1))))
+  (let ((file buffer-file-name))
+    (if (not (null file))                 ; if buffer has file name,
+        (let ((fuid (file-uid file)))     ;
+          (and (not (null fuid))          ; if file exists,
+               (not (eq fuid (user-uid))) ; if the user/owner differs,
+               (not (eq (user-uid) 0))    ; if not root,
+               (view-mode 1))))))         ; enable `view-mode'.
 
 (add-hook 'find-file-hook 'smart-view-mode)
 
@@ -1692,7 +1723,7 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
        
 
 ;;;
-;;; python-mode
+;;; python-mode configuration
 ;;;
 ;;; Note that this configuration is for `python-mode.el' not for
 ;;; `python.el' in GNU Emacs distribution.
