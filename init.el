@@ -665,6 +665,44 @@ NOTE: not fully implemented yet."
 ;;;
 ;;; Window/Frame configuration
 ;;;
+(defun frame-max-available-width (&optional frame)
+  "Return the maximum value for the possible frame width regards
+to the display width"
+  (let ((width (frame-width frame))
+        (char-width (frame-char-width frame))
+        (pwidth (frame-pixel-width frame)))
+    (- (/ (- (display-pixel-width) (- pwidth (* width char-width)))
+          char-width) 2)))
+
+(defun current-frame-configuration-only (&optional frame)
+  "Return a list describing the positions and states of FRAME only.
+
+This function behaves similar to `current-frame-configuration'
+except the return value contains the information of specified
+FRAME only."
+  (if (null frame)
+      (setq frame (window-frame (selected-window))))
+  (let ((fc nil))
+    (mapc (lambda (f)
+            (if (eq (car f) frame)
+                (setq fc f)))
+          (cdr (current-frame-configuration)))
+    (list 'frame-configuration fc)))
+
+
+(defun set-this-frame-configuration (configuration)
+  "Restore the frame to the state described by CONFIGURATION.
+
+This function behaves similar to `set-frame-configuration' except
+it will not affect the other frames that are not described in
+CONFIGURATION."
+  (let ((old-func (symbol-function 'iconify-frame)))
+    (fset 'iconify-frame (lambda (&optional frame) nil))
+    (set-frame-configuration configuration t)
+    (fset 'iconify-frame old-func)
+    nil))
+
+
 (defun reverse-other-window (arg) 
   "Reverse `other-window' with no argument"
   (interactive "p")
@@ -758,7 +796,7 @@ calls `iswitchb'"
   (call-interactively command))
 (global-set-key "\C-x5\M-x" 'run-command-other-frame)
 
-
+
 (defun pop-to-cvs-buffer (arg)
   "Select \"*cvs*\" buffer in some window, preferably a different one.
 If the buffer is not found, call `cvs-examine' interactively.
@@ -771,7 +809,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
       (if buf
           (pop-to-buffer buf)
         (call-interactively #'cvs-examine)))))
-
+
 
 (when (locate-library "winner")
   ;; A history manager for window configuration.
@@ -1630,24 +1668,15 @@ following:
 ;;;
 ;;; Ediff customization
 ;;;
-(defun frame-max-available-width (&optional frame)
-  "Return the maximum value for the possible frame width regards
-to the display width"
-  (let ((width (frame-width frame))
-        (char-width (frame-char-width frame))
-        (pwidth (frame-pixel-width frame)))
-    (- (/ (- (display-pixel-width) (- pwidth (* width char-width)))
-          char-width) 2)))
 
-(defun ediff-widen-frame-for-vertical-setup ()
-  "Widens the current frame iff the current ediff windows are 
-splitted vertically.
+(defun ediff-toggle-frame-configuration ()
+  "Toggle frame width depending on ediff windows setup.
 
 This function is best used for `ediff-before-setup-windows-hook'.
 
-This function saves some of the frame parameters (left, top,
-width) before widening the frame.  The saved information is used
-in `ediff-narrow-frame-for-vertical-setup' which is best used for
+This function saves the current ediff frame configuration before
+widening the frame.  The saved information is used in
+`ediff-narrow-frame-for-vertical-setup' which is best used for
 `ediff-suspend-hook' and `ediff-quit-hook'.
 "
   (let ((modifier (if (ediff-3way-job) 3 2)))
@@ -1655,39 +1684,52 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
         (let ((width (frame-width))
               (left (frame-parameter nil 'left))
               (top (frame-parameter nil 'top)))
+          ;;(message "width: %d" width)
           (if (< width (min (* (default-value 'fill-column) modifier)
                             (frame-max-available-width)))
               (let ((new-width (round (* width 1.14 modifier))))
-                (set-frame-parameter nil 'old-width width)
-                (set-frame-parameter nil 'old-left left)
-                (set-frame-parameter nil 'old-top top)
+                (ediff-xx-save-frame-configuration)
                 (set-frame-width nil new-width)
-                (message "Set frame width to %S" new-width))))
+                (lwarn '(dot-emacs) :debug
+                       (format "Set frame width to %S" new-width)))))
       (ediff-narrow-frame-for-vertical-setup))))
 
 (defun ediff-narrow-frame-for-vertical-setup ()
   "Restore the saved frame parameters from
-`ediff-widen-frame-for-vertical-setup'."
-  (let ((old-width (frame-parameter nil 'old-width))
-        (old-left (frame-parameter nil 'old-left))
-        (old-top (frame-parameter nil 'old-top)))
-    (if (integerp old-width)
-        (set-frame-width nil old-width))
-    (if (and (integerp old-left) (integerp old-top))
-        (modify-frame-parameters nil (list (cons 'left old-left)
-                                           (cons 'top old-top))))
-    (modify-frame-parameters nil '((old-left . nil)
-                                   (old-top . nil)
-                                   (old-width . nil)))))
+`ediff-toggle-frame-configuration'."
+  ;;(message "ediff-narrow-frame-for-vertical-setup")
+  ;;(lwarn '(dot-emacs) :debug "ediff-narrow-frame-for-vertical-setup")
+  (ediff-xx-restore-frame-configuration))
+
+(defun ediff-xx-restore-frame-configuration ()
+  "Restore the frame configuration to that of before ediff starts.
+
+Best used for `ediff-suspend-hook' and `ediff-quit-hook'."
+  (if (and (local-variable-p 'saved-ediff-frame-configuration)
+           (frame-configuration-p saved-ediff-frame-configuration))
+      (set-this-frame-configuration saved-ediff-frame-configuration)
+    (lwarn '(dot-emacs) :warning
+           (format "no saved frame-configuration found"))))
+
+(defun ediff-xx-save-frame-configuration ()
+  "Save the frame configuration for ediff session.
+
+Best used for `ediff-before-setup-hook'."
+  (make-local-variable 'saved-ediff-frame-configuration)
+  (setq saved-ediff-frame-configuration 
+        (current-frame-configuration-only)))
+
 
 (eval-after-load "ediff"
   '(progn
+     ;; These hook functions are for the save/restore frame conf.
      (add-hook 'ediff-before-setup-windows-hook
-               'ediff-widen-frame-for-vertical-setup)
+               'ediff-toggle-frame-configuration)
      (add-hook 'ediff-suspend-hook
                'ediff-narrow-frame-for-vertical-setup)
      (add-hook 'ediff-quit-hook
                'ediff-narrow-frame-for-vertical-setup)
+
      ;; ignore whitespaces and newlines. (can be toggled on/off via `##')
      (setq ediff-ignore-similar-regions t)
      ;; do not create new frame for the control panel
@@ -1743,6 +1785,7 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
      (define-key py-mode-map [(control ?c) (control ?c)] 'py-comment-region)
      (define-key py-mode-map [(control ?c) (control ?e)] 'py-execute-buffer)
 
+     ;; `C-c i' is for my personal preference for `indent-region'.
      (define-key py-mode-map [(control ?c) ?i] 'py-indent-region)
 
      (when (locate-file "pychecker" exec-path)
