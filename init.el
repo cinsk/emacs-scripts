@@ -352,10 +352,41 @@ appropriately."
 
 (global-set-key [(control c) ?i] 'indent-region)
 
+(global-set-key [(f6)] 'toggle-case-fold-search)
+
 ;;;
 ;;; ICE setup
 ;;;
 (add-to-list 'auto-mode-alist '(".*\\.ice$" . java-mode))
+
+;;;
+;;; Abbrev mode, skeletons, and autoload settings
+;;;
+(when (locate-library "xskel")
+  (load-library "xskel"))
+
+(let ((abb_default "~/.abbrev_defs")
+      (abb_correct "~/.emacs.d/abbrev_defs"))
+  ;; Prefer "~/.emacs.d/abbrev_defs" to "~/.abbrev_defs"
+  (setq abbrev-file-name
+        (if (file-readable-p abb_correct)
+            abb_correct
+          (if (file-readable-p abb_default)
+              abb_default
+            abb_correct))))
+
+(require 'autoinsert)
+
+(let ((aid_correct "~/.emacs.d/insert")
+      (aid_default (if (boundp 'auto-insert-directory)
+                       auto-insert-directory
+                     "~/insert")))
+  (setq auto-insert-directory
+        (if (file-accessible-directory-p aid_correct)
+            aid_correct
+          aid_default)))
+
+(add-hook 'find-file-hook 'auto-insert)
 
 ;;;
 ;;; cc-mode
@@ -371,112 +402,7 @@ appropriately."
           #'(lambda ()
               (safe-visit-tags-table "~/.emacs.d/TAGS.sys" t)))
 
-(define-abbrev-table 'c-mode-abbrev-table 
-  ;; I don't know why `@' for abbreviation doesn't work.
-  ;; So I choose `$' for that.
-  '(("$niy" "/* TODO: Not Implemented Yet. */" nil 0)
-
-    ("$gpl" 
-"/*
- * <one line to give the program's name and a brief idea of what it does.>
- * Copyright (C) <year>  <name of author>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */" nil 0)
-    ("$lgpl"
-"/* <one line to give the library's name and a brief idea of what it does.>
- * Copyright (C) <year>  <name of author>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public
- * License along with this library; if not, write to the Free
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */" nil 0)
-    ("$igpl"
-"static const char *gpl_notices[] = {
-  \"PROGRAM-NAME version XXX, Copyright (C) YEAR AUTHOR-NAME\",
-  \"PROGRAM-NAME comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\",
-  \"This is free software, and you are welcome to redistribute it\",
-  \"under certain conditions; type `show c' for details.\",
-};" nil 0)))
 (add-hook 'c-mode-hook (function (lambda nil (abbrev-mode 1))))
-
-
-(define-abbrev-table 'c++-mode-abbrev-table 
-  ;; I don't know why `@' for abbreviation doesn't work.
-  ;; So I choose `$' for that.
-  '(("$niy" "// TODO: Not Implemented Yet." nil 0)
-    ("@niy" "// TODO: Not Implemented Yet." nil 0)
-    ("$cxxchk" "#ifndef __cplusplus
-#error This is a C++ header file
-#endif" nil 0)
-    ("$gpl" 
-"/*
- * <one line to give the program's name and a brief idea of what it does.>
- * Copyright (C) <year>  <name of author>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */" nil 0)
-    ("$lgpl"
-"/* <one line to give the library's name and a brief idea of what it does.>
- * Copyright (C) <year>  <name of author>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public
- * License along with this library; if not, write to the Free
- * Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */" nil 0)
-    ("$igpl"
-"static const char *gpl_notices[] = {
-  \"PROGRAM-NAME version XXX, Copyright (C) YEAR AUTHOR-NAME\",
-  \"PROGRAM-NAME comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\",
-  \"This is free software, and you are welcome to redistribute it\",
-  \"under certain conditions; type `show c' for details.\",
-};" nil 0)))
 (add-hook 'c++-mode-hook (function (lambda nil (abbrev-mode 1))))
 
 ;; navigation
@@ -1626,7 +1552,7 @@ call has no effect on frame on tty terminal."
 (global-set-key [(control c) ?\"] 'org-capture)
 
 (let* ((org-path (getenv "ORG_PATH"))
-       (my-org-directory (if org-path org-path "~/doc/agenda")))
+       (my-org-directory (if org-path org-path "~/.emacs.d/agenda")))
   ;; All of my org agena files are located in `my-org-directory'.
   (if (not (file-accessible-directory-p my-org-directory))
       (if (yes-or-no-p
@@ -1862,359 +1788,6 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 
      ;; python-mode uses `C-c C-d' for `py-pdbtrack-toggle-stack-tracking'
      (define-key py-mode-map [(control ?c) (control ?d)] 'zap-to-nonspace)))
-
-;;;
-;;; w3m
-;;;
-(when (locate-library "w3m")
-  (require 'w3m-load))
-
-
-
-;;;
-;;; gnuplot
-;;;
-(when (locate-library "gnuplot")
-  (autoload 'gnuplot-mode "gnuplot" "gnuplot major mode" t)
-  (autoload 'gnuplot-make-buffer "gnuplot" "open a buffer in gnuplot-mode" t)
-
-  (setq auto-mode-alist (append '(("\\.gp$" . gnuplot-mode))
-                                auto-mode-alist)))
-
-
-;;;
-;;; lua
-;;;
-(when (locate-library "lua-mode")
-   (autoload 'lua-mode "lua-mode" "Major mode for lua script")
-   (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode)))
-
-
-;;;
-;;; ESS(Emacs Speaks Statistics) setting for R.
-;;;
-(when (locate-library "ess-site")
-  (require 'ess-site))
-
-
-;;; To save & load Emacs session, following lines should be the last
-;;; line in this file.
-;;;
-;;; The first time you save the state of the Emacs session, you must
-;;; do it manually, with the command `M-x desktop-save'. Once you have
-;;; done that, exiting Emacs will save the state again--not only the
-;;; present Emacs session, but also subsequent sessions. You can also
-;;; save the state at any time, without exiting Emacs, by typing `M-x
-;;; desktop-save' again.
-;;;
-;;; In order for Emacs to recover the state from a previous session,
-;;; you must start it with the same current directory as you used when
-;;; you started the previous session.  This is because `desktop-read'
-;;; looks in the current directory for the file to read.  This means
-;;; that you can have separate saved sessions in different
-;;; directories; the directory in which you start Emacs will control
-;;; which saved session to use.
-
-;;(desktop-load-default)
-;;(desktop-read)
-
-
-;;; I frequently uses `narrow-to-region', which is disabled by default
-;;; because it confuse users who do not understand it.  If you do not
-;;; use it or do not understand it, comment below lines.
-(put 'narrow-to-region 'disabled nil)
-
-
-;;;
-;;; GNU Emacs Calculator Configuration
-;;;
-(autoload 'calc "calc" "The Emacs Calculator" t)
-(global-set-key [f12] 'calc)
-(global-set-key [(control f12)] 'quick-calc)
-
-
-
-;;(global-set-key [f2] 'ff-find-other-file)
-;;(global-set-key [f3] 'dired-jump)
-(global-set-key [f2] #'pop-to-cvs-buffer)
-
-;;;
-;;; elscreen
-;;;
-(eval-after-load "elscreen"
-  '(progn
-     (define-key elscreen-map "\C-z" 'elscreen-toggle)
-     (setq elscreen-display-screen-number nil)
-     ))
-
-(when nil
-  ;; Don't know why, but in my system configuration,
-  ;; when Emacs 23.1.50 autoloads elscreen 1.4.6, launching emacs
-  ;; with filename causes "Symbol's value as variable is void: dir" error.
-  (when (locate-library "elscreen")
-    (require 'elscreen)))
-
-
-;;;
-;;; ecb settings; I do not use ECB any more -- cinsk.
-;;;
-(when nil
-  (when window-system
-    (autoload 'ecb-activate "ecb" "Emacs Code Browser" t)
-    (eval-after-load "ecb"
-      '(progn
-         (setq ecb-toggle-layout-sequence
-               '("left3" "left-symboldef" "left8"))
-         (setq ecb-tip-of-the-day nil)
-         (set-face-font 'ecb-default-general-face
-                        "-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*")
-         )))
-
-  (defun ecb-next-action (arg)
-    (interactive "P")
-    (or (featurep 'ecb)
-        (progn (require 'cedet)
-               (require 'ecb)))         ; load required packages
-    (cond ((null ecb-minor-mode) (ecb-activate))
-          (t (if (null arg) 
-                 (ecb-toggle-layout)
-               (ecb-deactivate)))))
-
-  ;;(global-set-key [f11] 'ecb-next-action)
-  )
-
-;;; Local Variables:
-;;; coding: utf-8
-;;; End:
-
-
-(let ((my-org-directory "~/doc/agenda"))
-  ;; All of my org agena files are located in `my-org-directory'.
-  (if (file-accessible-directory-p my-org-directory)
-      ;; Install all .org files in `my-org-directory' if exists
-      (setq org-agenda-files
-            (directory-files my-org-directory t ".*\\.org\\'"))
-    (lwarn '(dot-emacs) :warning
-           (format "cannot access org files in %s." my-org-directory))))
-
-;; (add-to-list 'org-agenda-files "~/.emacs.d/personal.org")
-
-(defvar org-table-convert-last-nrows	3
-  "Default number of columns per row.  This is changed if user used
-another value")
-
-(defun org-table-convert-from-lines (&optional nrows)
-  "Convert lines to the org table. Each line contains one column
-so that users need to specify the number of columns per row.
-
-For example, if the region contains 9 lines and each line
-contains the digit from 1 to 9, calling
-`org-table-convert-from-lines' with the column number 3 makes the
-following:
-
-| 1 | 2 | 3 |
-| 4 | 5 | 6 |
-| 7 | 8 | 9 |"
-  (interactive "P")
-  (require 'org)
-  (if (null nrows)
-      (let ((nrows (string-to-number
-                    (read-string
-                     (format "Number of columns per row[%d]: " 
-                             org-table-convert-last-nrows)
-                     nil nil 
-                     (number-to-string org-table-convert-last-nrows)))))
-        (setq org-table-convert-last-nrows nrows)
-        (save-excursion
-          (save-restriction
-            (let ((start (set-marker (make-marker) (region-beginning)))
-                  (end (set-marker (make-marker) (region-end))))
-              ;;(message "nrows(%S) start(%S) end(%S)" nrows start end)
-              (set-marker-insertion-type end t)
-              (narrow-to-region start end)
-              (goto-char start)
-              (while (progn
-                       (dotimes (i (1- nrows))
-                         (end-of-line) (zap-to-nonspace) (insert "\t"))
-                       (beginning-of-line)
-                       (and (eq (forward-line) 0) (< (point) end))))
-              (org-table-convert-region start end '(16))))))))
-
-(eval-after-load "org"
-  '(progn
-     (define-key outline-mode-map [(control down)]
-       'outline-next-visible-heading)
-     (define-key outline-mode-map [(control up)] 
-       'outline-previous-visible-heading)
-     (define-key outline-mode-map [(control shift down)]
-       'outline-forward-same-level)
-     (define-key outline-mode-map [(control shift up)]
-       'outline-backward-same-level)
-
-     ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
-     ;; since I use "C-<TAB>" for `smart-other-window'.
-     (move-key org-mode-map [(control tab)] [(control x) (control tab)])
-     (move-key org-mode-map [(control c) (control d)] [(control c) ?e])
-
-     (define-key org-mode-map [(control c) (control ?\\)]
-       'org-table-convert-from-lines)
-
-     ;; When opening a link with `org-open-at-point' (C-c C-o), These
-     ;; settings allow to use acroread for pdf files and to use ggv
-     ;; for ps files.
-     (add-to-list 'org-file-apps '("pdf" . "acroread %s"))
-     (add-to-list 'org-file-apps '("ps" . "ggv %s"))))
-
-
-;;;
-;;; Emacs-wiki support
-;;;
-;(require 'emacs-wiki)
-
-
-;;;
-;;; ispell(aspell) configuration
-;;;
-;;; Currently neither of them provides Korean dictionary.
-;;; Currently, ispell complained that it does not have proper dictionary in
-;;; Korean language environment. 
-(eval-after-load "ispell"
-  '(progn
-     (setq ispell-dictionary "english")))
-
-
-;;;
-;;; Ediff customization
-;;;
-
-(defun ediff-toggle-frame-configuration ()
-  "Toggle frame width depending on ediff windows setup.
-
-This function is best used for `ediff-before-setup-windows-hook'.
-
-This function saves the current ediff frame configuration before
-widening the frame.  The saved information is used in
-`ediff-narrow-frame-for-vertical-setup' which is best used for
-`ediff-suspend-hook' and `ediff-quit-hook'.
-"
-  (let ((modifier (if (ediff-3way-job) 3 2)))
-    (if (eq ediff-split-window-function 'split-window-horizontally)
-        (let ((width (frame-width))
-              (left (frame-parameter nil 'left))
-              (top (frame-parameter nil 'top)))
-          ;;(message "width: %d" width)
-          (if (< width (min (* (default-value 'fill-column) modifier)
-                            (frame-max-available-width)))
-              (let ((new-width (round (* width 1.14 modifier))))
-                (ediff-xx-save-frame-configuration)
-                (set-frame-width nil new-width)
-                (lwarn '(dot-emacs) :debug
-                       (format "Set frame width to %S" new-width)))))
-      (ediff-narrow-frame-for-vertical-setup))))
-
-(defun ediff-narrow-frame-for-vertical-setup ()
-  "Restore the saved frame parameters from
-`ediff-toggle-frame-configuration'."
-  ;;(message "ediff-narrow-frame-for-vertical-setup")
-  ;;(lwarn '(dot-emacs) :debug "ediff-narrow-frame-for-vertical-setup")
-  (ediff-xx-restore-frame-configuration))
-
-(defun ediff-xx-restore-frame-configuration ()
-  "Restore the frame configuration to that of before ediff starts.
-
-Best used for `ediff-suspend-hook' and `ediff-quit-hook'."
-  (if (and (local-variable-p 'saved-ediff-frame-configuration)
-           (frame-configuration-p saved-ediff-frame-configuration))
-      (set-this-frame-configuration saved-ediff-frame-configuration)
-    (lwarn '(dot-emacs) :warning
-           (format "no saved frame-configuration found"))))
-
-(defun ediff-xx-save-frame-configuration ()
-  "Save the frame configuration for ediff session.
-
-Best used for `ediff-before-setup-hook'."
-  (make-local-variable 'saved-ediff-frame-configuration)
-  (setq saved-ediff-frame-configuration 
-        (current-frame-configuration-only)))
-
-
-(eval-after-load "ediff"
-  '(progn
-     ;; These hook functions are for the save/restore frame conf.
-     (add-hook 'ediff-before-setup-windows-hook
-               'ediff-toggle-frame-configuration)
-     (add-hook 'ediff-suspend-hook
-               'ediff-narrow-frame-for-vertical-setup)
-     (add-hook 'ediff-quit-hook
-               'ediff-narrow-frame-for-vertical-setup)
-
-     ;; Change the algorithm perhaps find a smaller set of changes.
-     ;; This makes `diff' slower.
-     (setq ediff-diff-options "-d")
-
-     ;; ignore whitespaces and newlines. (can be toggled on/off via `##')
-     (setq ediff-ignore-similar-regions t)
-     ;; do not create new frame for the control panel
-     (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-     ;; If nil, ask the user to kill the buffers on exit.
-     ;; (setq ediff-keep-variants nil)
-     ))
-
-
-;;;
-;;; Do not display splash screen on startup
-;;;
-
-;; Show the `*scratch*' buffer 
-(setq initial-buffer-choice t)
-
-;; Disable the startup screen
-(setq inhibit-splash-screen t)
-
-
-
-;;;
-;;; ERC (IRC client) settings
-;;;
-
-(when (locate-library "erc")
-  (eval-after-load "erc"
-    '(progn
-       (setq erc-default-coding-system '(cp949 . undecided))
-       (setq erc-nick '("cinsk" "cinsky" "cinsk_" "cinsk__"))
-       (setq erc-user-full-name "Seong-Kook Shin")
-       (setq erc-server "localhost:8668"))))
-       
-
-;;;
-;;; python-mode configuration
-;;;
-;;; Note that this configuration is for `python-mode.el' not for
-;;; `python.el' in GNU Emacs distribution.
-
-(when (locate-library "python-mode")
-  (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
-  (setq interpreter-mode-alist (cons '("python" . python-mode)
-                                     interpreter-mode-alist))
-  (autoload 'python-mode "python-mode" "Python editing mode." t))
-
-(eval-after-load "python-mode"
-  '(progn
-     ;; python-mode uses `C-c C-c' for `py-execute-buffer' where most
-     ;; major modes uses that for `comment-region'.  Thus, I'll uses
-     ;; `C-c C-e' bindings for py-execute-buffer.  It makes sense
-     ;; because cc-mode uses this for `c-macro-expand'.
-     (define-key py-mode-map [(control ?c) (control ?c)] 'py-comment-region)
-     (define-key py-mode-map [(control ?c) (control ?e)] 'py-execute-buffer)
-
-     ;; `C-c i' is for my personal preference for `indent-region'.
-     (define-key py-mode-map [(control ?c) ?i] 'py-indent-region)
-
-     (when (locate-file "pychecker" exec-path)
-       (define-key py-mode-map [(control ?c) ?c] 'py-pychecker-run))
-
-     ;; python-mode uses `C-c C-d' for `py-pdbtrack-toggle-stack-tracking'
-     (define-key py-mode-map [(control ?c) (control ?d)] 'delete-chars-forward-with-syntax)))
 
 ;;;
 ;;; w3m
