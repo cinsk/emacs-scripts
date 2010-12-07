@@ -84,10 +84,10 @@ New height will be calculated by (* FACTOR old-face-height)"
 ;;; to use X resource configuration.
 ;;;
 (when nil
-  ; "NanumGothic_Coding-12"
-  ;(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-12"))
-  ;(set-fontset-font "fontset-default" 'hangul
-  ;'("NanumGothic_Coding-12" . "unicode-bmp"))
+  ;; "NanumGothic_Coding-12"
+  ;;(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-12"))
+  ;;(set-fontset-font "fontset-default" 'hangul
+  ;;'("NanumGothic_Coding-12" . "unicode-bmp"))
   (set-face-font 'default "fontset-default")
   (set-fontset-font "fontset-default" '(#x1100. #xffdc)
                     '("NanumGothic_Coding" . "unicode-bmp"))
@@ -103,7 +103,7 @@ New height will be calculated by (* FACTOR old-face-height)"
                     '("NanumGothic_Coding" . "unicode-bmp"))
   (set-fontset-font "fontset-default" 'han
                     '("NanumGothic_Coding" . "unicode-bmp"))
-)
+  )
 
 ;;; Sometimes, Emacs asks for the confirmation of a command such as
 ;;; killing a buffer.  In that case, user should type "yes" or "no"
@@ -122,13 +122,13 @@ It compare the old value with OLD-VALUE using `equal' then
 set it to NEW-VALUE if the old value matched.
 If NOWARN is nil, and the old value is not matched with the
 supplied one, a warning message is generated."
-   `(progn
-      (if (equal ,symbol ,old-value)
-	  (setq ,symbol ,new-value)
-	(if (not ,nowarn)
-	    (progn (message "%s has unexpected value `%S'"
-			    (symbol-name ',symbol) ,symbol)
-		   ,old-value)))))
+  `(progn
+     (if (equal ,symbol ,old-value)
+         (setq ,symbol ,new-value)
+       (if (not ,nowarn)
+           (progn (message "%s has unexpected value `%S'"
+                           (symbol-name ',symbol) ,symbol)
+                  ,old-value)))))
 
 (defun move-key (keymap old-key new-key)
   "Move the key definition from OLD-KEY to NEW-KEY in KEYMAP."
@@ -195,7 +195,7 @@ supplied one, a warning message is generated."
 (require 'cl)
 (when enable-multibyte-characters
   (set-language-environment "Korean")
-  ; (setq-default file-name-coding-system 'utf-8)
+  ;; (setq-default file-name-coding-system 'utf-8)
 
   ;; Default korean keyboard layout
   ;;
@@ -215,7 +215,7 @@ supplied one, a warning message is generated."
   (defun delete-quail-completions ()
     (when (get-buffer "*Quail Completions*")
       (kill-buffer "*Quail Completions*")))
-  ;(set-selection-coding-system 'euc-kr)
+  ;;(set-selection-coding-system 'euc-kr)
   (set-selection-coding-system 'utf-8)
   (setq x-select-request-type 'UTF8_STRING)
 
@@ -239,19 +239,19 @@ supplied one, a warning message is generated."
   ;; turn off C-h during input
   (eval-after-load "quail"
     '(progn
-      (define-key quail-translation-keymap "\C-h"
-        'quail-delete-last-char)
-      ;;(define-key quail-translation-keymap "\C-?"
-      ;;  'quail-translation-help)
-      (define-key quail-translation-keymap "\C-?"
-        'quail-delete-last-char)
-      ))
+       (define-key quail-translation-keymap "\C-h"
+         'quail-delete-last-char)
+       ;;(define-key quail-translation-keymap "\C-?"
+       ;;  'quail-translation-help)
+       (define-key quail-translation-keymap "\C-?"
+         'quail-delete-last-char)
+       ))
 
   ;; The default coding system of the dired buffer is utf-8.
   (add-hook 'dired-before-readin-hook
             (lambda ()
               (set (make-local-variable 'coding-system-for-read) 'utf-8)))
-)
+  )
 
 
 ;;;
@@ -309,8 +309,8 @@ appropriately."
                    (name . "^\\*.*\\*$"))))))
 
 (add-hook 'ibuffer-mode-hook
-              (lambda ()
-                (ibuffer-switch-to-saved-filter-groups "default")))
+          (lambda ()
+            (ibuffer-switch-to-saved-filter-groups "default")))
 
 
 ;;; When a user paste clipboard content in Emacs using mouse button 2,
@@ -529,7 +529,7 @@ NOTE: not fully implemented yet."
     (if (not (null chr))
         (progn
           (skip-syntax-backward (string (char-syntax chr)))
-          ;(message (buffer-substring-no-properties beg (point)))))))
+          ;;(message (buffer-substring-no-properties beg (point)))))))
           (message "%s %s" beg (point))
           (if (not (= beg (point)))
               (kill-region (+ beg 1) (point))
@@ -575,8 +575,8 @@ NOTE: not fully implemented yet."
 (global-set-key "\M-]" 'find-next-tag)
 (global-set-key "\M-[" 'find-prev-tag)
 
-;(global-set-key [up]   '(lambda () (interactive) (scroll-down 1)))
-;(global-set-key [down] '(lambda () (interactive) (scroll-up 1)))
+;;(global-set-key [up]   '(lambda () (interactive) (scroll-down 1)))
+;;(global-set-key [down] '(lambda () (interactive) (scroll-up 1)))
 
 (fset 'scroll-other-frame "\C-xo\C-v\C-xo")      ; C-x o C-v C-x o
 (fset 'scroll-other-frame-down "\C-xo\366\C-xo") ; C-x o M-v C-x o
@@ -674,9 +674,9 @@ current window"
 (global-set-key [(control x) ?w ?9]
                 '(lambda () (interactive) (abs-other-window 9)))
 
-;(global-set-key [C-tab] 'other-window)  ; C-x o
-;(global-set-key [S-iso-lefttab] 'reverse-other-window)
-;(global-set-key [(backtab)] 'reverse-other-window)
+;;(global-set-key [C-tab] 'other-window)  ; C-x o
+;;(global-set-key [S-iso-lefttab] 'reverse-other-window)
+;;(global-set-key [(backtab)] 'reverse-other-window)
 (global-set-key [(control tab)] 'smart-other-window)
 (global-set-key [(control x) ?w ?n] 'other-window)
 (global-set-key [(control x) ?w ?o] 'other-window)
@@ -823,11 +823,11 @@ A numeric prefix argument specifies the starting number"
 (global-set-key [(control ?c) ?n] #'line-numbers-on-region)
 
 
-;(require 'autofit-frame)
-;(add-hook 'after-make-frame-functions 'fit-frame)
-;
-;(add-hook 'temp-buffer-show-hook
-;          'fit-frame-if-one-window 'append)
+;;(require 'autofit-frame)
+;;(add-hook 'after-make-frame-functions 'fit-frame)
+;;
+;;(add-hook 'temp-buffer-show-hook
+;;          'fit-frame-if-one-window 'append)
 
 
 ;;;
@@ -921,7 +921,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
           ;;(newline)
           (newline-and-indent)
           (set-buffer src))))
-))
+    ))
 
 
 ;;;
@@ -1030,7 +1030,7 @@ instead of the current word."
           (nxml-mode nil embedded-css)
           ))
 
-)
+  )
 
 
 
@@ -1077,14 +1077,6 @@ instead of the current word."
             (lwarn '(dot-emacs) :warning
                    (format "cannot access default schema for nxml-mode"))))))
 
-(define-abbrev-table 'nxml-mode-abbrev-table 
-  ;; I don't know why `@' for abbreviation doesn't work.
-  ;; So I choose `$' for that.
-  '(("$doctypexhtml" 
-"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"
-	\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" nil 0)
-))
-
 (eval-after-load "nxml-mode"
   '(progn
      ;; Make a slash automatically completes the end-tag
@@ -1114,7 +1106,7 @@ chance to change the name of the element."
         (while (not done)
           (setq curpos (point))
           (forward-paragraph)
-          ;(message (format "curpos(%d) point(%d)" curpos (point)))
+          ;;(message (format "curpos(%d) point(%d)" curpos (point)))
           (if (>= curpos (point))
               (progn
                 (setq done t)))
@@ -1129,7 +1121,7 @@ chance to change the name of the element."
                 (insert (if (eq (char-before) ?\n)
                             (concat "</" elname ">\n")
                           (concat "\n</" elname ">")))
-                ;(message (format "pt(%d) pt-max(%d)" (point) (point-max)))
+                ;;(message (format "pt(%d) pt-max(%d)" (point) (point-max)))
                 (if (>= (point) (1- (point-max)))
                     (setq done t))
                 )))))))
@@ -1334,7 +1326,7 @@ Best used for `smtpmail-smtp-service' as the default value.")
       (setq smtpmail-auth-credentials netrc)
     (lwarn '(dot-emacs) :warning
            "NETRC auth. file not exist, SMTP may not work correctly")))
-    
+
 (setq smtpmail-starttls-credentials `((,smtpmail-smtp-server
                                        ,default-smtp-ssl-port
                                        nil nil)))
@@ -1377,7 +1369,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
                                 color-theme-dark-laptop
                                 color-theme-taylor
                                 color-theme-robin-hood)
-      "My favorite color theme list")
+  "My favorite color theme list")
 
 (defun color-theme-select-random ()
   "Select random color theme"
@@ -1397,7 +1389,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 
 (defun color-themes-next-symbol (theme)
-"Return the next color-theme symbol of THEME"
+  "Return the next color-theme symbol of THEME"
   (let ((found 0) (next nil))
     (catch 'found
       (mapcar (lambda (entry)
@@ -1413,7 +1405,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 
 (defun color-theme-apply (&optional arg)
-"Apply the color theme.
+  "Apply the color theme.
 
 If the argument is :random, this applies any color theme randomly, 
 or if the argument is :next, this applies the next color theme in the
@@ -1427,7 +1419,7 @@ the color-theme function, it applies that color theme."
         (t (error "Wrong type of argument"))))
 
 (defun color-theme-next-symbol ()
-"Return the next color-theme symbol of the last applied color theme.
+  "Return the next color-theme symbol of the last applied color theme.
 
 This function works iff color-theme-history-max-length is not NIL"
   (if (null color-theme-history)
@@ -1444,7 +1436,7 @@ call has no effect on frame on tty terminal."
           (select-frame frame)
           (if (or window-system force_tty)
               (color-theme-select-random)))
-      (select-frame oldframe)))
+      (select-frame oldframe))))
 
 (when (and window-system
            (locate-library "color-theme"))
