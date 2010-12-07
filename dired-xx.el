@@ -2,13 +2,14 @@
 ;;; $Id$
 ;;; 
 (require 'dired)
-;(eval-when-compile (require 'cl))
+;;(eval-when-compile (require 'cl))
 
 (defvar dired-xx-file-type-use-file t
   "Use file(1) to determine the type of the file.")
 
 (defun dired-xx-mark-files-if (predicate msg)
-  "Mark files if PREDICATE is t for use in later commands.                      
+  "Mark files if PREDICATE is t for use in later commands.
+
 PREDICATE is evaluated on each file, with an absolute pathname.
 MSG as in `dired-mark-if'."
   (dired-mark-if (and (not (looking-at dired-re-dot))
@@ -18,9 +19,8 @@ MSG as in `dired-mark-if'."
                  msg))
 
 (defun dired-xx-mark-files-if-file (regex msg)
-  "Mark files if the output of file(1) command matches with a regular           
-expression REGEX.
-MSG as in `dired-mark-if'."
+  "Mark files if the output of file(1) command matches with a
+regular expression REGEX.  MSG as in `dired-mark-if'."
   (save-match-data
     (dired-xx-mark-files-if
      (lambda (fn)
