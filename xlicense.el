@@ -110,8 +110,9 @@ replaced to AUTHOR.
 
 See `license-keywords-alist' for keywords and their meaning."
   (let (;(buffer (get-buffer-create "*LICENSE*"))
-        (desc (or (and summary (> (length summary) 0))
-                  license-default-summary))
+        (desc (if (and summary (> (length summary) 0))
+                  summary
+                license-default-summary))
         (auth (or author (user-full-name)))
         (lfile (license-file type))
         (mode major-mode)
@@ -158,7 +159,8 @@ See `license-keywords-alist' for keywords and their meaning."
   (interactive)
   (let ((text (create-license
                (or type (intern (completing-read "Choose a license type: "
-                                                 license-types nil t))) t)))
+                                                 license-types nil t)))
+               t (read-from-minibuffer "Summary (short description): "))))
     (if (called-interactively-p 'any)
         (insert text)
       text)))
