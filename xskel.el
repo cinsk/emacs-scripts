@@ -26,198 +26,9 @@
 
 (require 'skeleton)
 (require 'autoinsert)
+(require 'xlicense)
 
-(eval-when-compile (require 'cl))
-
-(defvar license-directory "~/.emacs.d/license"
-  "Directory for license templates")
-
-(defvar license-types '((gpl . "GPL-2.0")
-                        (gpl2 . "GPL-2.0")
-                        (gpl3 . "GPL-3.0")
-                        (lgpl . "LGPL")
-                        (apache . "APACHE-2.0")
-                        (boost . "BOOST")
-                        (bsd-old . "BSD-old")
-                        (bsd-new . "BSD-new")
-                        (bsd . "BSD-new")
-                        (freebsd . "FREEBSD")
-                        (mit . "MIT")
-                        (tmp . "TMP")
-                        )
-  "Alist of licenses.  CAR of each item is a symbol represents the license,
-CDR of each item is a filename of the license template")
-
-(defvar license-default-summary
-  "<one line to give the program's name and a brief idea of what it does.>"
-  "Short description of what it does.")
-
-(defvar license-eol-text "!@#$EOL!@#$"
-  "Text to mark blank lines -- used internally")
-
-(defun license-file (type)
-  "Return the pathname of the given license file"
-  (let ((tp (assoc type license-types)))
-    (if tp
-        (concat (file-name-as-directory license-directory) (cdr tp))
-      tp)))
-
-(defvar xskel-keywords-alist '(("@author@" . user-full-name)
-                               ("@email@" . "hello")
-                               ("@year@" . (lambda ()
-                                             (substring (current-time-string)
-                                                        -4)))
-                               ("@organization@" . (lambda ()
-                                                     (getenv "ORGANIZATION"))))
-  "Keywords that need to be substituted by `xskel-substitute-keywords'.
-
-The CAR of an item is a keyword and CDR is a replacement.  If the
-CDR of an item is a function, the return value(string) is used as
-a replacement.  If the returned value is nil, no substitution for
-that keyword.")
-
-
-(defun xskel-substitute-keywords (&optional record)
-  (let (markers)
-    (dolist (i xskel-keywords-alist)
-      (let ((keyword (regexp-quote (car i)))
-            (what (if (functionp (cdr i)) (funcall (cdr i)) (cdr i))))
-        (if what
-            (progn
-              (goto-char (point-min))
-              (while (re-search-forward keyword nil t)
-                (if record
-                    (setq markers (cons (point-marker) markers)))
-                (replace-match what))))))
-    markers))
-
-(defun xskel-fill-paragraphs (lst)
-  (dolist (i lst)
-    (goto-char i)
-    (fill-paragraph)))
-
-
-(defun create-license (type &optional summary author)
-  (let (;(buffer (get-buffer-create "*LICENSE*"))
-        (desc (or (and summary (> (length summary) 0))
-                  license-default-summary))
-        (auth (or author (user-full-name)))
-        (lfile (license-file type))
-        (mode major-mode)
-        (fill-points nil))
-    ;;(save-current-buffer
-    (with-temp-buffer
-      ;(set-buffer buffer)
-      ;(erase-buffer)
-      (insert (format "%s\n" desc))
-      (insert (format "Copyright (C) %d  %s" (nth 5 (decode-time)) auth))
-      (if user-mail-address
-          (insert (format " <%s>" user-mail-address)))
-      (insert "\n")
-      (insert-file-contents lfile)
-
-      (goto-char (point-min))
-      (while (re-search-forward "^$" nil t)
-        (replace-match license-eol-text))
-
-      (let ((case-fold-search t)
-            (markers (xskel-substitute-keywords t)))
-        (funcall mode)
-        (let ((comment-style 'extra-line))
-          (comment-region (point-min) (point-max)))
-
-        (goto-char (point-min))
-
-        (let ((re-eol (concat (regexp-quote license-eol-text) "$")))
-          (while (re-search-forward re-eol nil t)
-            (replace-match "")))
-
-        (xskel-fill-paragraphs markers)
-
-        ;;(print markers)
-        ;;(pop-marker)
-        (goto-char (point-max))
-        (insert "\n"))
-      (buffer-substring-no-properties (point-min) (point-max)))))
-
-(defun create-license-old (type &optional summary author)
-  (let (;(buffer (get-buffer-create "*LICENSE*"))
-        (desc (or (and summary (> (length summary) 0))
-                  license-default-summary))
-        (auth (or author (user-full-name)))
-        (lfile (license-file type))
-        (mode major-mode)
-        (fill-points nil))
-    ;;(save-current-buffer
-    (with-temp-buffer
-      ;(set-buffer buffer)
-      ;(erase-buffer)
-      (insert (format "%s\n" desc))
-      (insert (format "Copyright (C) %d  %s" (nth 5 (decode-time)) auth))
-      (if user-mail-address
-          (insert (format " <%s>" user-mail-address)))
-      (insert "\n")
-      (insert-file-contents lfile)
-
-      (goto-char (point-min))
-      (while (re-search-forward "^$" nil t)
-        (replace-match license-eol-text))
-
-      (let ((case-fold-search t)
-            (markers nil))
-        (flet ((push-marker () 
-                            (setq markers (cons (point-marker) markers)))
-               (pop-marker ()
-                           (if (null markers)
-                               nil
-                             (let ((m (car markers)))
-                               (goto-char m)
-                               (setq markers (cdr markers))
-                               m))))
-          (goto-char (point-min))
-          (while (re-search-forward "<author>" nil t)
-            ;;(message (format "push mark at %d" (match-beginning 0)))
-            (push-marker)
-            (replace-match (user-full-name)))
-
-          (goto-char (point-min))
-          (let ((org (getenv "ORGANIZATION")))
-            (if org
-                (while (re-search-forward "<organization>" nil t)
-                  ;;(message (format "push mark at %d" (match-beginning 0)))
-                  (push-marker)
-                  (replace-match org))))
-
-          (funcall mode)
-          (let ((comment-style 'extra-line))
-            (comment-region (point-min) (point-max)))
-
-          (goto-char (point-min))
-
-          (let ((re-eol (concat (regexp-quote license-eol-text) "$")))
-            (while (re-search-forward re-eol nil t)
-              (replace-match "")))
-
-          (while (pop-marker)
-            (fill-paragraph))
-
-          ;;(print markers)
-          ;;(pop-marker)
-          (goto-char (point-max))
-          (insert "\n")
-          ))
-      (buffer-substring-no-properties (point-min) (point-max)))))
-
-
-(defun insert-license (&optional type)
-  (interactive)
-  (let ((text (create-license
-               (or type (intern (completing-read "Choose a license type: "
-                                                 license-types nil t))))))
-    (if (called-interactively-p 'any)
-        (insert text)
-      text)))
-
+;;(eval-when-compile (require 'cl))
 
 (defun c-file-name-macro ()
   "Return a string in XXX_H__ form where XXX is the upcase name of the file"
@@ -225,7 +36,6 @@ that keyword.")
                    (file-name-sans-extension buffer-file-name))
                   "_"
                   (file-name-extension buffer-file-name) "__")))
-
 
 (define-skeleton c-header-skeleton
   "cinsk's personal skeleton for a blank C header file"
@@ -263,20 +73,6 @@ that keyword.")
   "#endif"
   "\n\n"
   _ "\n\n#endif /* " str " */")
-
-(define-skeleton gpl-interactive-skeleton
-  "Insert an Interactive GPL banner."
-  ""
-  \n > "static const char *gpl_banner[] = {" \n
-  > "\"" (file-name-nondirectory (file-name-sans-extension buffer-file-name))
-  > " version XXX, Copyright (C) "
-  (substring (current-time-string) -4) " " (user-full-name) "\"," \n
-  > "\"" (file-name-nondirectory (file-name-sans-extension buffer-file-name))
-  "comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\"," \n
-  "\"This is free software, and you are welcome to redistribute it\"," \n
-  "\"under certain conditions; type `show c' for details.\"," \n
-  > > "};" \n
-  > _)
 
 (define-skeleton xhtml-skeleton
   "Insert an XHTML skeleton into the current buffer"
