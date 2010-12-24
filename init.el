@@ -23,7 +23,14 @@
 ;;;
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 ;;;
-(setq load-path (cons (expand-file-name "~/.emacs.d/") load-path))
+(setq user-emacs-directory "~/.emacs.d")
+
+(if (not (file-accessible-directory-p user-emacs-directory))
+    (if (yes-or-no-p
+         (format "create user directory(%s)? " user-emacs-directory))
+        (make-directory user-emacs-directory t)))
+
+(setq load-path (cons (expand-file-name user-emacs-directory) load-path))
 
 
 ;;;
@@ -366,7 +373,8 @@ appropriately."
   (load-library "xskel"))
 
 (let ((abb_default "~/.abbrev_defs")
-      (abb_correct "~/.emacs.d/abbrev_defs"))
+      (abb_correct (concat (file-name-as-directory user-emacs-directory)
+                           "abbrev_defs")))
   ;; Prefer "~/.emacs.d/abbrev_defs" to "~/.abbrev_defs"
   (setq abbrev-file-name
         (if (file-readable-p abb_correct)
@@ -377,7 +385,8 @@ appropriately."
 
 (require 'autoinsert)
 
-(let ((aid_correct "~/.emacs.d/insert")
+(let ((aid_correct (concat (file-name-as-directory user-emacs-directory)
+                           "insert"))
       (aid_default (if (boundp 'auto-insert-directory)
                        auto-insert-directory
                      "~/insert")))
@@ -396,11 +405,15 @@ appropriately."
 
 (add-hook 'c-mode-hook
           #'(lambda ()
-              (safe-visit-tags-table "~/.emacs.d/TAGS.sys" t)))
-             
+              (safe-visit-tags-table (concat (file-name-as-directory 
+                                              user-emacs-directory)
+                                             "TAGS.sys") t)))
+
 (add-hook 'c++-mode-hook
           #'(lambda ()
-              (safe-visit-tags-table "~/.emacs.d/TAGS.sys" t)))
+              (safe-visit-tags-table (concat (file-name-as-directory 
+                                              user-emacs-directory)
+                                             "TAGS.sys") t)))
 
 (add-hook 'c-mode-hook (function (lambda nil (abbrev-mode 1))))
 (add-hook 'c++-mode-hook (function (lambda nil (abbrev-mode 1))))
@@ -593,6 +606,17 @@ NOTE: not fully implemented yet."
 ;;;
 ;;; Window/Frame configuration
 ;;;
+(defun toggle-current-window-dedication ()
+  "Toggle current window as dedicated"
+  (interactive)
+  (let* ((window (selected-window))
+         (dedicated (window-dedicated-p window)))
+    (set-window-dedicated-p window (not dedicated))
+    (message "Window %sdedicated to %s"
+             (if dedicated "no longer " "")
+             (buffer-name))))
+(global-set-key [Scroll_Lock] 'toggle-current-window-dedication)
+
 (defun frame-max-available-width (&optional frame)
   "Return the maximum value for the possible frame width regards
 to the display width"
@@ -836,7 +860,9 @@ A numeric prefix argument specifies the starting number"
 
 (add-hook 'emacs-lisp-mode-hook 
           '(lambda ()
-             (safe-visit-tags-table "~/.emacs.d/TAGS.emacs" t)))
+             (safe-visit-tags-table (concat (file-name-as-directory 
+                                              user-emacs-directory)
+                                            "TAGS.emacs") t)))
 
 (eval-after-load "lisp-mode"
   '(progn
@@ -852,7 +878,7 @@ A numeric prefix argument specifies the starting number"
 
 ;; clisp does not work with slime package for now -- cinsk
 ;;(setq inferior-lisp-program "clisp -I -q -E utf-8")
-(setq inferior-lisp-program "sbcl --noinform")
+;;(setq inferior-lisp-program "sbcl")
 
 (defun lisp-macroexpand-region (start end &optional and-go)
   "Macroexpand the current region in the inferior Lisp process.
@@ -881,10 +907,26 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;;
 ;;; slime
 ;;;
-(when (locate-library "slime")
-  (eval-after-load "slime" '(slime-setup))
-  (autoload 'slime "slime"
-    "Start an inferior lisp and connect to its Swank server" t))
+(when (locate-library "slime-autoloads")
+  (require 'slime-autoloads)
+  (eval-after-load "slime" 
+    '(progn 
+       (slime-setup)
+       ;; C-c C-b slime-eval-buffer
+       ;; C-c C-e slime-eval-last-expression
+       ;; C-c C-r slime-eval-region
+
+       ;; `M-x slime-interrupt' moved to `C-c C-B' from `C-c C-b'
+       (move-key slime-mode [(control ?c) (control ?b)]
+                 [(control ?c) (control ?B)])
+       (define-key slime-mode-map [(control ?c) (control ?b)]
+         'slime-eval-buffer))))
+
+
+;; clisp does not work with slime package for now -- cinsk
+;;(setq inferior-lisp-program "clisp -I -q -E utf-8")
+(if (locate-file "sbcl" exec-path)
+    (setq inferior-lisp-program "sbcl"))
 
 
 
@@ -1489,7 +1531,8 @@ call has no effect on frame on tty terminal."
 ;;;
 (require 'calendar)
 
-(let ((my-diary-file "~/.emacs.d/diary"))
+(let ((my-diary-file (concat (file-name-as-directory user-emacs-directory)
+                             "diary")))
   (if (file-readable-p my-diary-file)
       (setq diary-file my-diary-file)))
 
@@ -1544,7 +1587,11 @@ call has no effect on frame on tty terminal."
 (global-set-key [(control c) ?\"] 'org-capture)
 
 (let* ((org-path (getenv "ORG_PATH"))
-       (my-org-directory (if org-path org-path "~/.emacs.d/agenda")))
+       (my-org-directory (if org-path 
+                             org-path 
+                           (concat (file-name-as-directory 
+                                    user-emacs-directory)
+                                   "agenda"))))
   ;; All of my org agena files are located in `my-org-directory'.
   (if (not (file-accessible-directory-p my-org-directory))
       (if (yes-or-no-p
@@ -1766,13 +1813,27 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 
 (eval-after-load "python-mode"
   '(progn
-     ;; python-mode uses `C-c C-c' for `py-execute-buffer' where most
-     ;; major modes uses that for `comment-region'.  Thus, I'll uses
-     ;; `C-c C-e' bindings for py-execute-buffer.  It makes sense
-     ;; because cc-mode uses this for `c-macro-expand'.
-     (define-key py-mode-map [(control ?c) (control ?c)] 'py-comment-region)
-     (define-key py-mode-map [(control ?c) (control ?e)] 'py-execute-buffer)
+     ;; C-c C-b py-execute-buffer
+     ;; C-c C-r py-execute-region
+     ;; C-c C-e py-execute-string
+     ;;
+     ;; C-c C-c py-comment-region
+     ;; C-c C-i py-indent-region
+     ;;
+     ;; C-c [   py-shift-region-left
+     ;; C-c ]   py-shift-region-right
+     (define-key py-mode-map [(control ?c) (control ?\])] 
+       'py-shift-region-right)
+     (define-key py-mode-map [(control ?c) (control ?\[)] 
+       'py-shift-region-left)
+     (define-key py-mode-map [(control ?c) (control ?b)]
+       'py-execute-buffer)
+     (define-key py-mode-map [(control ?c) (control ?r)]
+       'py-execute-region)
+     (define-key py-mode-map [(control ?c) (control ?e)]
+       'py-execute-string)
 
+     (define-key py-mode-map [(control ?c) (control ?c)] 'py-comment-region)
      (define-key py-mode-map [(control ?c) ?i] 'py-indent-region)
 
      (when (locate-file "pychecker" exec-path)
@@ -1806,7 +1867,27 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 (when (locate-library "lua-mode")
    (autoload 'lua-mode "lua-mode" "Major mode for lua script")
    (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode)))
-
+
+;;;
+;;; Scala
+;;;
+(when (locate-library "scala-mode-auto")
+  (require 'scala-mode-auto)
+  (eval-after-load "scala-mode"
+    '(progn
+       ;; Modify scala-mode-map to keep consistency with other
+       ;; interpreter setting.
+       ;;
+       ;; C-c C-b   scala-eval-buffer
+       ;; C-c C-r   scala-eval-region
+       ;; C-c C-e   scala-eval-definition  (TODO: check the symantics)
+       (define-key scala-mode-map [(control ?c) (control ?e)]
+         'scala-eval-definition)
+       ;; 
+       ;; scala-undent-line: `C-<tab>' -> `<backtab>'
+       (move-key scala-mode-map
+                 [(control tab)] [backtab])
+       )))
 
 ;;;
 ;;; ESS(Emacs Speaks Statistics) setting for R.
@@ -1855,6 +1936,39 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;(global-set-key [f2] 'ff-find-other-file)
 ;;(global-set-key [f3] 'dired-jump)
 (global-set-key [f2] #'pop-to-cvs-buffer)
+
+(defun dired-jump (&optional other-window)
+  "Jump to dired buffer corresponding to current buffer.
+If in a file, dired the current directory and move to file's line.
+If in Dired already, pop up a level and goto old directory's line.
+In case the proper dired file line cannot be found, refresh the dired
+buffer and try again."
+  (interactive "P")
+  (let* ((file buffer-file-name)
+         (dir (if file (file-name-directory file) default-directory)))
+    (if (eq major-mode 'dired-mode)
+        (progn
+          (setq dir (dired-current-directory))
+          (dired-up-directory other-window)
+          (or (dired-goto-file dir)
+              ;; refresh and try again
+              (progn
+                (dired-insert-subdir (file-name-directory dir))
+                (dired-goto-file dir))))
+      (if other-window
+          (dired-other-window dir)
+        (dired dir))
+      (if file
+          (or (dired-goto-file file)
+              ;; refresh and try again
+              (progn
+                (dired-insert-subdir (file-name-directory file))
+                (dired-goto-file file))
+              ;; Toggle omitting, if it is on, and try again.
+	      (if dired-omit-mode
+		  (progn
+		    (dired-omit-mode)
+		    (dired-goto-file file))))))))
 
 ;;;
 ;;; elscreen
