@@ -867,7 +867,7 @@ A numeric prefix argument specifies the starting number"
 (eval-after-load "lisp-mode"
   '(progn
     (define-key emacs-lisp-mode-map [f5] 'eval-buffer)
-    (define-key emacs-lisp-mode-map [(control c) ?|] 'eval-region)))
+    (define-key emacs-lisp-mode-map [(control c) ?\|] 'eval-region)))
 
 
 ;;;
