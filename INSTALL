@@ -2,7 +2,18 @@
 
 $Id$
 
-Copy files to your $HOME directory like this:
+Recent Emacs can load the init file from $HOME/.emacs.d/init.el if
+$HOME/.emacs is not found.   Using init.el looks better than .emacs because
+I can manage all scripts in the same directory. 
 
-     dot-emacs.el -> $HOME/.emacs
-     lib/theme.el -> $HOME/.emacs.d/theme.el
+    $ cd $HOME
+    $ mv emacs-scripts .emacs.d
+    $ # Remove if old .emacs still exists.
+    $ rm .emacs
+
+Or, you still can use old way; copying files to your $HOME directory
+like this.  (Other than
+
+    $ cd $HOME
+    $ mv emacs-scripts .emacs.d
+    $ ln -s .emacs.d/init.el .emacs
