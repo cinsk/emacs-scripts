@@ -917,7 +917,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
        ;; C-c C-r slime-eval-region
 
        ;; `M-x slime-interrupt' moved to `C-c C-B' from `C-c C-b'
-       (move-key slime-mode [(control ?c) (control ?b)]
+       (move-key slime-mode-map [(control ?c) (control ?b)]
                  [(control ?c) (control ?B)])
        (define-key slime-mode-map [(control ?c) (control ?b)]
          'slime-eval-buffer))))
