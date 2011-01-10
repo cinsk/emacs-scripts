@@ -1,0 +1,9 @@
+# Files that GIT should ignore
+# See gitignore(5) for the format of this file
+
+# tramp -- Tramp connection history
+/tramp
+# generated etags file(s)
+/TAGS*
+# auto-saves 
+auto-save-list/
