@@ -779,6 +779,9 @@ calls `iswitchb'"
 (global-set-key "\C-x5\M-x" 'run-command-other-frame)
 
 
+;;;
+;;; CVS
+;;;
 (defun pop-to-cvs-buffer (arg)
   "Select \"*cvs*\" buffer in some window, preferably a different one.
 If the buffer is not found, call `cvs-examine' interactively.
@@ -791,6 +794,20 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
       (if buf
           (pop-to-buffer buf)
         (call-interactively #'cvs-examine)))))
+
+(global-set-key [f2] #'pop-to-cvs-buffer)
+
+
+;;;
+;;; Git
+;;;
+(when (locate-library "git")
+  (require 'git))
+
+(eval-after-load "git"
+  '(progn
+     (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status)))
+
 
 
 (when (locate-library "winner")
@@ -919,6 +936,14 @@ Prefix argument means switch to the Lisp buffer afterwards."
        ;; `M-x slime-interrupt' moved to `C-c C-B' from `C-c C-b'
        (move-key slime-mode-map [(control ?c) (control ?b)]
                  [(control ?c) (control ?B)])
+       (move-key slime-mode-map [(control ?c) (control ?e)]
+                 [(control meta ?\:)])
+       ;; C-c v   slime-describe-symbol
+       ;; C-c f   slime-describe
+       ;;(define-key slime-mode-map [(control ?c) ?v]         'slime-describe-symbol)
+       ;;(define-key slime-mode-map [(control ?c) ?f]         'slime-describe-function)
+       (define-key slime-mode-map [(control ?c) (control ?e)]
+         'slime-eval-last-expression)
        (define-key slime-mode-map [(control ?c) (control ?b)]
          'slime-eval-buffer))))
 
@@ -1700,8 +1725,30 @@ following:
 
 
 ;;;
-;;; Ediff customization
+;;; diff & ediff customization
 ;;;
+(defun diff-ediff-patch2 (&optional arg)
+  "Call `ediff-patch-file' on the current buffer.
+
+With a prefix argument, ask the user of the option to the patch
+command."
+  (interactive "P")
+  (require 'ediff-ptch)                 ; required for `ediff-patch-options'
+  (let ((new-ediff-patch-options
+         (if (and arg (= (prefix-numeric-value arg) 4))
+             (read-from-minibuffer (format "patch options [%s]: "
+                                           ediff-patch-options)
+                                   ediff-patch-options nil nil nil
+                                   ediff-patch-options)
+           ediff-patch-options)))
+    (let ((ediff-patch-options new-ediff-patch-options))
+      (call-interactively #'diff-ediff-patch))))
+
+(eval-after-load "diff-mode"
+  '(progn
+     (define-key diff-mode-map [(control ?c) (control ?e)]
+       'diff-ediff-patch2)))
+
 (defun frame-max-available-width (&optional frame)
   "Return the maximum value for the possible frame width regards
 to the display width"
@@ -1722,7 +1769,7 @@ width) before widening the frame.  The saved information is used
 in `ediff-narrow-frame-for-vertical-setup' which is best used for
 `ediff-suspend-hook' and `ediff-quit-hook'.
 "
-  (let ((modifier (if (ediff-3way-job) 3 2)))
+  (let ((modifier (if (boundp 'ediff-3way-job) 3 2)))
     (if (eq ediff-split-window-function 'split-window-horizontally)
         (let ((width (frame-width))
               (left (frame-parameter nil 'left))
@@ -1809,7 +1856,8 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
   (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
   (setq interpreter-mode-alist (cons '("python" . python-mode)
                                      interpreter-mode-alist))
-  (autoload 'python-mode "python-mode" "Python editing mode." t))
+  (require 'python-mode))
+;(autoload 'python-mode "python-mode" "Python editing mode." t))
 
 (eval-after-load "python-mode"
   '(progn
@@ -1822,9 +1870,9 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
      ;;
      ;; C-c [   py-shift-region-left
      ;; C-c ]   py-shift-region-right
-     (define-key py-mode-map [(control ?c) (control ?\])] 
+     (define-key py-mode-map [(control ?c) ?\]] 
        'py-shift-region-right)
-     (define-key py-mode-map [(control ?c) (control ?\[)] 
+     (define-key py-mode-map [(control ?c) ?\[] 
        'py-shift-region-left)
      (define-key py-mode-map [(control ?c) (control ?b)]
        'py-execute-buffer)
@@ -1935,7 +1983,6 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 
 ;;(global-set-key [f2] 'ff-find-other-file)
 ;;(global-set-key [f3] 'dired-jump)
-(global-set-key [f2] #'pop-to-cvs-buffer)
 
 (defun dired-jump (&optional other-window)
   "Jump to dired buffer corresponding to current buffer.
