@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;; $Id$
+;; $Id: xskel.el,v 1.2 2010/12/16 08:26:16 cinsk Exp $
 
 ;;; Code:
 
@@ -115,7 +115,7 @@
 (define-skeleton org-skeleton
   "Inserts a ORG mode skeleton into current buffer."
   ""
-  "# -*-org-mode-*-\n"
+  "# -*-org-*-\n"
   "#+OPTIONS: toc:4" \n
   "#+STYLE: <style>body { "
   "font-family: \"Helvetica Neue\",Helvetica,Arial,Verdana,Geneva,sans-serif;"
