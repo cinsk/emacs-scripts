@@ -359,7 +359,7 @@ appropriately."
 
 (global-set-key [(control c) ?i] 'indent-region)
 
-(global-set-key [(f6)] 'toggle-case-fold-search)
+(global-set-key [(f11)] 'toggle-case-fold-search)
 
 ;;;
 ;;; ICE setup
@@ -807,6 +807,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 (eval-after-load "git"
   '(progn
      (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status)))
+
 
 ;;;
 ;;; vc-jump
@@ -1868,6 +1869,7 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
   (setq interpreter-mode-alist (cons '("python" . python-mode)
                                      interpreter-mode-alist))
   (require 'python-mode))
+
 ;;
 ;; In python-mode 5.1.0, autoloading `python-mode' causes `eval-after-load'
 ;; failed.  Don't know why
