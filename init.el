@@ -779,6 +779,9 @@ calls `iswitchb'"
 (global-set-key "\C-x5\M-x" 'run-command-other-frame)
 
 
+;;;
+;;; CVS
+;;;
 (defun pop-to-cvs-buffer (arg)
   "Select \"*cvs*\" buffer in some window, preferably a different one.
 If the buffer is not found, call `cvs-examine' interactively.
@@ -791,6 +794,26 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
       (if buf
           (pop-to-buffer buf)
         (call-interactively #'cvs-examine)))))
+
+;;(global-set-key [f2] #'pop-to-cvs-buffer)
+
+
+;;;
+;;; Git
+;;;
+(when (locate-library "git")
+  (require 'git))
+
+(eval-after-load "git"
+  '(progn
+     (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status)))
+
+;;;
+;;; vc-jump
+;;;
+(when (locate-library "vc-jump")
+  (require 'vc-jump)
+  (global-set-key [f12] 'vc-jump))
 
 
 (when (locate-library "winner")
@@ -919,6 +942,14 @@ Prefix argument means switch to the Lisp buffer afterwards."
        ;; `M-x slime-interrupt' moved to `C-c C-B' from `C-c C-b'
        (move-key slime-mode-map [(control ?c) (control ?b)]
                  [(control ?c) (control ?B)])
+       (move-key slime-mode-map [(control ?c) (control ?e)]
+                 [(control meta ?\:)])
+       ;; C-c v   slime-describe-symbol
+       ;; C-c f   slime-describe
+       ;;(define-key slime-mode-map [(control ?c) ?v]         'slime-describe-symbol)
+       ;;(define-key slime-mode-map [(control ?c) ?f]         'slime-describe-function)
+       (define-key slime-mode-map [(control ?c) (control ?e)]
+         'slime-eval-last-expression)
        (define-key slime-mode-map [(control ?c) (control ?b)]
          'slime-eval-buffer))))
 
@@ -1579,6 +1610,11 @@ call has no effect on frame on tty terminal."
 (setq org-odd-levels-only t)
 (setq org-agenda-include-diary t)
 
+;; If org file loaded with folding, comparing files with ediff
+;; is very unhandy, thus starting with everything is shown
+(setq org-hide-block-startup nil)
+(setq org-startup-folded 'showeverything)
+
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 
 (global-set-key [(control c) ?a] 'org-agenda)
@@ -1700,8 +1736,30 @@ following:
 
 
 ;;;
-;;; Ediff customization
+;;; diff & ediff customization
 ;;;
+(defun diff-ediff-patch2 (&optional arg)
+  "Call `ediff-patch-file' on the current buffer.
+
+With a prefix argument, ask the user of the option to the patch
+command."
+  (interactive "P")
+  (require 'ediff-ptch)                 ; required for `ediff-patch-options'
+  (let ((new-ediff-patch-options
+         (if (and arg (= (prefix-numeric-value arg) 4))
+             (read-from-minibuffer (format "patch options [%s]: "
+                                           ediff-patch-options)
+                                   ediff-patch-options nil nil nil
+                                   ediff-patch-options)
+           ediff-patch-options)))
+    (let ((ediff-patch-options new-ediff-patch-options))
+      (call-interactively #'diff-ediff-patch))))
+
+(eval-after-load "diff-mode"
+  '(progn
+     (define-key diff-mode-map [(control ?c) (control ?e)]
+       'diff-ediff-patch2)))
+
 (defun frame-max-available-width (&optional frame)
   "Return the maximum value for the possible frame width regards
 to the display width"
@@ -1722,7 +1780,7 @@ width) before widening the frame.  The saved information is used
 in `ediff-narrow-frame-for-vertical-setup' which is best used for
 `ediff-suspend-hook' and `ediff-quit-hook'.
 "
-  (let ((modifier (if (ediff-3way-job) 3 2)))
+  (let ((modifier (if (boundp 'ediff-3way-job) 3 2)))
     (if (eq ediff-split-window-function 'split-window-horizontally)
         (let ((width (frame-width))
               (left (frame-parameter nil 'left))
@@ -1809,7 +1867,12 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
   (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
   (setq interpreter-mode-alist (cons '("python" . python-mode)
                                      interpreter-mode-alist))
-  (autoload 'python-mode "python-mode" "Python editing mode." t))
+  (require 'python-mode))
+;;
+;; In python-mode 5.1.0, autoloading `python-mode' causes `eval-after-load'
+;; failed.  Don't know why
+;;
+;;(autoload 'python-mode "python-mode" "Python editing mode." t))
 
 (eval-after-load "python-mode"
   '(progn
@@ -1822,9 +1885,9 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
      ;;
      ;; C-c [   py-shift-region-left
      ;; C-c ]   py-shift-region-right
-     (define-key py-mode-map [(control ?c) (control ?\])] 
+     (define-key py-mode-map [(control ?c) ?\]] 
        'py-shift-region-right)
-     (define-key py-mode-map [(control ?c) (control ?\[)] 
+     (define-key py-mode-map [(control ?c) ?\[] 
        'py-shift-region-left)
      (define-key py-mode-map [(control ?c) (control ?b)]
        'py-execute-buffer)
@@ -1887,6 +1950,8 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
        ;; scala-undent-line: `C-<tab>' -> `<backtab>'
        (move-key scala-mode-map
                  [(control tab)] [backtab])
+
+       (define-key scala-mode-map [(control ?c) ?\!] 'scala-run-scala)
        )))
 
 ;;;
@@ -1928,47 +1993,15 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;; GNU Emacs Calculator Configuration
 ;;;
 (autoload 'calc "calc" "The Emacs Calculator" t)
-(global-set-key [f12] 'calc)
-(global-set-key [(control f12)] 'quick-calc)
+(global-set-key [f10] 'calc)
+(global-set-key [(control f10)] 'quick-calc)
 
 
 
 ;;(global-set-key [f2] 'ff-find-other-file)
 ;;(global-set-key [f3] 'dired-jump)
-(global-set-key [f2] #'pop-to-cvs-buffer)
 
-(defun dired-jump (&optional other-window)
-  "Jump to dired buffer corresponding to current buffer.
-If in a file, dired the current directory and move to file's line.
-If in Dired already, pop up a level and goto old directory's line.
-In case the proper dired file line cannot be found, refresh the dired
-buffer and try again."
-  (interactive "P")
-  (let* ((file buffer-file-name)
-         (dir (if file (file-name-directory file) default-directory)))
-    (if (eq major-mode 'dired-mode)
-        (progn
-          (setq dir (dired-current-directory))
-          (dired-up-directory other-window)
-          (or (dired-goto-file dir)
-              ;; refresh and try again
-              (progn
-                (dired-insert-subdir (file-name-directory dir))
-                (dired-goto-file dir))))
-      (if other-window
-          (dired-other-window dir)
-        (dired dir))
-      (if file
-          (or (dired-goto-file file)
-              ;; refresh and try again
-              (progn
-                (dired-insert-subdir (file-name-directory file))
-                (dired-goto-file file))
-              ;; Toggle omitting, if it is on, and try again.
-	      (if dired-omit-mode
-		  (progn
-		    (dired-omit-mode)
-		    (dired-goto-file file))))))))
+(require 'dired-x)
 
 ;;;
 ;;; elscreen
