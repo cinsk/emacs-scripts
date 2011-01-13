@@ -359,7 +359,7 @@ appropriately."
 
 (global-set-key [(control c) ?i] 'indent-region)
 
-(global-set-key [(f6)] 'toggle-case-fold-search)
+(global-set-key [(f11)] 'toggle-case-fold-search)
 
 ;;;
 ;;; ICE setup
@@ -1976,8 +1976,8 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;; GNU Emacs Calculator Configuration
 ;;;
 (autoload 'calc "calc" "The Emacs Calculator" t)
-(global-set-key [f12] 'calc)
-(global-set-key [(control f12)] 'quick-calc)
+(global-set-key [f10] 'calc)
+(global-set-key [(control f10)] 'quick-calc)
 
 
 
