@@ -1934,8 +1934,47 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
    (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode)))
 
 ;;;
+;;; YASnippet -- http://code.google.com/p/yasnippet/
+;;;
+(when (locate-library "yasnippet")
+  (require 'yasnippet)
+  (yas/initialize)
+  ;; The official document describes the snippets director in
+  ;; "~/.emacs.d/plugins/yasnippet-x.y.z/snippets", whereas Gentoo
+  ;; yasnippet package installed them in
+  ;; "/usr/share/emacs/etc/yasnippet/snippets".
+  (let* ((gentoo-dir "/usr/share/emacs/etc/yasnippet/snippets")
+         (official-prefix "~/.emacs.d/plugins")
+         ;; First, try the directory of the gentoo package.  If not
+         ;; found, try the official directory.  If the official
+         ;; directory contains more than one version, try to use the
+         ;; latest one (by sorting feature in `directory-files'.
+         (snippets-dir (if (file-exists-p gentoo-dir)
+                           gentoo-dir
+                         (if (file-directory-p official-prefix)
+                             (let ((files (directory-files official-prefix 
+                                                           t "yasnippet-.*")))
+                               (nth (- (length files) 1) files))))))
+    (if snippets-dir
+        (yas/load-directory snippets-dir)
+      (lwarn '(dot-emacs) :warning
+             "yasnippet cannot find the snippet directory"))))
+
+
+;;;
 ;;; Scala
 ;;;
+
+;; Currently, Scala 2.8.x is not provided by gentoo portage. Thus, I
+;; will use the binary distribution from the Scala repository in
+;; /opt/scala
+(when (not (locate-library "scala-mode-auto"))
+  (let* ((scala-mode-path "/opt/scala/misc/scala-tool-support/emacs")
+         (scala-file (concat (file-name-as-directory scala-mode-path)
+                             "scala-mode-auto.el")))
+    (if (file-exists-p scala-file)
+        (add-to-list 'load-path scala-mode-path))))
+
 (when (locate-library "scala-mode-auto")
   (require 'scala-mode-auto)
   (eval-after-load "scala-mode"
