@@ -1,7 +1,5 @@
 ;;; -*-emacs-lisp-*-
 
-;;; $Id$
-
 ;;;
 ;;; Seong-Kook Shin's .emacs initialization file.
 ;;;
