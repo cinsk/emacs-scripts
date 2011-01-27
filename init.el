@@ -799,12 +799,12 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 ;;;
 ;;; Git
 ;;;
-(when (locate-library "git")
-  (require 'git))
-
 (eval-after-load "git"
   '(progn
      (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status)))
+
+(when (locate-library "git")
+  (require 'git))
 
 
 ;;;
@@ -930,7 +930,6 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;; slime
 ;;;
 (when (locate-library "slime-autoloads")
-  (require 'slime-autoloads)
   (eval-after-load "slime" 
     '(progn 
        (slime-setup)
@@ -950,7 +949,8 @@ Prefix argument means switch to the Lisp buffer afterwards."
        (define-key slime-mode-map [(control ?c) (control ?e)]
          'slime-eval-last-expression)
        (define-key slime-mode-map [(control ?c) (control ?b)]
-         'slime-eval-buffer))))
+         'slime-eval-buffer)))
+  (require 'slime-autoloads))
 
 
 ;; clisp does not work with slime package for now -- cinsk
@@ -1077,8 +1077,6 @@ instead of the current word."
 ;;; MMM mode
 ;;;
 (when (locate-library "mmm-auto")
-  (require 'mmm-auto)
-
   (eval-after-load "mmm-mode"
     ;; It seems that mmm-mode 0.4.8 will reset the mmm-related face
     ;; attributes after loading mmm-mode.el.  To prevent resetting,
@@ -1086,6 +1084,8 @@ instead of the current word."
     '(progn
        (set-face-background 'mmm-code-submode-face nil)
        (set-face-background 'mmm-default-submode-face nil)))
+
+  (require 'mmm-auto)
 
   ;; DO NOT SET `mmm-global-mode' to t!!!  If you do in mmm-mode
   ;; 0.4.8, some mysterious bugs will happen.  Particularly, on ediff
@@ -1115,6 +1115,17 @@ instead of the current word."
   (nxml-mode)
   (make-local-variable 'nxml-child-indent)
   (setq nxml-child-indent 4))
+
+
+(eval-after-load "nxml-mode"
+  '(progn
+     ;; Make a slash automatically completes the end-tag
+     (setq nxml-slash-auto-complete-flag t)
+     (define-key nxml-mode-map [(control ?c) (control ?e)]
+       'nxml-enclose-paragraph)
+
+     ;; install abbrev table
+     (add-hook 'nxml-mode-hook (function (lambda nil (abbrev-mode 1))))))
 
 (when (locate-library "rng-auto")
   ;; Strangely, nxml-mode does not provide a package to be used with
@@ -1148,17 +1159,6 @@ instead of the current word."
         (if (not (file-readable-p file))
             (lwarn '(dot-emacs) :warning
                    (format "cannot access default schema for nxml-mode"))))))
-
-(eval-after-load "nxml-mode"
-  '(progn
-     ;; Make a slash automatically completes the end-tag
-     (setq nxml-slash-auto-complete-flag t)
-     (define-key nxml-mode-map [(control ?c) (control ?e)]
-       'nxml-enclose-paragraph)
-
-     ;; install abbrev table
-     (add-hook 'nxml-mode-hook (function (lambda nil (abbrev-mode 1))))))
-
 
 (defun nxml-enclose-paragraph (start end prefix)
   "Enclose each paragraph with the element in the region.
@@ -1544,9 +1544,9 @@ call has no effect on frame on tty terminal."
 ;;;
 ;;; CSS mode
 ;;;
-(autoload 'css-mode "css-mode" "CSS editing major mode" t)
 (eval-after-load "css-mode"
   '(setq cssm-indent-function #'cssm-c-style-indenter))
+(autoload 'css-mode "css-mode" "CSS editing major mode" t)
 (add-to-list 'auto-mode-alist '("\\.css\\'" . css-mode))
 
 
@@ -1597,6 +1597,36 @@ call has no effect on frame on tty terminal."
 ;;;
 ;;; Org mode
 ;;;
+(eval-after-load "org"
+  '(progn
+     (define-key outline-mode-map [(control down)]
+       'outline-next-visible-heading)
+     (define-key outline-mode-map [(control up)] 
+       'outline-previous-visible-heading)
+     (define-key outline-mode-map [(control shift down)]
+       'outline-forward-same-level)
+     (define-key outline-mode-map [(control shift up)]
+       'outline-backward-same-level)
+
+     ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
+     ;; since I use "C-<TAB>" for `smart-other-window'.
+     (move-key org-mode-map [(control tab)] [(control x) (control tab)])
+
+     ;; Move the binding of `org-deadline' from "C-c C-d" to "C-c
+     ;; C-S-d", since I'vd used the keybinding for
+     ;; `delete-chars-forward-with-syntax'.
+     (move-key org-mode-map [(control ?c) (control ?d)]
+               [(control ?c) (control shift ?d)])
+
+     (define-key org-mode-map [(control c) (control ?\\)]
+       'org-table-convert-from-lines)
+
+     ;; When opening a link with `org-open-at-point' (C-c C-o), These
+     ;; settings allow to use acroread for pdf files and to use ggv
+     ;; for ps files.
+     (add-to-list 'org-file-apps '("pdf" . "acroread %s"))
+     (add-to-list 'org-file-apps '("ps" . "ggv %s"))))
+
 (require 'org-install)
 
 ;; Org mode requires font-locking on every org buffer
@@ -1686,36 +1716,6 @@ following:
                        (and (eq (forward-line) 0) (< (point) end))))
               (org-table-convert-region start end '(16))))))))
 
-(eval-after-load "org"
-  '(progn
-     (define-key outline-mode-map [(control down)]
-       'outline-next-visible-heading)
-     (define-key outline-mode-map [(control up)] 
-       'outline-previous-visible-heading)
-     (define-key outline-mode-map [(control shift down)]
-       'outline-forward-same-level)
-     (define-key outline-mode-map [(control shift up)]
-       'outline-backward-same-level)
-
-     ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
-     ;; since I use "C-<TAB>" for `smart-other-window'.
-     (move-key org-mode-map [(control tab)] [(control x) (control tab)])
-
-     ;; Move the binding of `org-deadline' from "C-c C-d" to "C-c
-     ;; C-S-d", since I'vd used the keybinding for
-     ;; `delete-chars-forward-with-syntax'.
-     (move-key org-mode-map [(control ?c) (control ?d)]
-               [(control ?c) (control shift ?d)])
-
-     (define-key org-mode-map [(control c) (control ?\\)]
-       'org-table-convert-from-lines)
-
-     ;; When opening a link with `org-open-at-point' (C-c C-o), These
-     ;; settings allow to use acroread for pdf files and to use ggv
-     ;; for ps files.
-     (add-to-list 'org-file-apps '("pdf" . "acroread %s"))
-     (add-to-list 'org-file-apps '("ps" . "ggv %s"))))
-
 
 ;;;
 ;;; Emacs-wiki support
@@ -1737,6 +1737,27 @@ following:
 ;;;
 ;;; diff & ediff customization
 ;;;
+(eval-after-load "ediff"
+  '(progn
+     (add-hook 'ediff-before-setup-windows-hook
+               'ediff-widen-frame-for-vertical-setup)
+     (add-hook 'ediff-suspend-hook
+               'ediff-narrow-frame-for-vertical-setup)
+     (add-hook 'ediff-quit-hook
+               'ediff-narrow-frame-for-vertical-setup)
+
+     ;; Change the algorithm perhaps find a smaller set of changes.
+     ;; This makes `diff' slower.
+     (setq ediff-diff-options "-d")
+
+     ;; ignore whitespaces and newlines. (can be toggled on/off via `##')
+     (setq ediff-ignore-similar-regions t)
+     ;; do not create new frame for the control panel
+     (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+     ;; If nil, ask the user to kill the buffers on exit.
+     ;; (setq ediff-keep-variants nil)
+     ))
+
 (defun diff-ediff-patch2 (&optional arg)
   "Call `ediff-patch-file' on the current buffer.
 
@@ -1809,26 +1830,6 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
                                    (old-top . nil)
                                    (old-width . nil)))))
 
-(eval-after-load "ediff"
-  '(progn
-     (add-hook 'ediff-before-setup-windows-hook
-               'ediff-widen-frame-for-vertical-setup)
-     (add-hook 'ediff-suspend-hook
-               'ediff-narrow-frame-for-vertical-setup)
-     (add-hook 'ediff-quit-hook
-               'ediff-narrow-frame-for-vertical-setup)
-
-     ;; Change the algorithm perhaps find a smaller set of changes.
-     ;; This makes `diff' slower.
-     (setq ediff-diff-options "-d")
-
-     ;; ignore whitespaces and newlines. (can be toggled on/off via `##')
-     (setq ediff-ignore-similar-regions t)
-     ;; do not create new frame for the control panel
-     (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-     ;; If nil, ask the user to kill the buffers on exit.
-     ;; (setq ediff-keep-variants nil)
-     ))
 
 
 ;;;
@@ -1861,12 +1862,6 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;;
 ;;; Note that this configuration is for `python-mode.el' not for
 ;;; `python.el' in GNU Emacs distribution.
-
-(when (locate-library "python-mode")
-  (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
-  (setq interpreter-mode-alist (cons '("python" . python-mode)
-                                     interpreter-mode-alist))
-  (require 'python-mode))
 
 ;;
 ;; In python-mode 5.1.0, autoloading `python-mode' causes `eval-after-load'
@@ -1904,6 +1899,13 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 
      ;; python-mode uses `C-c C-d' for `py-pdbtrack-toggle-stack-tracking'
      (define-key py-mode-map [(control ?c) (control ?d)] 'zap-to-nonspace)))
+
+(when (locate-library "python-mode")
+  (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
+  (setq interpreter-mode-alist (cons '("python" . python-mode)
+                                     interpreter-mode-alist))
+  (require 'python-mode))
+
 
 ;;;
 ;;; w3m
@@ -1974,7 +1976,6 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
         (add-to-list 'load-path scala-mode-path))))
 
 (when (locate-library "scala-mode-auto")
-  (require 'scala-mode-auto)
   (eval-after-load "scala-mode"
     '(progn
        ;; Modify scala-mode-map to keep consistency with other
@@ -1991,7 +1992,9 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
                  [(control tab)] [backtab])
 
        (define-key scala-mode-map [(control ?c) ?\!] 'scala-run-scala)
-       )))
+       ))
+  (require 'scala-mode-auto))
+
 
 ;;;
 ;;; ESS(Emacs Speaks Statistics) setting for R.
