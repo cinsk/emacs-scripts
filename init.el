@@ -1837,8 +1837,10 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;; Do not display splash screen on startup
 ;;;
 
-;; Show the `*scratch*' buffer 
-(setq initial-buffer-choice t)
+;; Show the `*scratch*' buffer (even in the presence of command-line
+;; arguments for files)
+;;
+;; (setq initial-buffer-choice t)
 
 ;; Disable the startup screen
 (setq inhibit-splash-screen t)
@@ -1908,6 +1910,31 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
      (define-key py-mode-map [(control ?c) (control ?d)] 'zap-to-nonspace)))
 
 ;;;
+;;; Ruby Mode
+;;;
+(when (locate-library "ruby-mode")
+  (require 'ruby-mode)
+
+  (if (fboundp 'ruby-send-buffer)
+      (lwarn '(dot-emacs) :warning
+             "`ruby-send-buffer' already defined.  need to update init.el")
+    (defun ruby-send-buffer ()
+      "Send the current buffer to the inferior Ruby process."
+      (interactive)
+      (save-excursion
+        (save-restriction
+          (widen)
+          (ruby-send-region (point-min) (point-max)))))))
+      
+(eval-after-load "ruby-mode"
+  '(progn
+     (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
+     (define-key ruby-mode-map [(control ?c) (control ?b)] 'ruby-send-buffer)))
+
+     
+
+
+;;;
 ;;; w3m
 ;;;
 (when (locate-library "w3m")
@@ -1939,7 +1966,7 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 (when (locate-library "yasnippet")
   (require 'yasnippet)
   (yas/initialize)
-  ;; The official document describes the snippets director in
+  ;; The official document describes the snippets directory in
   ;; "~/.emacs.d/plugins/yasnippet-x.y.z/snippets", whereas Gentoo
   ;; yasnippet package installed them in
   ;; "/usr/share/emacs/etc/yasnippet/snippets".
