@@ -1,7 +1,5 @@
 -*-text-*-
 
-$Id$
-
 Recent Emacs can load the init file from $HOME/.emacs.d/init.el if
 $HOME/.emacs is not found.   Using init.el looks better than .emacs because
 I can manage all scripts in the same directory. 
