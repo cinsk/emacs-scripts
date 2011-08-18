@@ -799,6 +799,10 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 ;;;
 ;;; Git
 ;;;
+(setq git-show-uptodate t
+      git-show-ignored t
+      git-show-unknown t)
+
 (eval-after-load "git"
   '(progn
      (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status)))
@@ -1800,14 +1804,15 @@ width) before widening the frame.  The saved information is used
 in `ediff-narrow-frame-for-vertical-setup' which is best used for
 `ediff-suspend-hook' and `ediff-quit-hook'.
 "
-  (let ((modifier (if (boundp 'ediff-3way-job) 3 2)))
+  (let ((modifier (if (and (boundp 'ediff-3way-job) ediff-3way-job) 3 2)))
     (if (eq ediff-split-window-function 'split-window-horizontally)
         (let ((width (frame-width))
               (left (frame-parameter nil 'left))
               (top (frame-parameter nil 'top)))
           (if (< width (min (* (default-value 'fill-column) modifier)
                             (frame-max-available-width)))
-              (let ((new-width (round (* width 1.14 modifier))))
+              (let ((new-width (min (round (* width 1.14 modifier))
+                                    (frame-max-available-width))))
                 (set-frame-parameter nil 'old-width width)
                 (set-frame-parameter nil 'old-left left)
                 (set-frame-parameter nil 'old-top top)
@@ -1929,7 +1934,8 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 (eval-after-load "ruby-mode"
   '(progn
      (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
-     (define-key ruby-mode-map [(control ?c) (control ?b)] 'ruby-send-buffer)))
+     (define-key ruby-mode-map [(control ?c) (control ?b)] 'ruby-send-buffer)
+     (define-key ruby-mode-map [(control ?c) (control ?c)] 'comment-region)))
 
      
 
