@@ -1,0 +1,3 @@
+[submodule "egg"]
+	path = egg
+	url = https://github.com/byplayer/egg.git

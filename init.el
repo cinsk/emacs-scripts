@@ -810,6 +810,14 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 (when (locate-library "git")
   (require 'git))
 
+
+(let ((egg-dir (concat (file-name-as-directory 
+                        (expand-file-name user-emacs-directory)) "egg")))
+  (if (file-accessible-directory-p egg-dir)
+      (progn
+        (add-to-list 'load-path egg-dir)
+        (when (locate-library "egg")
+          (require 'egg)))))
 
 ;;;
 ;;; vc-jump
@@ -1762,6 +1770,7 @@ following:
      ;; (setq ediff-keep-variants nil)
      ))
 
+
 (defun diff-ediff-patch2 (&optional arg)
   "Call `ediff-patch-file' on the current buffer.
 
@@ -1918,7 +1927,10 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;; Ruby Mode
 ;;;
 (when (locate-library "ruby-mode")
-  (require 'ruby-mode)
+  (require 'inf-ruby)
+
+  (add-to-list 'auto-mode-alist
+               '("[rR]akefile" . ruby-mode))
 
   (if (fboundp 'ruby-send-buffer)
       (lwarn '(dot-emacs) :warning
