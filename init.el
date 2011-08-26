@@ -1929,8 +1929,32 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 (when (locate-library "ruby-mode")
   (require 'inf-ruby)
 
+  (add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
   (add-to-list 'auto-mode-alist
                '("[rR]akefile" . ruby-mode))
+
+  (add-to-list 'interpreter-mode-alist  '("ruby" . ruby-mode))
+
+  ;; Unlike most major modes, key-bindings of ruby-mode is done by
+  ;; `inf-ruby-keys', which is called from `ruby-mode-hook' in the
+  ;; current implementation of 'ruby-mode'.  
+  ;;
+  ;; Thus, using `define-key' on `ruby-mode-map' is not working,
+  ;; unless we call `define-key' in the `ruby-mode-hook' after
+  ;; `inf-ruby-keys'.
+  (add-hook 'ruby-mode-hook 'inf-ruby-keys)
+  (add-hook 'ruby-mode-hook
+            (lambda ()
+              (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
+              (define-key ruby-mode-map [(control ?c) (control ?c)] 
+                'comment-region)
+              (define-key ruby-mode-map [(control ?c) (control ?b)]
+                'ruby-send-buffer)
+              (define-key ruby-mode-map [(control ?c) (control ?e)] 
+                'ruby-send-block))
+            ;; Make sure that this function is appended, not prepended
+            t)
+
 
   (if (fboundp 'ruby-send-buffer)
       (lwarn '(dot-emacs) :warning
@@ -1942,13 +1966,6 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
         (save-restriction
           (widen)
           (ruby-send-region (point-min) (point-max)))))))
-      
-(eval-after-load "ruby-mode"
-  '(progn
-     (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
-     (define-key ruby-mode-map [(control ?c) (control ?b)] 'ruby-send-buffer)
-     (define-key ruby-mode-map [(control ?c) (control ?c)] 'comment-region)))
-
      
 
 
