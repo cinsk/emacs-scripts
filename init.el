@@ -1842,7 +1842,12 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
                                            (cons 'top old-top))))
     (modify-frame-parameters nil '((old-left . nil)
                                    (old-top . nil)
-                                   (old-width . nil)))))
+                                   (old-width . nil)))
+    ;; When resizing the frame, there is a possiblility that the frame
+    ;; lose the input focus to another frame or other X window.  This
+    ;; prevent the current frame from losing the input focus.
+    (select-frame-set-input-focus (selected-frame))
+    ))
 
 
 

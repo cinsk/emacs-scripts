@@ -97,24 +97,16 @@
            (ediffx-truncate-lines-buffers :restore)
            (message "Restore to the previous truncate line mode"))))
 
-  (if (buffer-local-value 'ediff-multiframe (current-buffer))
-      (flet ((intsect (lst1 lst2 result)
-                      (if (null lst1)
-                          result
-                        (intsect (cdr lst1) lst2
-                                 (if (memq (car lst1) lst2)
-                                     (cons (car lst1) result)
-                                   result)))))
-        (let ((frame (intsect
-                      (mapcar (lambda (win) (window-frame win))
-                              (get-buffer-window-list ediff-buffer-A nil t))
-                      (mapcar (lambda (win) (window-frame win))
-                              (get-buffer-window-list ediff-buffer-B nil t))
-                      nil)))
-          (if (consp frame)
-              (progn
-                ;;(message "REDRAW FRAME: %S" (car frame))
-                (redraw-frame (car frame))))))))
+  (mapcar (lambda (win)
+            (message "set-window-hscroll for win<%S>" win)
+            (set-window-hscroll win 0))
+          (append
+           (if ediff-buffer-A
+               (get-buffer-window-list ediff-buffer-A nil t) nil)
+           (if ediff-buffer-B
+               (get-buffer-window-list ediff-buffer-B nil t) nil)
+           (if ediff-buffer-C
+               (get-buffer-window-list ediff-buffer-C nil t) nil))))
 
 (provide 'ediffx)
 ;;; ediffx.el ends here
