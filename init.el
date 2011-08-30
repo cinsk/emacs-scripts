@@ -824,6 +824,12 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 ;;;
 (when (locate-library "vc-jump")
   (require 'vc-jump)
+  ;; I prefer magit over egg, egg over git
+  (add-to-list vc-status-assoc
+               (cons 'Git 
+                     (cond ((fboundp 'magit-status) #'magit-status)
+                           ((fboundp 'egg-status) #'egg-status)
+                           (#'git-status))))
   (global-set-key [f12] 'vc-jump))
 
 
