@@ -21,7 +21,7 @@
 ;;;
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 ;;;
-(setq user-emacs-directory "~/.emacs.d")
+(setq user-emacs-directory "~/.emacs.d/")
 
 (if (not (file-accessible-directory-p user-emacs-directory))
     (if (yes-or-no-p
@@ -1258,8 +1258,8 @@ chance to change the name of the element."
                        "aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc" ; TeX related
                        "\\`\.#.*[0-9]"))                          ; VC related
 
-;(define-key global-map "\C-x\C-j" 'dired-jump)
-;(define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
+;;(define-key global-map "\C-x\C-j" 'dired-jump)
+;;(define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
 (defun dired-jump-other-frame ()
   "Like `dired-jump-other-window' but in other frame."
   (interactive)
