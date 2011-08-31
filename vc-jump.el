@@ -115,11 +115,12 @@
                         fname
                       (file-name-directory fname))
                   default-directory)))
-    (message "fname(%s) dname(%s)" fname dname)
+    ;;(message "fname(%s) dname(%s)" fname dname)
     (if (or fname dname)
         (let ((func (vc-status-function (or fname dname))))
           (if func
-              (apply func (list dname)))))))
+              (apply func (list dname))
+            (message "vc-jump: No known VCS for %s" (buffer-name)))))))
 
 
 (provide 'vc-jump)
