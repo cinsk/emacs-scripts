@@ -350,7 +350,7 @@ appropriately."
 
 
 (global-set-key "\C-cc" 'compile)
-
+(global-set-key [(control ?c) (control ?c)] 'comment-region)
 
 (global-set-key [?\C-.] 'find-tag-other-window) ; C-x o 
 
@@ -1447,8 +1447,12 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 (setq color-theme-history-max-length 32)
 
-;; New color theme will undo all settings made by previous theme
-(setq color-theme-is-cumulative nil)
+;; If non-nil, new color theme will undo all settings made by previous
+;; theme.  Normally, this is a bad idea, since some color themes do
+;; not provide all face attributes.  However, if you want to find your
+;; favorite theme using `color-theme-select-random' or
+;; `color-theme-apply', setting this variable to t might help.
+;; (setq color-theme-is-cumulative nil)
 
 (defvar color-theme-favorites '(color-theme-deep-blue
                                 color-theme-cinsk-wood
@@ -1552,10 +1556,11 @@ call has no effect on frame on tty terminal."
   (setq color-theme-is-global nil)
 
   ;; Select random color theme from my favorite list
-  (let ((theme (nth (random (length color-theme-favorites))
-                    color-theme-favorites))
-        (buf "*scratch*"))
-    (funcall theme))
+  (when t
+    (let ((theme (nth (random (length color-theme-favorites))
+                      color-theme-favorites))
+          (buf "*scratch*"))
+      (funcall theme)))
   )
 
 
