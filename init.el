@@ -1590,37 +1590,24 @@ call has no effect on frame on tty terminal."
 ;;;
 (require 'calendar)
 
+(global-set-key [(control f12)] 'calendar)
+
 (let ((my-diary-file (concat (file-name-as-directory user-emacs-directory)
                              "diary")))
   (if (file-readable-p my-diary-file)
       (setq diary-file my-diary-file)))
 
-(setq calendar-date-display-form
-      '(year "-" month "-" day (if dayname (concat ", " dayname))))
 (setq mark-holidays-in-calendar t)
 (setq mark-diary-entries-in-calendar t)
 (add-hook 'diary-display-hook 'fancy-diary-display)
 
-;; Weeks begin on Monday
-(setq calendar-week-start-day 1)
-
-(setq general-holidays
-      '((holiday-fixed 1 1 "설날")
-        (holiday-fixed 3 1 "삼일절")
-        (holiday-fixed 4 5 "식목일")
-        (holiday-fixed 5 5 "어린이날")
-        ;;(holiday-fixed 5 8 "어버이날")
-        ;;(holiday-fixed 5 15 "스승의날")
-        (holiday-fixed 6 6 "현충일")
-        (holiday-fixed 7 17 "제헌절")
-        (holiday-fixed 8 15 "광복절")
-        ;;(holiday-fixed 10 1 "국군의 날")
-        (holiday-fixed 10 3 "개천절")
-        ;;(holiday-fixed 10 9 "한글날")
-        (holiday-fixed 12 25 "성탄절")))
-
 (setq local-holidays
       '((holiday-fixed 11 1 "삼성전자 창립일")))
+
+(add-to-list 'load-path (expand-file-name "./cal-korea-x/"))
+(when (locate-library "cal-korea-x")
+  (require 'cal-korea-x)
+  (setq holiday-general-holidays cal-korea-x-korean-holidays))
 
 
 ;;;
