@@ -1241,6 +1241,12 @@ chance to change the name of the element."
 (setq auto-mode-alist (cons '("[^/]\\.dired$" . dired-virtual-mode)
                             auto-mode-alist))
 
+(when (string-match "\\bgnu\\b" (symbol-name system-type))
+  ;; If the operating system is gnu or gnu/linux, 
+  ;; we'll use GNU ls(1) --time-style option
+  (setq dired-listing-switches
+        (concat dired-listing-switches " --time-style=long-iso")))
+
 (setq-if-equal dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$"
                (concat dired-omit-files
                        ;; Omit RCS files
