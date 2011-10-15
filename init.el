@@ -350,7 +350,7 @@ appropriately."
 
 
 (global-set-key "\C-cc" 'compile)
-
+(global-set-key [(control ?c) (control ?c)] 'comment-region)
 
 (global-set-key [?\C-.] 'find-tag-other-window) ; C-x o 
 
@@ -1244,6 +1244,12 @@ chance to change the name of the element."
 (setq auto-mode-alist (cons '("[^/]\\.dired$" . dired-virtual-mode)
                             auto-mode-alist))
 
+(when (string-match "\\bgnu\\b" (symbol-name system-type))
+  ;; If the operating system is gnu or gnu/linux, 
+  ;; we'll use GNU ls(1) --time-style option
+  (setq dired-listing-switches
+        (concat dired-listing-switches " --time-style=long-iso")))
+
 (setq-if-equal dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$"
                (concat dired-omit-files
                        ;; Omit RCS files
@@ -1450,8 +1456,12 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 (setq color-theme-history-max-length 32)
 
-;; New color theme will undo all settings made by previous theme
-(setq color-theme-is-cumulative nil)
+;; If non-nil, new color theme will undo all settings made by previous
+;; theme.  Normally, this is a bad idea, since some color themes do
+;; not provide all face attributes.  However, if you want to find your
+;; favorite theme using `color-theme-select-random' or
+;; `color-theme-apply', setting this variable to t might help.
+;; (setq color-theme-is-cumulative nil)
 
 (defvar color-theme-favorites '(color-theme-deep-blue
                                 color-theme-cinsk-wood
@@ -1555,10 +1565,11 @@ call has no effect on frame on tty terminal."
   (setq color-theme-is-global nil)
 
   ;; Select random color theme from my favorite list
-  (let ((theme (nth (random (length color-theme-favorites))
-                    color-theme-favorites))
-        (buf "*scratch*"))
-    (funcall theme))
+  (when t
+    (let ((theme (nth (random (length color-theme-favorites))
+                      color-theme-favorites))
+          (buf "*scratch*"))
+      (funcall theme)))
   )
 
 
@@ -1582,37 +1593,24 @@ call has no effect on frame on tty terminal."
 ;;;
 (require 'calendar)
 
+(global-set-key [(control f12)] 'calendar)
+
 (let ((my-diary-file (concat (file-name-as-directory user-emacs-directory)
                              "diary")))
   (if (file-readable-p my-diary-file)
       (setq diary-file my-diary-file)))
 
-(setq calendar-date-display-form
-      '(year "-" month "-" day (if dayname (concat ", " dayname))))
 (setq mark-holidays-in-calendar t)
 (setq mark-diary-entries-in-calendar t)
 (add-hook 'diary-display-hook 'fancy-diary-display)
 
-;; Weeks begin on Monday
-(setq calendar-week-start-day 1)
-
-(setq general-holidays
-      '((holiday-fixed 1 1 "설날")
-        (holiday-fixed 3 1 "삼일절")
-        (holiday-fixed 4 5 "식목일")
-        (holiday-fixed 5 5 "어린이날")
-        ;;(holiday-fixed 5 8 "어버이날")
-        ;;(holiday-fixed 5 15 "스승의날")
-        (holiday-fixed 6 6 "현충일")
-        (holiday-fixed 7 17 "제헌절")
-        (holiday-fixed 8 15 "광복절")
-        ;;(holiday-fixed 10 1 "국군의 날")
-        (holiday-fixed 10 3 "개천절")
-        ;;(holiday-fixed 10 9 "한글날")
-        (holiday-fixed 12 25 "성탄절")))
-
 (setq local-holidays
       '((holiday-fixed 11 1 "삼성전자 창립일")))
+
+(add-to-list 'load-path (expand-file-name "./cal-korea-x/"))
+(when (locate-library "cal-korea-x")
+  (require 'cal-korea-x)
+  (setq holiday-general-holidays cal-korea-x-korean-holidays))
 
 
 ;;;
