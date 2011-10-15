@@ -810,14 +810,17 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 (when (locate-library "git")
   (require 'git))
 
+(when (locate-library "magit")
+  (require 'magit))
 
-(let ((egg-dir (concat (file-name-as-directory 
-                        (expand-file-name user-emacs-directory)) "egg")))
-  (if (file-accessible-directory-p egg-dir)
-      (progn
-        (add-to-list 'load-path egg-dir)
-        (when (locate-library "egg")
-          (require 'egg)))))
+(when nil
+  (let ((egg-dir (concat (file-name-as-directory 
+                          (expand-file-name user-emacs-directory)) "egg")))
+    (if (file-accessible-directory-p egg-dir)
+        (progn
+          (add-to-list 'load-path egg-dir)
+          (when (locate-library "egg")
+            (require 'egg))))))
 
 ;;;
 ;;; vc-jump
@@ -1986,6 +1989,7 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 (when (locate-library "w3m")
   (require 'w3m-load))
 
+(setq w3m-use-cookies t)
 
 
 ;;;
