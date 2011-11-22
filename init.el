@@ -1984,7 +1984,31 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 (when (locate-library "w3m")
   (require 'w3m-load))
 
+
+;;;
+;;; browse-url configuration
+;;;
 
+(defun browse-url-w3m (url &optional new-window)
+  (interactive (browse-url-interactive-org "W3M URL: "))
+  (w3m url))
+
+(cond ((memq system-type '(windows-nt ms-dos cygwin))
+       ;; Use system default configuration
+       nil)
+
+      ((or (display-graphic-p) 
+           (= (call-process-shell-command "xset q") 0))
+       ;; Even if (display-graphic-p) returns nil,
+       ;; it may be possible to launch X application.
+       (cond ((executable-find "chromium")
+              (setq browse-url-browser-function 'browse-url-generic
+                    browse-url-generic-program (executable-find "chromium")))
+             ((executable-find browse-url-firefox-program)
+              (setq browse-url-browser-function 'browse-url-firefox))))
+
+      ((fboundp 'w3m)
+       (setq browse-url-browser-function 'browse-url-w3m)))
 
 ;;;
 ;;; gnuplot
