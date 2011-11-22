@@ -1468,6 +1468,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
                                 color-theme-dark-blue2
                                 color-theme-dark-laptop
                                 color-theme-taylor
+                                color-theme-billw
                                 color-theme-robin-hood)
   "My favorite color theme list")
 
@@ -1563,11 +1564,12 @@ call has no effect on frame on tty terminal."
 
   ;; Select random color theme from my favorite list
   (when t
+    (random t)                          ; randomize the seed
     (let ((theme (nth (random (length color-theme-favorites))
                       color-theme-favorites))
           (buf "*scratch*"))
-      (funcall theme)))
-  )
+      (funcall theme)
+      (message "%s installed" (symbol-name theme)))))
 
 
 ;;;
