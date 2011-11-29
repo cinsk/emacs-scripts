@@ -1753,6 +1753,21 @@ following:
 ;;;
 ;;; diff & ediff customization
 ;;;
+(defun cinsk/ediff-revision-buffer-p (buf)
+  "Return non-nil if BUF is the temporary revision file from `ediff-revision'."
+  (and (buffer-file-name buf)
+       (string-match "\\`.*~.*~\\'" (file-name-nondirectory
+                                     (buffer-file-name buf)))))
+
+(defun cinsk/ediff-janitor ()
+  "Delete ediff-related buffers if it is a VC related files."
+  (let ((ediff-buffer-A (and (cinsk/ediff-revision-buffer-p ediff-buffer-A)
+                             ediff-buffer-A))
+        (ediff-buffer-B (and (cinsk/ediff-revision-buffer-p ediff-buffer-B)
+                             ediff-buffer-B)))
+    ;; TODO: What about ediff-buffer-C?
+    (ediff-janitor nil nil)))
+
 (eval-after-load "ediff"
   '(progn
      (add-hook 'ediff-before-setup-windows-hook
@@ -1772,6 +1787,9 @@ following:
      (setq ediff-window-setup-function 'ediff-setup-windows-plain)
      ;; If nil, ask the user to kill the buffers on exit.
      ;; (setq ediff-keep-variants nil)
+
+     ;; Delete the buffer for the revision files on `ediff-quit'.
+     (add-to-list 'ediff-cleanup-hook #'cinsk/ediff-janitor)
      ))
 
 
