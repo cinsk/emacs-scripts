@@ -833,14 +833,17 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 (when (locate-library "git")
   (require 'git))
 
+(when (locate-library "magit")
+  (require 'magit))
 
-(let ((egg-dir (concat (file-name-as-directory 
-                        (expand-file-name user-emacs-directory)) "egg")))
-  (if (file-accessible-directory-p egg-dir)
-      (progn
-        (add-to-list 'load-path egg-dir)
-        (when (locate-library "egg")
-          (require 'egg)))))
+(when nil
+  (let ((egg-dir (concat (file-name-as-directory 
+                          (expand-file-name user-emacs-directory)) "egg")))
+    (if (file-accessible-directory-p egg-dir)
+        (progn
+          (add-to-list 'load-path egg-dir)
+          (when (locate-library "egg")
+            (require 'egg))))))
 
 ;;;
 ;;; vc-jump
@@ -890,12 +893,76 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
                                   (message "Frame configuration saved")))
 
 
-(defun line-numbers-on-region (&optional start)
-  "Insert line numbers on the current region.
-A numeric prefix argument specifies the starting number"
-  (interactive "P")
-  (let ((start (if (null start) 1 (prefix-numeric-value start)))
-        (begin (region-beginning))
+(defun import-buffer-region (&optional after-import)
+  "Copy region from the current buffer to the previous buffer.
+
+Once called, Emacs enters in recursive edit mode.  Marking a region
+in some buffer then press \\[exit-recursive-edit] will copy the region
+into the buffer at the invocation time.
+
+If the function AFTER-IMPORT is non-nil, this function will call
+AFTER-IMPORT with the buffer where the user press
+\\[exit-recursive-edit].  In the AFTER-IMPORT, the mark is set to
+the beginning of the inserted text, and the point is set to the
+end of the inserted text.
+
+This function uses `recursive-edit' internally."
+  (interactive)
+  (let* ((map (current-global-map))
+         (old-binding (lookup-key map [(control meta ?c)])))
+    (substitute-key-definition
+     'exit-recursive-edit
+     'exit-import-buffer-region map)
+    ;; (define-key map [(control meta ?c)] 'exit-import-buffer-region)
+
+    (let ((old-buffer (current-buffer))
+          (src-buffer (unwind-protect
+                          (catch 'exit-from-import
+                            (message "Use `%s' when done, or use `%s' to abort."
+                                     (substitute-command-keys "\\[exit-import-buffer-region]")
+                                     (substitute-command-keys "\\[abort-recursive-edit]"))
+                            (recursive-edit))
+                        ;; (define-key map [(control meta ?c)] old-binding))))
+                        (substitute-key-definition
+                         'exit-import-buffer-region
+                         'exit-recursive-edit
+                         map))))
+      (when (buffer-live-p old-buffer)
+        (let ((display-buffer-reuse-frames t)
+              start end)
+          (pop-to-buffer old-buffer)
+          (with-current-buffer src-buffer
+            (when (and mark-active
+                       (or (and transient-mark-mode
+                                (use-region-p))
+                           (not transient-mark-mode)))
+              (setq start (region-beginning)
+                    end (region-end))))
+          (when (and start end)
+            (push-mark)
+            (insert-buffer-substring src-buffer start end)
+            (and after-import
+                 (funcall after-import src-buffer))
+            (pop-mark)))))))
+
+(defun exit-import-buffer-region ()
+  (interactive)
+  (throw 'exit-from-import (current-buffer)))
+
+(defun line-numbers-on-region (begin end &optional start)
+  "Insert line numbers on the region.
+
+When called interactively, it insert the line number starting
+from 1, in the region.  A numeric prefix argument specifies the
+starting number."
+  (interactive (list
+                (region-beginning)
+                (region-end)
+                (if current-prefix-arg 
+                    (prefix-numeric-value current-prefix-arg)
+                  1)))
+  (unless start (setq start 1))
+  (let ((begin (region-beginning))
         (end (region-end)))
     (save-restriction
       (let* ((lines (count-lines begin end))
@@ -1779,6 +1846,21 @@ following:
 ;;;
 ;;; diff & ediff customization
 ;;;
+(defun cinsk/ediff-revision-buffer-p (buf)
+  "Return non-nil if BUF is the temporary revision file from `ediff-revision'."
+  (and (buffer-file-name buf)
+       (string-match "\\`.*~.*~\\'" (file-name-nondirectory
+                                     (buffer-file-name buf)))))
+
+(defun cinsk/ediff-janitor ()
+  "Delete ediff-related buffers if it is a VC related files."
+  (let ((ediff-buffer-A (and (cinsk/ediff-revision-buffer-p ediff-buffer-A)
+                             ediff-buffer-A))
+        (ediff-buffer-B (and (cinsk/ediff-revision-buffer-p ediff-buffer-B)
+                             ediff-buffer-B)))
+    ;; TODO: What about ediff-buffer-C?
+    (ediff-janitor nil nil)))
+
 (eval-after-load "ediff"
   '(progn
      (add-hook 'ediff-before-setup-windows-hook
@@ -1798,6 +1880,9 @@ following:
      (setq ediff-window-setup-function 'ediff-setup-windows-plain)
      ;; If nil, ask the user to kill the buffers on exit.
      ;; (setq ediff-keep-variants nil)
+
+     ;; Delete the buffer for the revision files on `ediff-quit'.
+     (add-to-list 'ediff-cleanup-hook #'cinsk/ediff-janitor)
      ))
 
 
@@ -1906,7 +1991,35 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
        (setq erc-nick '("cinsk" "cinsky" "cinsk_" "cinsk__"))
        (setq erc-user-full-name "Seong-Kook Shin")
        (setq erc-server "localhost:8668"))))
-       
+
+
+;;;
+;;; erlang configuration
+;;;
+
+
+
+(when (locate-library "erlang-start")
+  (setq erlang-cinsk-init nil)  ; for one time init
+  ;; Note on key-binding of erlang-mode.
+  ;;
+  ;; `erlang-mode-map' is initialized inside of `erlang-mode'.  This
+  ;; means that we cannot use `erlang-mode-map' in any of
+  ;; `erlang-load-hook', nor `eval-after-load'.
+  ;;
+  ;; It may be possible that call `erlang-mode-commands' directly,
+  ;; but I don't want to do that, in case of future modification.
+  (add-hook 'erlang-mode-hook
+            (lambda ()
+              (unless erlang-cinsk-init
+                (define-key erlang-mode-map [(control ?c) ?b]
+                  'erlang-compile)
+                (define-key erlang-mode-map [(control ?c) ?\!]
+                  'erlang-shell-display)
+                (setq erlang-cinsk-init t))))
+  (require 'erlang-start))
+
+
 
 ;;;
 ;;; python-mode configuration
@@ -1957,6 +2070,10 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
                                      interpreter-mode-alist))
   (require 'python-mode))
 
+
+(when (locate-library "ipython")
+  ;; Download ipython.el from http://ipython.scipy.org/dist/ipython.el
+  (require 'ipython))
 
 ;;;
 ;;; Ruby Mode
@@ -2009,6 +2126,9 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;;
 (when (locate-library "w3m")
   (require 'w3m-load))
+
+
+(setq w3m-use-cookies t)
 
 
 ;;;
