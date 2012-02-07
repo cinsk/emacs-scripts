@@ -1500,21 +1500,22 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
                                 color-theme-robin-hood)
   "My favorite color theme list")
 
-(defun color-theme-select-random ()
-  "Select random color theme"
-  (interactive)
-  (let ((sym (car (nth (random (length color-themes)) color-themes))))
-    (funcall sym)
-    (message "%s installed" (symbol-name sym)))
-  (if nil
-      ;; Below code was my first creation.  Don't know which is better yet.
-      (progn
-        (random t)
-        (let* ((index (+ (random (- (length color-themes) 2)) 2))
-               (theme (nth index color-themes)))
-          (save-font-excursion 'default
-            (funcall (car theme)))
-          (message "%s installed" (symbol-name (car theme)))))))
+(defun color-theme-select-random (&optional favorite-only)
+  "Select random color theme.
+
+If optional FAVORITE-ONLY is non-nil, select color theme from only
+in the `color-theme-favorites'."
+  (interactive "P")
+  (let* ((theme-list (if favorite-only 
+                        color-theme-favorites
+                       color-themes))
+         (selected (nth (random (length theme-list)) theme-list))
+         (theme-func (if (consp selected) (car selected) selected))
+         (theme-name (if (consp selected) 
+                         (cadr selected) 
+                       (symbol-name theme-func))))
+    (funcall theme-func)
+    (message "%s installed" theme-name)))
 
 
 (defun color-themes-next-symbol (theme)
@@ -1590,14 +1591,9 @@ call has no effect on frame on tty terminal."
   ;; color-theme-* is frame-local from now.
   (setq color-theme-is-global nil)
 
+  (random t)
   ;; Select random color theme from my favorite list
-  (when t
-    (random t)                          ; randomize the seed
-    (let ((theme (nth (random (length color-theme-favorites))
-                      color-theme-favorites))
-          (buf "*scratch*"))
-      (funcall theme)
-      (message "%s installed" (symbol-name theme)))))
+  (color-theme-select-random 'favorite))
 
 
 ;;;
