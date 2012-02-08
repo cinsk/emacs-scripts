@@ -2046,7 +2046,8 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 
 (when (locate-library "ipython")
   ;; Download ipython.el from http://ipython.scipy.org/dist/ipython.el
-  (require 'ipython))
+  (require 'ipython)
+  (setq py-python-command-args '("-colors" "Linux")))
 
 ;;;
 ;;; Ruby Mode
@@ -2104,6 +2105,7 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;;
 ;;; browse-url configuration
 ;;;
+(require 'browse-url)
 
 (defun browse-url-w3m (url &optional new-window)
   (interactive (browse-url-interactive-org "W3M URL: "))
@@ -2125,6 +2127,18 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 
       ((fboundp 'w3m)
        (setq browse-url-browser-function 'browse-url-w3m)))
+
+(add-to-list 'browse-url-filename-alist
+             '("\\`/home/\\([^/]+\\)/public_html/\\(.*\\)\\'" . 
+               "http://localhost/~\\1/\\2"))
+
+;; gentoo: /var/www/localhost/htdocs
+;; ubuntu: /var/www/
+;; centos: /var/www/html/  /var/www/cgi-bin/
+(add-to-list 'browse-url-filename-alist
+             '("\\'/var/www/localhost/htdocs/\\(.*\\)\\'" . 
+               "http://localhost/\\1"))
+
 
 ;;;
 ;;; gnuplot
