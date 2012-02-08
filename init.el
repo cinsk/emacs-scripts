@@ -32,6 +32,29 @@
 
 
 ;;;
+;;; package
+;;;
+(let ((pkgdir (concat (file-name-as-directory user-emacs-directory)
+                      "package")))
+  ;; PKGDIR will contains the last emacs-23 compatible package.el from
+  ;; https://github.com/technomancy/package.el
+  (when (and (file-readable-p pkgdir)
+             (= emacs-major-version 23))
+    (add-to-list 'load-path pkgdir))
+
+  (when (and (>= emacs-major-version 23)
+             (locate-library "package"))
+    (require 'package)
+    (add-to-list 'package-archives
+                 '("marmalade" . "http://marmalade-repo.org/packages/"))
+    ;; According to the package.el, if `package-enable-at-startup' is
+    ;; t, it will load all the packages on start up.  But it didn't.
+    ;; Perhaps it's a problem related to the version (currently Emacs
+    ;; 23).  Thus, I'll force to load it here.
+    (package-initialize)))
+
+
+;;;
 ;;; Due to my preference, I configure fonts of Emacs using X
 ;;; resources.  If you are not sure, insert following configuration in
 ;;; your $HOME/.Xdefaults-hostname where hostname is the name of the
@@ -810,14 +833,17 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 (when (locate-library "git")
   (require 'git))
 
+(when (locate-library "magit")
+  (require 'magit))
 
-(let ((egg-dir (concat (file-name-as-directory 
-                        (expand-file-name user-emacs-directory)) "egg")))
-  (if (file-accessible-directory-p egg-dir)
-      (progn
-        (add-to-list 'load-path egg-dir)
-        (when (locate-library "egg")
-          (require 'egg)))))
+(when nil
+  (let ((egg-dir (concat (file-name-as-directory 
+                          (expand-file-name user-emacs-directory)) "egg")))
+    (if (file-accessible-directory-p egg-dir)
+        (progn
+          (add-to-list 'load-path egg-dir)
+          (when (locate-library "egg")
+            (require 'egg))))))
 
 ;;;
 ;;; vc-jump
@@ -1164,6 +1190,8 @@ instead of the current word."
     ;; attributes after loading mmm-mode.el.  To prevent resetting,
     ;; set the background of the faces AFTER loading mmm-mode.el 
     '(progn
+       ;; By default, mmm-mode uses faces with bright background for
+       ;; the submodes.   I don't like the bright background for most faces.
        (set-face-background 'mmm-code-submode-face nil)
        (set-face-background 'mmm-default-submode-face nil)))
 
@@ -1174,6 +1202,9 @@ instead of the current word."
   ;; control panel will not listen to your key input on ediff-patch-*
   ;; command.
   (setq mmm-global-mode 'maybe)
+
+  ;; `mmm-submode-decoration-level' can be 0, 1, or 2. (0: no color)
+  (setq mmm-submode-decoration-level 2)
 
   (setq mmm-mode-ext-classes-alist 
         '((xhtml-mode nil html-js)
@@ -1536,21 +1567,22 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
                                 color-theme-robin-hood)
   "My favorite color theme list")
 
-(defun color-theme-select-random ()
-  "Select random color theme"
-  (interactive)
-  (let ((sym (car (nth (random (length color-themes)) color-themes))))
-    (funcall sym)
-    (message "%s installed" (symbol-name sym)))
-  (if nil
-      ;; Below code was my first creation.  Don't know which is better yet.
-      (progn
-        (random t)
-        (let* ((index (+ (random (- (length color-themes) 2)) 2))
-               (theme (nth index color-themes)))
-          (save-font-excursion 'default
-            (funcall (car theme)))
-          (message "%s installed" (symbol-name (car theme)))))))
+(defun color-theme-select-random (&optional favorite-only)
+  "Select random color theme.
+
+If optional FAVORITE-ONLY is non-nil, select color theme from only
+in the `color-theme-favorites'."
+  (interactive "P")
+  (let* ((theme-list (if favorite-only 
+                        color-theme-favorites
+                       color-themes))
+         (selected (nth (random (length theme-list)) theme-list))
+         (theme-func (if (consp selected) (car selected) selected))
+         (theme-name (if (consp selected) 
+                         (cadr selected) 
+                       (symbol-name theme-func))))
+    (funcall theme-func)
+    (message "%s installed" theme-name)))
 
 
 (defun color-themes-next-symbol (theme)
@@ -1626,14 +1658,9 @@ call has no effect on frame on tty terminal."
   ;; color-theme-* is frame-local from now.
   (setq color-theme-is-global nil)
 
+  (random t)
   ;; Select random color theme from my favorite list
-  (when t
-    (random t)                          ; randomize the seed
-    (let ((theme (nth (random (length color-theme-favorites))
-                      color-theme-favorites))
-          (buf "*scratch*"))
-      (funcall theme)
-      (message "%s installed" (symbol-name theme)))))
+  (color-theme-select-random 'favorite))
 
 
 ;;;
@@ -2100,6 +2127,9 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;;
 (when (locate-library "w3m")
   (require 'w3m-load))
+
+
+(setq w3m-use-cookies t)
 
 
 ;;;
