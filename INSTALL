@@ -15,3 +15,7 @@ like this.  (Other than
     $ cd $HOME
     $ mv emacs-scripts .emacs.d
     $ ln -s .emacs.d/init.el .emacs
+
+Assuming that you use bash(1), add following sentence in your $HOME/.bashrc
+
+[[ -n "$DISPLAY" ]] && xrdb -merge ~/.emacs.d/emacs.res
