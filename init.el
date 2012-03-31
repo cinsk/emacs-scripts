@@ -32,6 +32,51 @@
 
 
 ;;;
+;;; Mac OS customization
+;;;
+(when (eq system-type 'darwin)
+  (setq mac-option-modifier nil)
+  (setq mac-command-modifier 'meta)
+  ;; sets fn-delete to be right-delete
+  (global-set-key [kp-delete] 'delete-char)
+
+  (set-fontset-font "fontset-standard" 'unicode 
+                    (font-spec :name "Consolas"
+                               :weight 'normal
+                               :slant 'normal
+                               :size 16)); nil 'prepend)
+  (set-fontset-font "fontset-standard" 'hangul
+                    (font-spec :name "NanumGothicCoding"))
+
+  (set-face-font 'default "fontset-standard")
+)
+
+;;; Although it is possible to set font faces in lisp code, I prefer
+;;; to use X resource configuration.
+;;;
+(when nil
+  ;; "NanumGothic_Coding-12"
+  ;; (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-12"))
+  ;; (set-face-font 'default "fontset-default")
+  ;; (set-fontset-font "fontset-default" '(#x1100. #xffdc)
+  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
+  ;; (set-fontset-font "fontset-default" 'ascii
+  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
+  ;; (set-fontset-font "fontset-default" 'latin-iso8859-1
+  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
+  ;; (set-fontset-font "fontset-default" 'hangul
+  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
+  ;; (set-fontset-font "fontset-default" '(#xe0bc. #xf66e)
+  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
+  ;; (set-fontset-font "fontset-default" 'kana
+  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
+  ;; (set-fontset-font "fontset-default" 'han
+  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
+  )
+
+
+
+;;;
 ;;; package
 ;;;
 (let ((pkgdir (concat (file-name-as-directory user-emacs-directory)
@@ -85,8 +130,8 @@ New height will be calculated by (* FACTOR old-face-height)"
     (set-face-attribute 'default frame :height (round (* height factor)))))
 
 
-(when (xftp)
-  ;; When Emacs uses Xft font backend, "control + mouse wheel up"
+(when (display-graphic-p)
+  ;; When Emacs uses graphic display,"control + mouse wheel up"
   ;; increases the default font size whereas "control + mouse wheel
   ;; down " decreases the size.
 
@@ -95,43 +140,26 @@ New height will be calculated by (* FACTOR old-face-height)"
   ;;
   ;; It seems that mwheel package is automatically loaded in Emacs 22
   ;; or higher.  Thus, I do not need to call `mwheel-install' any longer.
-  (global-set-key [C-mouse-4] (lambda ()
-                                (interactive)
-                                (scale-default-font-height 1.1
-                                                           (selected-frame))
-                                (message "New face height: %d" 
-                                         (face-attribute 'default :height))))
-  (global-set-key [C-mouse-5] (lambda ()
-                                (interactive)
-                                (scale-default-font-height 0.9
-                                                           (selected-frame))
-                                (message "New face height: %d" 
-                                         (face-attribute 'default :height)))))
 
-;;; Although it is possible to set font faces in lisp code, I prefer
-;;; to use X resource configuration.
-;;;
-(when nil
-  ;; "NanumGothic_Coding-12"
-  ;;(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-12"))
-  ;;(set-fontset-font "fontset-default" 'hangul
-  ;;'("NanumGothic_Coding-12" . "unicode-bmp"))
-  (set-face-font 'default "fontset-default")
-  (set-fontset-font "fontset-default" '(#x1100. #xffdc)
-                    '("NanumGothic_Coding" . "unicode-bmp"))
-  (set-fontset-font "fontset-default" 'ascii
-                    '("NanumGothic_Coding" . "unicode-bmp"))
-  (set-fontset-font "fontset-default" 'latin-iso8859-1
-                    '("NanumGothic_Coding" . "unicode-bmp"))
-  (set-fontset-font "fontset-default" 'hangul
-                    '("NanumGothic_Coding" . "unicode-bmp"))
-  (set-fontset-font "fontset-default" '(#xe0bc. #xf66e)
-                    '("NanumGothic_Coding" . "unicode-bmp"))
-  (set-fontset-font "fontset-default" 'kana
-                    '("NanumGothic_Coding" . "unicode-bmp"))
-  (set-fontset-font "fontset-default" 'han
-                    '("NanumGothic_Coding" . "unicode-bmp"))
-  )
+  ;; In darwin, the wheel-up and wheel-down events are [C-wheel-up]
+  ;; and [C-wheel-down] respectively.
+  (let ((incr [C-mouse-4]) (decr [C-mouse-5]))
+    (and (eq system-type 'darwin)
+         (setq incr [C-wheel-up]
+               decr [C-wheel-down]))
+
+    (global-set-key incr (lambda ()
+                           (interactive)
+                           (scale-default-font-height 1.1
+                                                      (selected-frame))
+                           (message "New face height: %d" 
+                                    (face-attribute 'default :height))))
+    (global-set-key decr (lambda ()
+                           (interactive)
+                           (scale-default-font-height 0.9
+                                                      (selected-frame))
+                           (message "New face height: %d" 
+                                    (face-attribute 'default :height))))))
 
 ;;; Sometimes, Emacs asks for the confirmation of a command such as
 ;;; killing a buffer.  In that case, user should type "yes" or "no"
@@ -458,7 +486,6 @@ appropriately."
 
 ;;; Prompt for arguments to the preprocessor for `c-macro-expand'
 (setq c-macro-prompt-flag t)
-
 
 
 ;;;
@@ -1638,7 +1665,8 @@ call has no effect on frame on tty terminal."
 (when (and window-system
            (locate-library "color-theme"))
   (require 'color-theme)
-  (color-theme-initialize)
+  (and (fboundp 'color-theme-initialize)
+       (color-theme-initialize))
 
   (and (locate-library "pink-bliss")
        (require 'pink-bliss))
@@ -2080,7 +2108,7 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 ;;; Ruby Mode
 ;;;
 (when (locate-library "ruby-mode")
-  (require 'inf-ruby)
+  ;;(require 'inf-ruby)
 
   (add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
   (add-to-list 'auto-mode-alist
@@ -2345,6 +2373,19 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
   ;;(global-set-key [f11] 'ecb-next-action)
   )
 
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
+ '(tool-bar-mode nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 ;;; Local Variables:
 ;;; coding: utf-8
 ;;; End:
