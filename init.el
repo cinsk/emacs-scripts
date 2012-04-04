@@ -49,7 +49,15 @@
                     (font-spec :name "NanumGothicCoding"))
 
   (set-face-font 'default "fontset-standard")
-)
+
+  (when (display-graphic-p)
+    (global-set-key [(meta ?c)] 'ns-copy-including-secondary))
+
+  ;; If Emacs is not launched in Terminal, .bashrc is not executed, so
+  ;; that /usr/local/bin is not added to the PATH, so that Emacs will
+  ;; not find some executables in "/usr/local/bin".
+  (unless (member "/usr/local/bin" exec-path)
+    (add-to-list 'exec-path "/usr/local/bin")))
 
 ;;; Although it is possible to set font faces in lisp code, I prefer
 ;;; to use X resource configuration.
@@ -2210,6 +2218,18 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
 
 
 ;;;
+;;; go lang
+;;;
+(let* ((godir "/usr/local/go")
+       (gldir (concat (file-name-as-directory godir) "misc/emacs")))
+  (when (file-accessible-directory-p gldir)
+    (add-to-list 'load-path gldir 'append)
+    (when (locate-library "go-mode-load")
+      (require 'go-mode-load))))
+
+
+
+;;;
 ;;; lua
 ;;;
 (when (locate-library "lua-mode")
@@ -2373,19 +2393,6 @@ in `ediff-narrow-frame-for-vertical-setup' which is best used for
   ;;(global-set-key [f11] 'ecb-next-action)
   )
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(column-number-mode t)
- '(tool-bar-mode nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 ;;; Local Variables:
 ;;; coding: utf-8
 ;;; End:
