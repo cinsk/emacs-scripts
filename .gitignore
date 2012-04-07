@@ -7,3 +7,5 @@
 /TAGS*
 # auto-saves 
 auto-save-list/
+# packages installed by package.el
+elpa
