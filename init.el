@@ -7,15 +7,10 @@
 ;;;
 ;;; You can download the latest version of this script at cinsk.org
 ;;; 
-;;; $ cvs -d :pserver:anonymous@www.cinsk.org:/root login
-;;; CVS password: <RET>
-;;; $ cvs -d :pserver:anonymous@www.cinsk.org:/root co emacs-script
-;;; $ cvs -d :pserver:anonymous@www.cinsk.org:/root logouta
-;;;
-;;; Then, you may create a symbolic link .emacs from dot-emacs.el
-;;; You may browse dot-emacs.el in 
-;;;
-;;;   http://www.cinsk.org/viewvc/cvsroot/emacs-scripts/dot-emacs.el
+;;; $ # make sure that you don't have .emacs.d/ nor .emacs file
+;;; $ rm -r .emacs.d .emacs
+;;; $ # Get the source file from my repository
+;;; $ git clone http://www.cinsk.org/git/emacs-scripts .emacs.d
 ;;;
 
 ;;;
