@@ -50,6 +50,9 @@
 
   (set-face-font 'default "fontset-standard")
 
+  (setq default-frame-alist (append default-frame-alist
+                                    '((width . 80) (height . 45))))
+
   (when (display-graphic-p)
     (global-set-key [(meta ?c)] 'ns-copy-including-secondary))
 
@@ -1350,7 +1353,11 @@ chance to change the name of the element."
 ;;;
 ;;; Dired and dired-x setting
 ;;;
+
 (require 'dired-x)
+
+(when (locate-library "dired+")
+  (require 'dired+))
 
 (add-hook 'dired-load-hook
 	  (lambda ()
