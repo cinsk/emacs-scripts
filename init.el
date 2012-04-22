@@ -1946,6 +1946,64 @@ command."
      (define-key diff-mode-map [(control ?c) (control ?e)]
        'diff-ediff-patch2)))
 
+(defun frame-margin (&optional frame)
+  "Return the margin of the current frame, (MARGIN-WIDTH . MARGIN-HEIGHT).
+
+The margin includes the internal borders, scroll bars, and fringes.
+Note that the returned value is not quite correct depending on the 
+window system.  See the explanation in `frame-pixel-height'."
+  (let ((margin-w (- (frame-pixel-width frame)
+                     (* (frame-width frame) (frame-char-width frame))))
+        (margin-h (- (frame-pixel-height frame)
+                     (* (frame-height frame) (frame-char-height frame)))))
+    (cons margin-w margin-h)))
+
+(defun frame-position-for-resizing (width height &optional frame display)
+  "Return the good frame position (LEFT TOP WIDTH HEIGHT) to satisfy the
+new frame size WIDTH and HEIGHT regarding to the current display"
+  (or width (setq width (frame-width frame)))
+  (or height (setq height (frame-height frame)))
+  (let* ((left (frame-parameter frame 'left))
+         (top  (frame-parameter frame 'top))
+         (margin (frame-margin frame))
+         ;; width and height of current frame in characters.
+         (cur-width (frame-width frame))
+         (cur-height (frame-height frame))
+         ;; width and height of the display in pixels.
+         (disp-width (display-pixel-width display))
+         (disp-height (display-pixel-height display))
+         ;; width and height of the character in pixels.
+         (char-width (frame-char-width frame))
+         (char-height (frame-char-height frame))
+         ;; width and height of the new frame size in pixels.
+         (pwidth (+ (* char-width width) (car margin)))
+         (pheight (+ (* char-height height) (cdr margin))))
+    (if (> pwidth disp-width)
+        ;; WIDTH is too large for the display.
+        (setq width (/ (- disp-width (car margin)) char-width)
+              pwidth (+ (* width char-width) (car margin))
+              ;; Since `frame-margin' cannot determine the exact
+              ;; margin regarding to the window system, it's better to
+              ;; set LEFT zero.
+              left 0))
+    (if (> pheight disp-height)
+        ;; HEIGHT is too large for the display.
+        (setq height (/ (- disp-height (cdr margin)) char-height)
+              pheight (+ (* width char-height) (cdr margin))
+              ;; Since `frame-margin' cannot determine the exact
+              ;; margin regarding to the window system, it's better to
+              ;; set TOP zero.
+              top 0))
+    (when (> (+ left pwidth) disp-width)
+      ;; Current LEFT cannot satisfy WIDTH
+      (setq left (- left (+ (* (- width cur-width) char-width)
+                            (ceiling (/ (car margin) 2.0))))))
+    (when (> (+ top pheight) disp-height)
+      ;; Current LEFT cannot satisfy HEIGHT
+      (setq top (- top (+ (* (- height cur-height) char-height)
+                          (ceiling (/ (cdr margin) 2.0))))))
+    (list left top width height)))
+
 (defun frame-max-available-width (&optional frame)
   "Return the maximum value for the possible frame width regards
 to the display width"
@@ -1953,7 +2011,12 @@ to the display width"
         (char-width (frame-char-width frame))
         (pwidth (frame-pixel-width frame)))
     (- (/ (- (display-pixel-width) (- pwidth (* width char-width)))
-          char-width) 2)))
+          char-width)
+       ;; For safety, subtract 2 from the max-width because we don't
+       ;; know the exact margin.
+       ;;
+       ;; TODO: Using zero in MacOS X seems to be fine.  Check in other system.
+       0)))
 
 (defun ediff-widen-frame-for-vertical-setup ()
   "Widens the current frame iff the current ediff windows are 
@@ -1966,20 +2029,42 @@ width) before widening the frame.  The saved information is used
 in `ediff-narrow-frame-for-vertical-setup' which is best used for
 `ediff-suspend-hook' and `ediff-quit-hook'.
 "
-  (let ((modifier (if (and (boundp 'ediff-3way-job) ediff-3way-job) 3 2)))
+  (let ((modifier (if (and (boundp 'ediff-3way-job) ediff-3way-job) 3 2))
+        ;; The meaning of ADJUST:
+        ;;
+        ;; If I use the frame width 80, I want to have 160 on
+        ;; splitting windows vertically.  Since I cannot find any
+        ;; variable that holds 80, the best choice would be using
+        ;; `fill-column' for the calculation. Thus:
+        ;;
+        ;;   FILL-COLUMN * ADJUST ~= 80.
+        ;;
+        ;; For the 2-way vertical diff, the window size will be:
+        ;;
+        ;;   FILL-COLUMN * ADJUST * 2 ~= 160
+        ;;
+        ;; For the 3-way vertical diff, the window size will be:
+        ;;
+        ;;   FILL-COLUMN * ADJUST * 3 ~= 240
+        (adjust (/ 80 (float (default-value 'fill-column)))))
     (if (eq ediff-split-window-function 'split-window-horizontally)
         (let ((width (frame-width))
               (left (frame-parameter nil 'left))
               (top (frame-parameter nil 'top)))
           (if (< width (min (* (default-value 'fill-column) modifier)
                             (frame-max-available-width)))
-              (let ((new-width (min (round (* width 1.14 modifier))
+              (let ((new-width (min (ceiling (* width adjust modifier))
                                     (frame-max-available-width))))
                 (set-frame-parameter nil 'old-width width)
                 (set-frame-parameter nil 'old-left left)
                 (set-frame-parameter nil 'old-top top)
-                (set-frame-width nil new-width)
-                (message "Set frame width to %S" new-width))))
+                ;; TODO: set the new coordinate
+                (let ((coord (frame-position-for-resizing new-width nil)))
+                  (modify-frame-parameters nil
+                                           (list (cons 'left (nth 0 coord))
+                                                 (cons 'top (nth 1 coord))
+                                                 (cons 'width (nth 2 coord))))
+                  (message "Set frame width to %S" (nth 2 coord))))))
       (ediff-narrow-frame-for-vertical-setup))))
 
 (defun ediff-narrow-frame-for-vertical-setup ()
