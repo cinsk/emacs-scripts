@@ -504,6 +504,13 @@ appropriately."
 (iswitchb-mode 1)			; smart buffer switching mode
 (setq iswitchb-default-method 'maybe-frame) ; ask to use another frame.
 
+;;
+;; Sometimes, I found that minibuffers are in the buffer list which is
+;; very annoying.  I don't know why.  It should not be in the list
+;; since minibuffer name is like " *Minibuf-1*" which is matched by
+;; `iswitchb-buffer-ignore'.  Need to find the cause. -- cinsk
+;;
+
 
 ;;;
 

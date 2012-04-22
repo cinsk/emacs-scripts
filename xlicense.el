@@ -24,6 +24,7 @@
 
 ;;; Code:
 
+
 (require 'skeleton)
 ;;(eval-when-compile (require 'cl))
 
@@ -62,7 +63,7 @@ CDR of each item is a filename of the license template")
       tp)))
 
 (defvar license-keywords-alist '(("@author@" . user-full-name)
-                                 ("@email@" . "hello")
+                                 ("@email@" . user-mail-address)
                                  ("@year@" . (lambda ()
                                                (substring (current-time-string)
                                                           -4)))
@@ -85,7 +86,7 @@ the replacement positions in markers."
       (let ((keyword (regexp-quote (car i)))
             (what (if (functionp (cdr i)) (funcall (cdr i)) (cdr i))))
         (if what
-            (progn
+            (let ((case-fold-search t))
               (goto-char (point-min))
               (while (re-search-forward keyword nil t)
                 (if record
