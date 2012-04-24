@@ -1909,11 +1909,11 @@ following:
 (eval-after-load "ediff"
   '(progn
      (add-hook 'ediff-before-setup-windows-hook
-               'ediff-widen-frame-for-vertical-setup)
+               'cinsk/ediff-widen-frame-for-vertical-setup)
      (add-hook 'ediff-suspend-hook
-               'ediff-narrow-frame-for-vertical-setup)
+               'cinsk/ediff-narrow-frame-for-vertical-setup)
      (add-hook 'ediff-quit-hook
-               'ediff-narrow-frame-for-vertical-setup)
+               'cinsk/ediff-narrow-frame-for-vertical-setup)
 
      ;; Change the algorithm perhaps find a smaller set of changes.
      ;; This makes `diff' slower.
@@ -1952,6 +1952,19 @@ command."
   '(progn
      (define-key diff-mode-map [(control ?c) (control ?e)]
        'diff-ediff-patch2)))
+
+(defun cinsk/ediff-multiframe-before-setup-p ()
+  "Guess whether ediff control panel will have separated frame or not."
+  (unless (boundp 'ediff-window-setup-function)
+    (require 'ediff))
+  ;; I cannot find sound solution to determine the ediff frame setup type
+  ;; before `ediff-window-setup-function' called.
+  (if (eq ediff-window-setup-function 'ediff-setup-windows-multiframe)
+      t
+    (if (eq ediff-window-setup-function 'ediff-setup-windows-plain)
+        nil
+      ;; neither of pre-defined setup function.
+      (error "user-define ediff-window-setup-function is not supported."))))
 
 (defun frame-margin (&optional frame)
   "Return the margin of the current frame, (MARGIN-WIDTH . MARGIN-HEIGHT).
@@ -2004,11 +2017,13 @@ new frame size WIDTH and HEIGHT regarding to the current display"
     (when (> (+ left pwidth) disp-width)
       ;; Current LEFT cannot satisfy WIDTH
       (setq left (- left (+ (* (- width cur-width) char-width)
-                            (ceiling (/ (car margin) 2.0))))))
+                            (ceiling (/ (car margin) 2.0))))
+            left (if (< left 0) 0 left)))
     (when (> (+ top pheight) disp-height)
       ;; Current LEFT cannot satisfy HEIGHT
       (setq top (- top (+ (* (- height cur-height) char-height)
-                          (ceiling (/ (cdr margin) 2.0))))))
+                          (ceiling (/ (cdr margin) 2.0))))
+            top (if (< top 0) 0 top)))
     (list left top width height)))
 
 (defun frame-max-available-width (&optional frame)
@@ -2025,7 +2040,7 @@ to the display width"
        ;; TODO: Using zero in MacOS X seems to be fine.  Check in other system.
        0)))
 
-(defun ediff-widen-frame-for-vertical-setup ()
+(defun cinsk/ediff-widen-frame-for-vertical-setup ()
   "Widens the current frame iff the current ediff windows are 
 splitted vertically.
 
@@ -2033,66 +2048,83 @@ This function is best used for `ediff-before-setup-windows-hook'.
 
 This function saves some of the frame parameters (left, top,
 width) before widening the frame.  The saved information is used
-in `ediff-narrow-frame-for-vertical-setup' which is best used for
-`ediff-suspend-hook' and `ediff-quit-hook'.
+in `cinsk/ediff-narrow-frame-for-vertical-setup' which is best
+used for `ediff-suspend-hook' and `ediff-quit-hook'.
 "
-  (let ((modifier (if (and (boundp 'ediff-3way-job) ediff-3way-job) 3 2))
-        ;; The meaning of ADJUST:
-        ;;
-        ;; If I use the frame width 80, I want to have 160 on
-        ;; splitting windows vertically.  Since I cannot find any
-        ;; variable that holds 80, the best choice would be using
-        ;; `fill-column' for the calculation. Thus:
-        ;;
-        ;;   FILL-COLUMN * ADJUST ~= 80.
-        ;;
-        ;; For the 2-way vertical diff, the window size will be:
-        ;;
-        ;;   FILL-COLUMN * ADJUST * 2 ~= 160
-        ;;
-        ;; For the 3-way vertical diff, the window size will be:
-        ;;
-        ;;   FILL-COLUMN * ADJUST * 3 ~= 240
-        (adjust (/ 80 (float (default-value 'fill-column)))))
-    (if (eq ediff-split-window-function 'split-window-horizontally)
-        (let ((width (frame-width))
-              (left (frame-parameter nil 'left))
-              (top (frame-parameter nil 'top)))
-          (if (< width (min (* (default-value 'fill-column) modifier)
-                            (frame-max-available-width)))
-              (let ((new-width (min (ceiling (* width adjust modifier))
-                                    (frame-max-available-width))))
-                (set-frame-parameter nil 'old-width width)
-                (set-frame-parameter nil 'old-left left)
-                (set-frame-parameter nil 'old-top top)
-                ;; TODO: set the new coordinate
-                (let ((coord (frame-position-for-resizing new-width nil)))
-                  (modify-frame-parameters nil
-                                           (list (cons 'left (nth 0 coord))
-                                                 (cons 'top (nth 1 coord))
-                                                 (cons 'width (nth 2 coord))))
-                  (message "Set frame width to %S" (nth 2 coord))))))
-      (ediff-narrow-frame-for-vertical-setup))))
+  (when (and window-system
+             (not (cinsk/ediff-multiframe-before-setup-p)))
+    (let ((modifier (if (and (boundp 'ediff-3way-job) ediff-3way-job) 3 2))
+          ;; The meaning of ADJUST:
+          ;;
+          ;; If I use the frame width 80, I want to have 160 on
+          ;; splitting windows vertically.  Since I cannot find any
+          ;; variable that holds 80, the best choice would be using
+          ;; `fill-column' for the calculation. Thus:
+          ;;
+          ;;   FILL-COLUMN * ADJUST ~= 80.
+          ;;
+          ;; For the 2-way vertical diff, the window size will be:
+          ;;
+          ;;   FILL-COLUMN * ADJUST * 2 ~= 160
+          ;;
+          ;; For the 3-way vertical diff, the window size will be:
+          ;;
+          ;;   FILL-COLUMN * ADJUST * 3 ~= 240
+          (adjust (/ 80 (float (default-value 'fill-column))))
+          ;; (frame (window-frame ediff-window-A))
+          (frame nil))
+      (if (eq ediff-split-window-function 'split-window-horizontally)
+          (let ((width (frame-width frame))
+                (left (frame-parameter frame 'left))
+                (top (frame-parameter frame 'top)))
+            ;;(message "target frame: %S" frame)
+            (if (< width (min (* (default-value 'fill-column) modifier)
+                              (frame-max-available-width frame)))
+                (let ((new-width (min (ceiling (* width adjust modifier))
+                                      (frame-max-available-width frame))))
+                  (set-frame-parameter frame 'old-width width)
+                  (set-frame-parameter frame 'old-left left)
+                  (set-frame-parameter frame 'old-top top)
+                  ;; TODO: set the new coordinate
+                  (let ((coord (frame-position-for-resizing new-width nil
+                                                            frame)))
+                    (modify-frame-parameters frame
+                                             (list (cons 'left (nth 0 coord))
+                                                   (cons 'top (nth 1 coord))
+                                                   (cons 'width (nth 2 coord))))
+                    (message "Set frame width to %S at (%d, %d)"
+                             (nth 2 coord) (nth 0 coord) (nth 1 coord))))))
+        (cinsk/ediff-narrow-frame-for-vertical-setup frame)))))
 
-(defun ediff-narrow-frame-for-vertical-setup ()
+(defun cinsk/ediff-narrow-frame-for-vertical-setup (&optional frame)
   "Restore the saved frame parameters from
 `ediff-widen-frame-for-vertical-setup'."
-  (let ((old-width (frame-parameter nil 'old-width))
-        (old-left (frame-parameter nil 'old-left))
-        (old-top (frame-parameter nil 'old-top)))
-    (if (integerp old-width)
-        (set-frame-width nil old-width))
-    (if (and (integerp old-left) (integerp old-top))
-        (modify-frame-parameters nil (list (cons 'left old-left)
-                                           (cons 'top old-top))))
-    (modify-frame-parameters nil '((old-left . nil)
-                                   (old-top . nil)
-                                   (old-width . nil)))
-    ;; When resizing the frame, there is a possiblility that the frame
-    ;; lose the input focus to another frame or other X window.  This
-    ;; prevent the current frame from losing the input focus.
-    (select-frame-set-input-focus (selected-frame))
-    ))
+  (when (and window-system
+             (not (cinsk/ediff-multiframe-before-setup-p)))
+    (let ((old-width (frame-parameter frame 'old-width))
+          (old-left (frame-parameter frame 'old-left))
+          (old-top (frame-parameter frame 'old-top)))
+      (if (integerp old-width)
+          (set-frame-width frame old-width))
+      (if (and (integerp old-left) (integerp old-top))
+          (modify-frame-parameters frame (list (cons 'left old-left)
+                                               (cons 'top old-top))))
+      (modify-frame-parameters frame '((old-left . nil)
+                                       (old-top . nil)
+                                       (old-width . nil)))
+      (let ((buffer-read-only nil))
+        ;; After restoring original(smaller) frame, the buffer contents
+        ;; of the "ediff control panel" is too large for the current
+        ;; buffer.  We need to redraw the control buffer.
+        (ediff-setup-control-buffer (current-buffer)))
+
+      ;; When resizing the frame, there is a possiblility that the
+      ;; frame lose the input focus to another Emacs frame or other X
+      ;; window especially when the user uses "focus follow point"
+      ;; feature of the window manager.  This prevent the current
+      ;; frame from losing the input focus.
+      (select-frame-set-input-focus (selected-frame))
+      )))
 
 
 
