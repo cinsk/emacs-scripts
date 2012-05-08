@@ -1,4 +1,4 @@
-;;; -*-emacs-lisp-*-
+;; -*-emacs-lisp-*-
 
 ;;;
 ;;; Seong-Kook Shin's .emacs initialization file.
@@ -48,14 +48,15 @@
   (setq default-frame-alist (append default-frame-alist
                                     '((width . 80) (height . 45))))
 
-  (when (display-graphic-p)
-    (global-set-key [(meta ?c)] 'ns-copy-including-secondary))
-
   ;; If Emacs is not launched in Terminal, .bashrc is not executed, so
   ;; that /usr/local/bin is not added to the PATH, so that Emacs will
   ;; not find some executables in "/usr/local/bin".
   (unless (member "/usr/local/bin" exec-path)
     (add-to-list 'exec-path "/usr/local/bin")))
+
+(when (eq window-system 'x)
+  ;; enable clipboard
+  (setq x-select-enable-clipboard t))
 
 ;;; Although it is possible to set font faces in lisp code, I prefer
 ;;; to use X resource configuration.
@@ -172,10 +173,11 @@ by package.el")
                  'cinsk/ediff-narrow-frame-for-vertical-setup)
        (add-hook 'ediff-quit-hook
                  'cinsk/ediff-narrow-frame-for-vertical-setup))
-     (add-hook 'ediff-quit-hook
-               (lambda ()
-                 (if ediff-wide-display-p
-                     'ediff-toggle-wide-display)))
+
+     ;; (add-hook 'ediff-quit-hook 'cinsk/ediff-restore-frame)
+     (add-hook 'ediff-quit-hook (lambda ()
+                                  (if ediff-wide-display-p
+                                      (ediff-toggle-wide-display))))
 
      ;; Change the algorithm perhaps find a smaller set of changes.
      ;; This makes `diff' slower.
