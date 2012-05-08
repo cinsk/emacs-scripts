@@ -48,6 +48,9 @@
   (setq default-frame-alist (append default-frame-alist
                                     '((width . 80) (height . 45))))
 
+  (when (display-graphic-p)
+    (global-set-key [(meta ?c)] 'ns-copy-including-secondary))
+
   ;; If Emacs is not launched in Terminal, .bashrc is not executed, so
   ;; that /usr/local/bin is not added to the PATH, so that Emacs will
   ;; not find some executables in "/usr/local/bin".
@@ -251,6 +254,8 @@ the left corder unchanged.")
       ad-do-it)))
 
 (ad-activate 'ediff-toggle-wide-display)
+
+;;; TODO: not working properly on ediff-merge session
 
 (defun cinsk/ediff-make-wide-display ()
   "Construct an alist of parameters for the wide display.
