@@ -9,3 +9,5 @@
 auto-save-list/
 # packages installed by package.el
 elpa
+# packages installed manually
+site-lisp

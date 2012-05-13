@@ -103,6 +103,35 @@
     ;; Perhaps it's a problem related to the version (currently Emacs
     ;; 23).  Thus, I'll force to load it here.
     (package-initialize)))
+
+;; I will install packages that is not managed by packages.el in 
+;; "$HOME/.emacs.d/site-lisp".
+;;
+;; Note that packages in this directory has higher priority than others.
+(defvar user-site-lisp-directory
+  (concat (file-name-as-directory user-emacs-directory) "site-lisp")
+  "a directory name that contains packages which are not managed
+by package.el")
+
+(defun add-site-lisp-packages (dir)
+  "Add the subdirectories of DIR into `load-path'."
+  (when (file-accessible-directory-p dir)
+    (dolist (elem (directory-files-and-attributes dir))
+      (let* ((fname (car elem))
+             (attrs (cdr elem))
+             (path (expand-file-name 
+                    (concat (file-name-as-directory dir)
+                            fname))))
+        (when (and (not (string-equal fname "."))
+                   (not (string-equal fname ".."))
+                   (eq t (car attrs)))
+          ;; Add directories in $HOME/.emacs.d/site-lisp/ to the `load-path'
+          (message "load-path: adding %s" path)
+          (add-to-list 'load-path path))))))
+
+(add-site-lisp-packages "/usr/local/share/emacs/site-lisp")
+(add-site-lisp-packages user-site-lisp-directory)
+
 
 
 ;;;
@@ -214,10 +243,12 @@ the left corder unchanged.")
                                               ediff-buffer-A))
                          (t (max fill-column 70)))))
     (setq w (max min-width w))
-    (message "width: %S" w)
+    ;;(message "width: %S" w)
 
     (let ((cinsk/ediff-wide-window-width w))
       ad-do-it)))
+
+(ad-activate 'ediff-toggle-wide-display)
 
 (defun cinsk/ediff-make-wide-display ()
   "Construct an alist of parameters for the wide display.
@@ -241,8 +272,8 @@ It assumes that it is called from within the control buffer."
 		(cons 'width (cdr (assoc 'width frame-A-params))))
 	  ediff-wide-display-frame frame-A)
 
-    (message "wide window width: %S" cinsk/ediff-wide-window-width)
-    (message "split function: %S" ediff-split-window-function)
+    ;;(message "wide window width: %S" cinsk/ediff-wide-window-width)
+    ;;(message "split function: %S" ediff-split-window-function)
     (setq desired-fw (* cinsk/ediff-wide-window-width
                         (if (and (boundp 'ediff-3way-job) ediff-3way-job)
                             3 2)))
@@ -277,8 +308,6 @@ It assumes that it is called from within the control buffer."
     (modify-frame-parameters
      frame-A `((left . ,desired-left) (width . ,desired-fw)
                (user-position . t)))))
-
-(ad-activate 'ediff-toggle-wide-display)
 
 
 (defun frame-position-for-resizing (width height &optional frame display)
@@ -1637,11 +1666,15 @@ chance to change the name of the element."
                        ;; Omit .o, .lo, .Po, .Plo, .a, .la files
                        "\\|.+\\.\\(o\\|lo\\|Po\\|Plo\\|a\\|la\\)\\'"))
 
-(setq-if-equal dired-garbage-files-regexp
-               "\\.\\(?:aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc\\)\\'"
-               (format "\\(?:%s\\|%s\\)\\'"
-                       "aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc" ; TeX related
-                       "\\`\.#.*[0-9]"))                          ; VC related
+(when nil
+  ;; I want to delete all files that look like ".#gbd.tex.1.22", or
+  ;; ".#link.tex.1.1.1.1" in the dired mode with a single command.
+  (setq-if-equal
+   dired-garbage-files-regexp
+   "\\.\\(?:aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc\\)\\'"
+   (format "\\(?:%s\\|%s\\)\\'"
+           "aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc" ; TeX related
+           "\\`\.#.*[0-9]")))                          ; VC related
 
 ;;(define-key global-map "\C-x\C-j" 'dired-jump)
 ;;(define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
@@ -1982,10 +2015,14 @@ call has no effect on frame on tty terminal."
 (setq local-holidays
       '((holiday-fixed 11 1 "삼성전자 창립일")))
 
-(add-to-list 'load-path (expand-file-name "./cal-korea-x/"))
-(when (locate-library "cal-korea-x")
-  (require 'cal-korea-x)
-  (setq holiday-general-holidays cal-korea-x-korean-holidays))
+(let ((cal-korea-path (expand-file-name 
+                       (concat (file-name-as-directory user-emacs-directory)
+                               "cal-korea-x"))))
+  (when (file-accessible-directory-p cal-korea-path)
+    (add-to-list 'load-path cal-korea-path)
+    (when (locate-library "cal-korea-x")
+      (require 'cal-korea-x)
+      (setq holiday-general-holidays cal-korea-x-korean-holidays))))
 
 
 ;;;
@@ -2243,7 +2280,7 @@ following:
 ;;; Ruby Mode
 ;;;
 (when (locate-library "ruby-mode")
-  ;;(require 'inf-ruby)
+  (require 'ruby-mode)
 
   (add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
   (add-to-list 'auto-mode-alist
@@ -2251,26 +2288,33 @@ following:
 
   (add-to-list 'interpreter-mode-alist  '("ruby" . ruby-mode))
 
-  ;; Unlike most major modes, key-bindings of ruby-mode is done by
-  ;; `inf-ruby-keys', which is called from `ruby-mode-hook' in the
-  ;; current implementation of 'ruby-mode'.  
-  ;;
-  ;; Thus, using `define-key' on `ruby-mode-map' is not working,
-  ;; unless we call `define-key' in the `ruby-mode-hook' after
-  ;; `inf-ruby-keys'.
-  (add-hook 'ruby-mode-hook 'inf-ruby-keys)
-  (add-hook 'ruby-mode-hook
-            (lambda ()
-              (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
-              (define-key ruby-mode-map [(control ?c) (control ?c)] 
-                'comment-region)
-              (define-key ruby-mode-map [(control ?c) (control ?b)]
-                'ruby-send-buffer)
-              (define-key ruby-mode-map [(control ?c) (control ?e)] 
-                'ruby-send-block))
-            ;; Make sure that this function is appended, not prepended
-            t)
+  ;; Above configuration works on even ruby-mode 1.0, which is
+  ;; distributed with Emacs 24 build-in.
 
+  (when (locate-library "inf-ruby")
+    (require 'inf-ruby))
+
+  (when (fboundp 'inf-ruby-keys)
+    ;; Unlike most major modes, key-bindings of ruby-mode (at
+    ;; least 1.8.6) is done by `inf-ruby-keys', which is called
+    ;; from `ruby-mode-hook' in the current implementation of
+    ;; 'ruby-mode'.
+    ;;
+    ;; Thus, using `define-key' on `ruby-mode-map' is not working,
+    ;; unless we call `define-key' in the `ruby-mode-hook' after
+    ;; `inf-ruby-keys'.
+    (add-hook 'ruby-mode-hook 'inf-ruby-keys)
+    (add-hook 'ruby-mode-hook
+              (lambda ()
+                (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
+                (define-key ruby-mode-map [(control ?c) (control ?c)] 
+                  'comment-region)
+                (define-key ruby-mode-map [(control ?c) (control ?b)]
+                  'ruby-send-buffer)
+                (define-key ruby-mode-map [(control ?c) (control ?e)] 
+                  'ruby-send-block))
+              ;; Make sure that this function is appended, not prepended
+              'append))
 
   (if (fboundp 'ruby-send-buffer)
       (lwarn '(dot-emacs) :warning
