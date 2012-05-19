@@ -1,4 +1,4 @@
-;;; -*-emacs-lisp-*-
+;; -*-emacs-lisp-*-
 
 ;;;
 ;;; Seong-Kook Shin's .emacs initialization file.
@@ -56,6 +56,10 @@
   ;; not find some executables in "/usr/local/bin".
   (unless (member "/usr/local/bin" exec-path)
     (add-to-list 'exec-path "/usr/local/bin")))
+
+(when (eq window-system 'x)
+  ;; enable clipboard
+  (setq x-select-enable-clipboard t))
 
 ;;; Although it is possible to set font faces in lisp code, I prefer
 ;;; to use X resource configuration.
@@ -172,10 +176,11 @@ by package.el")
                  'cinsk/ediff-narrow-frame-for-vertical-setup)
        (add-hook 'ediff-quit-hook
                  'cinsk/ediff-narrow-frame-for-vertical-setup))
-     (add-hook 'ediff-quit-hook
-               (lambda ()
-                 (if ediff-wide-display-p
-                     'ediff-toggle-wide-display)))
+
+     ;; (add-hook 'ediff-quit-hook 'cinsk/ediff-restore-frame)
+     (add-hook 'ediff-quit-hook (lambda ()
+                                  (if ediff-wide-display-p
+                                      (ediff-toggle-wide-display))))
 
      ;; Change the algorithm perhaps find a smaller set of changes.
      ;; This makes `diff' slower.
@@ -249,6 +254,8 @@ the left corder unchanged.")
       ad-do-it)))
 
 (ad-activate 'ediff-toggle-wide-display)
+
+;;; TODO: not working properly on ediff-merge session
 
 (defun cinsk/ediff-make-wide-display ()
   "Construct an alist of parameters for the wide display.
