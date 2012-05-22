@@ -1038,7 +1038,7 @@ current window"
 ;;(global-set-key [C-tab] 'other-window)  ; C-x o
 ;;(global-set-key [S-iso-lefttab] 'reverse-other-window)
 ;;(global-set-key [(backtab)] 'reverse-other-window)
-(global-set-key [(control tab)] 'smart-other-window)
+(global-set-key [(control tab)] 'smart-other-frame-or-window)
 (global-set-key [(control x) ?w ?n] 'other-window)
 (global-set-key [(control x) ?w ?o] 'other-window)
 (global-set-key [(control x) ?w ?p] 'reverse-other-window)
@@ -1089,6 +1089,15 @@ calls `iswitchb'"
   (interactive "p")
   (if (> (length (frame-list)) 1)
       (other-frame arg)
+    (other-window arg)))
+
+(defun smart-other-frame-or-window (&optional arg)
+  "Switch focus to other window or frame."
+  (interactive "p")
+  (if (one-window-p 'nomini)
+      (if (> (length (frame-list)) 1)
+          (other-frame arg)
+        (call-interactively 'iswitchb-buffer))
     (other-window arg)))
 
 (defun reverse-smart-other-frame (arg)
