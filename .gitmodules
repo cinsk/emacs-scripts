@@ -1,6 +1,3 @@
-[submodule "egg"]
-	path = egg
-	url = https://github.com/byplayer/egg.git
 [submodule "cal-korea-x"]
 	path = cal-korea-x
 	url = git@ssh.github.com:cinsk/cal-korea-x.git
