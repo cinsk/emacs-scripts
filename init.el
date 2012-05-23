@@ -1891,7 +1891,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
                                 color-theme-robin-hood)
   "My favorite color theme list")
 
-(defun color-theme-select-random (&optional favorite-only)
+(defun color-theme-select-random (&optional favorite-only frame)
   "Select random color theme.
 
 If optional FAVORITE-ONLY is non-nil, select color theme from only
@@ -1905,7 +1905,8 @@ in the `color-theme-favorites'."
          (theme-name (if (consp selected) 
                          (cadr selected) 
                        (symbol-name theme-func))))
-    (funcall theme-func)
+    (with-selected-frame (or frame (selected-frame))
+      (funcall theme-func))
     (message "%s installed" theme-name)))
 
 
@@ -1979,7 +1980,8 @@ call has no effect on frame on tty terminal."
   ;; If you want to select random color theme on every new frame,
   ;; uncomment this.
   ;; (add-hook 'after-make-frame-functions 'set-frame-color-theme)
-
+  (add-hook 'after-make-frame-functions 
+            (lambda (frame) (color-theme-select-random 'favorite frame)))
   ;; color-theme-* is frame-local from now.
   (setq color-theme-is-global nil)
 
