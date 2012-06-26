@@ -1582,6 +1582,13 @@ instead of the current word."
   ;; For legacy nxml-mode which does not use `provide' for nxml-mode.
   (load (locate-library "rng-auto"))
 
+  ;; For nxml-version less than or equal to "20041004" (my Gentoo), I
+  ;; need to load rng-loc.el to use `rng-schema-locating-files'.
+  (when (and (boundp 'nxml-version)
+             (locate-library "rng-loc")
+             (not (string-lessp "20041004" nxml-version)))
+    (load (locate-library "rng-loc")))
+
   ;; `sgml-mode' adds an entry to `magic-mode-alist' so that
   ;; `auto-mode-alist' to `nxml-mode' might not work.  To work around
   ;; this, define an alias for `xml-mode' to `nxml-mode'.
