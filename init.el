@@ -55,7 +55,9 @@
   ;; that /usr/local/bin is not added to the PATH, so that Emacs will
   ;; not find some executables in "/usr/local/bin".
   (unless (member "/usr/local/bin" exec-path)
-    (add-to-list 'exec-path "/usr/local/bin")))
+    (add-to-list 'exec-path "/usr/local/bin"))
+
+  (desktop-save-mode 1))
 
 (when (eq window-system 'x)
   ;; enable clipboard
@@ -1126,6 +1128,16 @@ calls `iswitchb'"
 
 
 ;;;
+;;; Markdown mode
+;;;
+(when (locate-library "markdown-mode")
+  (autoload 'markdown-mode "markdown-mode"
+    "Major mode for editing Markdown files" t)
+  (add-to-list 'auto-mode-alist
+               '("\\.md" . markdown-mode)))
+
+
+;;;
 ;;; CVS
 ;;;
 (defun pop-to-cvs-buffer (arg)
@@ -1162,6 +1174,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
   (require 'magit))
 
 (when nil
+  ;; I do not use egg anymore.
   (let ((egg-dir (concat (file-name-as-directory 
                           (expand-file-name user-emacs-directory)) "egg")))
     (if (file-accessible-directory-p egg-dir)
@@ -1566,8 +1579,7 @@ instead of the current word."
      (add-hook 'nxml-mode-hook (function (lambda nil (abbrev-mode 1))))))
 
 (when (locate-library "rng-auto")
-  ;; Strangely, nxml-mode does not provide a package to be used with
-  ;; `require'.
+  ;; For legacy nxml-mode which does not use `provide' for nxml-mode.
   (load (locate-library "rng-auto"))
 
   ;; `sgml-mode' adds an entry to `magic-mode-alist' so that
@@ -1576,7 +1588,15 @@ instead of the current word."
   (defalias 'xml-mode 'nxml-mode)
 
   (setq auto-mode-alist (cons '("\\.\\(xml\\|pvm\\|rss\\)\\'" . nxml-mode)
-                              auto-mode-alist))
+                              auto-mode-alist)))
+
+(when (locate-library "nxml-mode")
+  ;; Emacs 24.x built-int nxml-mode provides a package to be used with
+  ;; `require'.
+  
+  (require 'nxml-mode))
+
+(when (fboundp 'nxml-mode)
   (setq auto-mode-alist (cons '("\\.lzx\\'" . lzx-nxml-mode)
                               auto-mode-alist))
 
@@ -1596,7 +1616,27 @@ instead of the current word."
     (if (string-match "^/usr/" file)
         (if (not (file-readable-p file))
             (lwarn '(dot-emacs) :warning
-                   (format "cannot access default schema for nxml-mode"))))))
+                   (format "cannot access default schema for nxml-mode")))))
+
+  ;; Adding .emacs.d/schema/schemas.xml for schema searching path
+  (let ((schema-file (concat (file-name-as-directory
+                              (expand-file-name user-emacs-directory))
+                             "schema/schemas.xml")))
+    (when (and (file-readable-p schema-file)
+               (not (member schema-file rng-schema-locating-files)))
+      (setq rng-schema-locating-files-default
+            (delete "schemas.xml" rng-schema-locating-files))
+      (add-to-list 'rng-schema-locating-files schema-file)
+      (add-to-list 'rng-schema-locating-files "schemas.xml"))))
+
+
+                   
+      
+      
+
+
+
+
 
 (defun nxml-enclose-paragraph (start end prefix)
   "Enclose each paragraph with the element in the region.
@@ -1884,8 +1924,9 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;; If non-nil, new color theme will undo all settings made by previous
 ;; theme.  Normally, this is a bad idea, since some color themes do
 ;; not provide all face attributes.  However, if you want to find your
-;; favorite theme using `color-theme-select-random' or
+;; favorite theme using `color-theme-apply-random' or
 ;; `color-theme-apply', setting this variable to t might help.
+;;
 ;; (setq color-theme-is-cumulative nil)
 
 (defvar color-theme-favorites '(color-theme-deep-blue
@@ -1900,12 +1941,26 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
                                 color-theme-robin-hood)
   "My favorite color theme list")
 
-(defun color-theme-select-random (&optional favorite-only)
+(defun color-theme-select-favorite (&optional arg)
+  "Apply one color theme from `color-theme-favorites'.
+
+If called with prefix arguments, it will undo all settings made
+by previous color theme.  Otherwise the new theme is installed on
+top of each other."
+  (interactive "P")
+
+  (let ((color-theme-is-cumulative (if arg nil color-theme-is-cumulative)))
+    (let ((theme (color-theme-apply-random 'favorite-only)))
+      (message "%s installed" theme))))
+
+(defun color-theme-apply-random (&optional favorite-only frame)
   "Select random color theme.
 
-If optional FAVORITE-ONLY is non-nil, select color theme from only
-in the `color-theme-favorites'."
-  (interactive "P")
+If optional FAVORITE-ONLY is non-nil, select color theme from
+only in the `color-theme-favorites'.  The color theme is applied
+to FRAME (nil for current frame).
+
+This function returns the name of the color theme in string."
   (let* ((theme-list (if favorite-only 
                          color-theme-favorites
                        color-themes))
@@ -1914,8 +1969,9 @@ in the `color-theme-favorites'."
          (theme-name (if (consp selected) 
                          (cadr selected) 
                        (symbol-name theme-func))))
-    (funcall theme-func)
-    (message "%s installed" theme-name)))
+    (with-selected-frame (or frame (selected-frame))
+      (funcall theme-func)
+      theme-name)))
 
 
 (defun color-themes-next-symbol (theme)
@@ -1942,7 +1998,7 @@ or if the argument is :next, this applies the next color theme in the
 installed color theme list.  or if the argument is a symbol indicates
 the color-theme function, it applies that color theme."
   (cond ((fboundp arg)  (apply arg nil))
-        ((eq arg :random)  (color-theme-select-random))
+        ((eq arg :random)  (color-theme-apply-random))
         ((eq arg :next)	(let ((theme (color-theme-next-symbol)))
                           (apply theme nil)
                           (message "%s installed" (symbol-name theme))))
@@ -1957,17 +2013,6 @@ This function works iff color-theme-history-max-length is not NIL"
     (color-themes-next-symbol (car (car color-theme-history)))))
 
 
-(defun set-frame-color-theme (frame &optional force_tty)
-  "Apply random color theme to FRAME.  If FORCE_TTY is nil, this
-call has no effect on frame on tty terminal."
-  (let ((oldframe (selected-frame)))
-    (unwind-protect
-        (progn
-          (select-frame frame)
-          (if (or window-system force_tty)
-              (color-theme-select-random)))
-      (select-frame oldframe))))
-
 (when (and window-system
            (locate-library "color-theme"))
   (require 'color-theme)
@@ -1980,7 +2025,7 @@ call has no effect on frame on tty terminal."
   (and (locate-library "cinsk-wood")
        (require 'cinsk-wood))
 
-  (global-set-key [(control f1)] 'color-theme-select-random)
+  (global-set-key [(control f1)] 'color-theme-select-favorite)
   (global-set-key [(control f2)] '(lambda ()
                                     (interactive)
                                     (color-theme-apply :next)))
@@ -1988,13 +2033,14 @@ call has no effect on frame on tty terminal."
   ;; If you want to select random color theme on every new frame,
   ;; uncomment this.
   ;; (add-hook 'after-make-frame-functions 'set-frame-color-theme)
-
+  (add-hook 'after-make-frame-functions 
+            (lambda (frame) (color-theme-apply-random 'favorite frame)))
   ;; color-theme-* is frame-local from now.
   (setq color-theme-is-global nil)
 
   (random t)
   ;; Select random color theme from my favorite list
-  (color-theme-select-random 'favorite))
+  (color-theme-select-favorite))
 
 
 ;;;

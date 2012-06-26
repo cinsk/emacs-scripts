@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<locatingRules xmlns="http://thaiopensource.com/ns/locating-rules/1.0">
+  <typeId id="Maven" uri="maven.rnc"/>
+  <uri resource="pom.xml" typeId="Maven"/>
+  <namespace ns="http://maven.apache.org/POM/4.0.0" typeId="Maven"/>
+</locatingRules>
