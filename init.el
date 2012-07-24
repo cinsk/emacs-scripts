@@ -1073,7 +1073,7 @@ current window"
 ;;(global-set-key [C-tab] 'other-window)  ; C-x o
 ;;(global-set-key [S-iso-lefttab] 'reverse-other-window)
 ;;(global-set-key [(backtab)] 'reverse-other-window)
-(global-set-key [(control tab)] 'smart-other-window)
+(global-set-key [(control tab)] 'smart-other-frame-or-window)
 (global-set-key [(control x) ?w ?n] 'other-window)
 (global-set-key [(control x) ?w ?o] 'other-window)
 (global-set-key [(control x) ?w ?p] 'reverse-other-window)
@@ -1124,6 +1124,15 @@ calls `iswitchb'"
   (interactive "p")
   (if (> (length (frame-list)) 1)
       (other-frame arg)
+    (other-window arg)))
+
+(defun smart-other-frame-or-window (&optional arg)
+  "Switch focus to other window or frame."
+  (interactive "p")
+  (if (one-window-p 'nomini)
+      (if (> (length (frame-list)) 1)
+          (other-frame arg)
+        (call-interactively 'iswitchb-buffer))
     (other-window arg)))
 
 (defun reverse-smart-other-frame (arg)
@@ -1618,6 +1627,13 @@ instead of the current word."
 (when (locate-library "rng-auto")
   ;; For legacy nxml-mode which does not use `provide' for nxml-mode.
   (load (locate-library "rng-auto"))
+
+  ;; For nxml-version less than or equal to "20041004" (my Gentoo), I
+  ;; need to load rng-loc.el to use `rng-schema-locating-files'.
+  (when (and (boundp 'nxml-version)
+             (locate-library "rng-loc")
+             (not (string-lessp "20041004" nxml-version)))
+    (load (locate-library "rng-loc")))
 
   ;; `sgml-mode' adds an entry to `magic-mode-alist' so that
   ;; `auto-mode-alist' to `nxml-mode' might not work.  To work around
