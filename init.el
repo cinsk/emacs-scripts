@@ -29,27 +29,60 @@
 ;;;
 ;;; Mac OS customization
 ;;;
+(defun darwin-smart-other-frame (&optional arg)
+  "Switch to other frame or call `tmm-menubar`."
+  (interactive "P")
+  (if (display-graphic-p)
+      (other-frame arg)
+    (tmm-menubar arg)))
+
 (when (eq system-type 'darwin)
   (setq mac-option-modifier nil)
   (setq mac-command-modifier 'meta)
   ;; sets fn-delete to be right-delete
   (global-set-key [kp-delete] 'delete-char)
 
-  (set-fontset-font "fontset-standard" 'unicode 
-                    (font-spec :name "Consolas"
-                               :weight 'normal
-                               :slant 'normal
-                               :size 16)); nil 'prepend)
-  (set-fontset-font "fontset-standard" 'hangul
-                    (font-spec :name "NanumGothicCoding"))
+  (when nil
+    ;; These configuration seems to stop working in recent version of
+    ;; Emacs 24.x. 
+    (set-fontset-font "fontset-standard" 'unicode 
+                      (font-spec :name "Consolas"
+                                 :weight 'normal
+                                 :slant 'normal
+                                 :size 16)); nil 'prepend)
+    (set-fontset-font "fontset-standard" 'hangul
+                      (font-spec :name "NanumGothicCoding"))
 
-  (set-face-font 'default "fontset-standard")
+    (set-face-font 'default "fontset-standard"))
+
+  (when t
+    ;; These configuration seems to work in
+    ;; GNU Emacs 24.1.1 (x86_64-apple-darwin, NS apple-appkit-1038.36)
+    ;; of 2012-06-11 on bob.porkrind.org
+
+    ;; default font family
+    (set-face-attribute 'default nil :family "Consolas")
+
+    ;; default font size
+    ;;
+    ;; WARNING: depending on the font family, some height value may
+    ;; cause a broken frame display; that is, the beginning of the
+    ;; buffer is not visible.
+    (set-face-attribute 'default nil :height 165)
+
+    ;;(set-fontset-font t 'unicode (font-spec :size 20.0))
+
+    ;; You may add :size POINT in below font-spec if you want to use
+    ;; specific size of Hangul font regardless of default font size
+    (set-fontset-font t 'hangul
+                      (font-spec :name "NanumGothicCoding")))
 
   (setq default-frame-alist (append default-frame-alist
                                     '((width . 80) (height . 45))))
 
   (when (display-graphic-p)
     (global-set-key [(meta ?c)] 'ns-copy-including-secondary))
+  (global-set-key [(meta ?`)] 'darwin-smart-other-frame)
 
   ;; If Emacs is not launched in Terminal, .bashrc is not executed, so
   ;; that /usr/local/bin is not added to the PATH, so that Emacs will
@@ -806,8 +839,8 @@ appropriately."
 ;;(add-hook 'c-mode-hook (function (lambda nil (which-function-mode))))
 ;;(add-hook 'c++-mode-hook (function (lambda nil (which-function-mode))))
 
-(when window-system
-  (which-function-mode 1))          ; display function names in mode-line
+;;(when window-system
+;;  (which-function-mode 1))          ; display function names in mode-line
 
 (global-font-lock-mode 1)           ; every buffer uses font-lock-mode
 (line-number-mode 1)                ; show line number in mode-line
@@ -1126,6 +1159,19 @@ calls `iswitchb'"
     "Major mode for editing Markdown files" t)
   (add-to-list 'auto-mode-alist
                '("\\.md" . markdown-mode)))
+
+
+;;;
+;;; vim-modeline
+;;;
+(let ((vim-modeline-path (expand-file-name
+                          (concat (file-name-as-directory user-emacs-directory)
+                                  "vim-modeline"))))
+  (when (file-accessible-directory-p vim-modeline-path)
+    (add-to-list 'load-path vim-modeline-path)
+    (when (locate-library "vim-modeline")
+      (require 'vim-modeline)
+      (add-hook 'find-file-hook 'vim-modeline/do))))
 
 
 ;;;
@@ -2032,6 +2078,14 @@ This function works iff color-theme-history-max-length is not NIL"
   (random t)
   ;; Select random color theme from my favorite list
   (color-theme-select-favorite))
+
+
+;;;
+;;; YAML mode
+;;;
+(when (locate-library "yaml-mode")
+  (require 'yaml-mode)
+  (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode)))
 
 
 ;;;

@@ -1,3 +1,6 @@
 [submodule "cal-korea-x"]
 	path = cal-korea-x
 	url = git@ssh.github.com:cinsk/cal-korea-x.git
+[submodule "vim-modeline"]
+	path = vim-modeline
+	url = https://github.com/cinsk/emacs-vim-modeline.git
