@@ -42,6 +42,21 @@
   ;; sets fn-delete to be right-delete
   (global-set-key [kp-delete] 'delete-char)
 
+  (cond
+    ;; prefer GNU ls over the native one.
+    ;;
+    ;; GNU ls provides "--dired" for Emacs to provide special escape
+    ;; sequences for certain unusual file names.
+    ;;
+    ;; My system (Mountain Lion, Homebrew coreutils) provides
+    ;; "/usr/local/bin/gls" where the previous version provided
+    ;; "/usr/local/bin/ls".
+   ((executable-find "gls")
+    (setq insert-directory-program "gls"))
+   ((executable-find "/usr/local/bin/ls")
+    (setq insert-directory-program "/usr/local/bin/ls")))
+
+
   (when nil
     ;; These configuration seems to stop working in recent version of
     ;; Emacs 24.x. 
