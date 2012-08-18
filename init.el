@@ -691,10 +691,12 @@ appropriately."
                     (name . "^\\*info.*\\*$")
                     (name . "^\\*Man.*\\*$")
                     (name . "^\\*Help.*\\*$")))
-         ("emacs" (or
-                   (name . "^\\*scratch\\*$")
-                   (name . "^TAGS$")
-                   (name . "^\\*.*\\*$"))))))
+         ("elisp" (or
+                   (mode . emacs-lisp-mode)
+                   (name . "\\`\\*scratch\\*\\'")))
+         ("internal" (or
+                      (name . "^TAGS$")
+                      (name . "^\\*.*\\*$"))))))
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()
@@ -1583,6 +1585,14 @@ instead of the current word."
 ;;;
 ;;; MMM mode
 ;;;
+(let ((mmm-dir (expand-file-name 
+                (concat (file-name-as-directory user-emacs-directory)
+                        "mmm-mode"))))
+  ;; If MMM mode is installed in $HOME/.emacs.d/mmm-mode/
+  (when (file-accessible-directory-p mmm-dir)
+    (add-to-list 'load-path mmm-dir)
+    (add-to-list 'Info-directory-list mmm-dir)))
+
 (when (locate-library "mmm-auto")
   (eval-after-load "mmm-mode"
     ;; It seems that mmm-mode 0.4.8 will reset the mmm-related face
@@ -1772,6 +1782,35 @@ chance to change the name of the element."
 
 (setq auto-mode-alist (cons '("[^/]\\.dired$" . dired-virtual-mode)
                             auto-mode-alist))
+
+(when (eq (call-process insert-directory-program nil nil nil
+                        "-d" "--time-style=iso" "/") 0)
+  ;; Prefer ISO time style.
+  (setq dired-listing-switches (concat dired-listing-switches
+                                       " --time-style=iso")))
+
+(defvar dired-desktop-open-program 
+  (let ((open-sh (concat (file-name-as-directory user-emacs-directory)
+                         "open.sh")))
+    (cond ((eq system-type 'darwin) "open")
+          ((let ((tstr (symbol-name system-type)))
+             (and (>= (length tstr) 3)
+                  (string-equal (substring tstr 0 3) "gnu")
+                  (file-executable-p open-sh)))
+           open-sh)
+          (t nil)))
+  "Command to open a file in the user's desktop environment")
+
+(defun dired-do-desktop-open ()
+  (interactive)
+  (when dired-desktop-open-program
+    (save-window-excursion
+      (dired-do-async-shell-command dired-desktop-open-program
+                                    current-prefix-arg
+                                    (dired-get-marked-files 
+                                     t
+                                     current-prefix-arg)))))
+(define-key dired-mode-map [(meta ?O)] 'dired-do-desktop-open)
 
 (when (string-match "\\bgnu\\b" (symbol-name system-type))
   ;; If the operating system is gnu or gnu/linux, 
