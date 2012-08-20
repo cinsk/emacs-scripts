@@ -691,10 +691,11 @@ appropriately."
                     (name . "^\\*info.*\\*$")
                     (name . "^\\*Man.*\\*$")
                     (name . "^\\*Help.*\\*$")))
-         ("emacs" (or
-                   (name . "^\\*scratch\\*$")
-                   (name . "^TAGS$")
-                   (name . "^\\*.*\\*$"))))))
+         ("elisp" (or (mode . emacs-lisp-mode)
+                      (name . "^\\*scratch\\*$")))
+         ("internal" (or
+                      (name . "\\`TAGS\\'")
+                      (name . "^\\*.*\\*$"))))))
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()
@@ -1584,6 +1585,7 @@ instead of the current word."
 ;;; MMM mode
 ;;;
 (when (locate-library "mmm-auto")
+
   (eval-after-load "mmm-mode"
     ;; It seems that mmm-mode 0.4.8 will reset the mmm-related face
     ;; attributes after loading mmm-mode.el.  To prevent resetting,
@@ -1591,8 +1593,9 @@ instead of the current word."
     '(progn
        ;; By default, mmm-mode uses faces with bright background for
        ;; the submodes.   I don't like the bright background for most faces.
-       (set-face-background 'mmm-code-submode-face nil)
-       (set-face-background 'mmm-default-submode-face nil)))
+       (set-face-background 'mmm-code-submode-face "black")
+       (set-face-background 'mmm-declaration-submode-face "black")
+       (set-face-background 'mmm-default-submode-face "black")))
 
   (require 'mmm-auto)
 
@@ -2108,7 +2111,8 @@ This function works iff color-theme-history-max-length is not NIL"
 
   (random t)
   ;; Select random color theme from my favorite list
-  (color-theme-select-favorite))
+  ;;(color-theme-select-favorite)
+)
 
 
 ;;;
@@ -2721,6 +2725,18 @@ following:
   ;;(global-set-key [f11] 'ecb-next-action)
   )
 
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(mmm-declaration-submode-face ((t nil))))
 ;;; Local Variables:
 ;;; coding: utf-8
 ;;; End:
