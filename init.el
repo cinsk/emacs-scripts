@@ -646,10 +646,14 @@ supplied one, a warning message is generated."
 ;;; Shell configuration
 ;;;
 
+;;
+;; Make the inferior shell a login shell.
+;;
+(setq explicit-bash-args '("--noediting" "-i" "-l"))
+
 ;; `shell' runs an inferior shell in ASCII coding system.
 ;; `unicode-shell' behaves the same as `shell' except it runs an inferior
 ;; shell in UTF-8 coding system.
-
 (defun unicode-shell (&optional encoding)
   "Execute the shell buffer in UTF-8 encoding.
 Note that you'll need to set the environment variable LANG and others 
@@ -660,17 +664,33 @@ appropriately."
         (coding-system-require-warning t))
     (call-interactively 'shell)))
 
-(global-set-key "\C-cd" 'unicode-shell)
-
 ;; Allow shell mode to handle color output from shell commands
 ;; (notably from ls --color command)
 ;;
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 ;;
-;; Make the inferior shell a login shell.
+;; I'll prefer `bash' instead of `shell' from now on -- cinsk
 ;;
-(setq explicit-bash-args (quote ("--noediting" "-i" "-l")))
+(defun bash ()
+  "Start a terminal-emulator in a new buffer.
+
+This function is the similar to `term' except few things:
+
+First, it uses bash(1) only and uses `explicit-bash-args',
+Second, the terminal created is in line mode by default."
+  ;; `M-x term' does not accept any argument on exec.  The definition
+  ;; is copyied from `term' then modified.
+  (interactive)
+  (set-buffer (apply 'make-term (append '("terminal" "/bin/bash" nil)
+                                        explicit-bash-args)))
+  (term-mode)
+  (term-line-mode)
+  (switch-to-buffer "*terminal*"))
+
+(global-set-key "\C-cd" 'bash)
+
+
 
 
 ;;;
@@ -691,11 +711,25 @@ appropriately."
                     (name . "^\\*info.*\\*$")
                     (name . "^\\*Man.*\\*$")
                     (name . "^\\*Help.*\\*$")))
+<<<<<<< variant A
          ("elisp" (or (mode . emacs-lisp-mode)
                       (name . "^\\*scratch\\*$")))
          ("internal" (or
                       (name . "\\`TAGS\\'")
                       (name . "^\\*.*\\*$"))))))
+>>>>>>> variant B
+         ("elisp" (or
+                   (mode . emacs-lisp-mode)
+                   (name . "\\`\\*scratch\\*\\'")))
+         ("internal" (or
+                      (name . "^TAGS$")
+                      (name . "^\\*.*\\*$"))))))
+####### Ancestor
+         ("emacs" (or
+                   (name . "^\\*scratch\\*$")
+                   (name . "^TAGS$")
+                   (name . "^\\*.*\\*$"))))))
+======= end
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()
@@ -1584,6 +1618,14 @@ instead of the current word."
 ;;;
 ;;; MMM mode
 ;;;
+(let ((mmm-dir (expand-file-name 
+                (concat (file-name-as-directory user-emacs-directory)
+                        "mmm-mode"))))
+  ;; If MMM mode is installed in $HOME/.emacs.d/mmm-mode/
+  (when (file-accessible-directory-p mmm-dir)
+    (add-to-list 'load-path mmm-dir)
+    (add-to-list 'Info-directory-list mmm-dir)))
+
 (when (locate-library "mmm-auto")
 
   (eval-after-load "mmm-mode"
@@ -1775,6 +1817,35 @@ chance to change the name of the element."
 
 (setq auto-mode-alist (cons '("[^/]\\.dired$" . dired-virtual-mode)
                             auto-mode-alist))
+
+(when (eq (call-process insert-directory-program nil nil nil
+                        "-d" "--time-style=iso" "/") 0)
+  ;; Prefer ISO time style.
+  (setq dired-listing-switches (concat dired-listing-switches
+                                       " --time-style=iso")))
+
+(defvar dired-desktop-open-program 
+  (let ((open-sh (concat (file-name-as-directory user-emacs-directory)
+                         "open.sh")))
+    (cond ((eq system-type 'darwin) "open")
+          ((let ((tstr (symbol-name system-type)))
+             (and (>= (length tstr) 3)
+                  (string-equal (substring tstr 0 3) "gnu")
+                  (file-executable-p open-sh)))
+           open-sh)
+          (t nil)))
+  "Command to open a file in the user's desktop environment")
+
+(defun dired-do-desktop-open ()
+  (interactive)
+  (when dired-desktop-open-program
+    (save-window-excursion
+      (dired-do-async-shell-command dired-desktop-open-program
+                                    current-prefix-arg
+                                    (dired-get-marked-files 
+                                     t
+                                     current-prefix-arg)))))
+(define-key dired-mode-map [(meta ?O)] 'dired-do-desktop-open)
 
 (when (string-match "\\bgnu\\b" (symbol-name system-type))
   ;; If the operating system is gnu or gnu/linux, 
