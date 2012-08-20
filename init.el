@@ -646,10 +646,14 @@ supplied one, a warning message is generated."
 ;;; Shell configuration
 ;;;
 
+;;
+;; Make the inferior shell a login shell.
+;;
+(setq explicit-bash-args '("--noediting" "-i" "-l"))
+
 ;; `shell' runs an inferior shell in ASCII coding system.
 ;; `unicode-shell' behaves the same as `shell' except it runs an inferior
 ;; shell in UTF-8 coding system.
-
 (defun unicode-shell (&optional encoding)
   "Execute the shell buffer in UTF-8 encoding.
 Note that you'll need to set the environment variable LANG and others 
@@ -660,17 +664,33 @@ appropriately."
         (coding-system-require-warning t))
     (call-interactively 'shell)))
 
-(global-set-key "\C-cd" 'unicode-shell)
-
 ;; Allow shell mode to handle color output from shell commands
 ;; (notably from ls --color command)
 ;;
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 ;;
-;; Make the inferior shell a login shell.
+;; I'll prefer `bash' instead of `shell' from now on -- cinsk
 ;;
-(setq explicit-bash-args (quote ("--noediting" "-i" "-l")))
+(defun bash ()
+  "Start a terminal-emulator in a new buffer.
+
+This function is the similar to `term' except few things:
+
+First, it uses bash(1) only and uses `explicit-bash-args',
+Second, the terminal created is in line mode by default."
+  ;; `M-x term' does not accept any argument on exec.  The definition
+  ;; is copyied from `term' then modified.
+  (interactive)
+  (set-buffer (apply 'make-term (append '("terminal" "/bin/bash" nil)
+                                        explicit-bash-args)))
+  (term-mode)
+  (term-line-mode)
+  (switch-to-buffer "*terminal*"))
+
+(global-set-key "\C-cd" 'bash)
+
+
 
 
 ;;;
