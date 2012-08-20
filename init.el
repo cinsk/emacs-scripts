@@ -711,25 +711,12 @@ Second, the terminal created is in line mode by default."
                     (name . "^\\*info.*\\*$")
                     (name . "^\\*Man.*\\*$")
                     (name . "^\\*Help.*\\*$")))
-<<<<<<< variant A
-         ("elisp" (or (mode . emacs-lisp-mode)
-                      (name . "^\\*scratch\\*$")))
-         ("internal" (or
-                      (name . "\\`TAGS\\'")
-                      (name . "^\\*.*\\*$"))))))
->>>>>>> variant B
          ("elisp" (or
                    (mode . emacs-lisp-mode)
                    (name . "\\`\\*scratch\\*\\'")))
          ("internal" (or
                       (name . "^TAGS$")
                       (name . "^\\*.*\\*$"))))))
-####### Ancestor
-         ("emacs" (or
-                   (name . "^\\*scratch\\*$")
-                   (name . "^TAGS$")
-                   (name . "^\\*.*\\*$"))))))
-======= end
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()
