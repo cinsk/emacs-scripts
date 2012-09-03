@@ -670,25 +670,80 @@ appropriately."
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 ;;
-;; I'll prefer `bash' instead of `shell' from now on -- cinsk
+;; `term/shell' is similar to `shell' based on `ansi-term' code.
 ;;
-(defun bash ()
+(defun term/shell (program &optional new-buffer-name)
   "Start a terminal-emulator in a new buffer.
 
-This function is the similar to `term' except few things:
+With a prefix argument, it prompts the user for the shell
+executable.
 
-First, it uses bash(1) only and uses `explicit-bash-args',
-Second, the terminal created is in line mode by default."
-  ;; `M-x term' does not accept any argument on exec.  The definition
-  ;; is copyied from `term' then modified.
-  (interactive)
-  (set-buffer (apply 'make-term (append '("terminal" "/bin/bash" nil)
-                                        explicit-bash-args)))
+If there is already existing buffer with the same name, switch to
+that buffer, otherwise it creates new buffer.
+
+Like `shell', it loads `~/.emacs_SHELLNAME' if exists, or
+`~/.emacs.d/init_SHELLNAME.sh'.
+
+The shell file name (sans directories) is used to make a symbol
+name such as `explicit-bash-args'.  If that symbol is a variable,
+its value is used as a list of arguments when invoking the
+shell."
+  (interactive (let ((default-prog (or explicit-shell-file-name
+                                       (getenv "ESHELL")
+                                       shell-file-name
+                                       (getenv "SHELL")
+                                       "/bin/sh")))
+                 (list (if (or (null default-prog)
+                               current-prefix-arg)
+                           (read-from-minibuffer "Run program: " default-prog)
+                         default-prog))))
+
+  ;; Pick the name of the new buffer.
+  (setq term-ansi-buffer-name
+	(if new-buffer-name
+	    new-buffer-name
+	  (if term-ansi-buffer-base-name
+	      (if (eq term-ansi-buffer-base-name t)
+		  (file-name-nondirectory program)
+		term-ansi-buffer-base-name)
+	    "shell/term")))
+
+  (setq term-ansi-buffer-name (concat "*" term-ansi-buffer-name "*"))
+
+  ;; In order to have more than one term active at a time
+  ;; I'd like to have the term names have the *term-ansi-term<?>* form,
+  ;; for now they have the *term-ansi-term*<?> form but we'll see...
+  (when current-prefix-arg
+    (setq term-ansi-buffer-name 
+          (generate-new-buffer-name term-ansi-buffer-name)))
+
+  (let* ((name (file-name-nondirectory program))
+         (startfile (concat "~/.emacs_" name))
+         (xargs-name (intern-soft (concat "explicit-" name "-args"))))
+    (unless (file-exists-p startfile)
+      (setq startfile (concat user-emacs-directory "init_" name ".sh")))
+
+    (setq term-ansi-buffer-name
+          (apply 'term-ansi-make-term term-ansi-buffer-name program
+                 (if (file-exists-p startfile) startfile)
+                 (if (and xargs-name (boundp xargs-name))
+                     ;; `term' does need readline support.
+                     (remove "--noediting" (symbol-value xargs-name))
+                   '("-i")))))
+
+  (set-buffer term-ansi-buffer-name)
   (term-mode)
   (term-line-mode)
-  (switch-to-buffer "*terminal*"))
 
-(global-set-key "\C-cd" 'bash)
+  ;; I wanna have find-file on C-x C-f -mm
+  ;; your mileage may definitely vary, maybe it's better to put this in your
+  ;; .emacs ...
+
+  (term-set-escape-char ?\C-x)
+
+  (switch-to-buffer term-ansi-buffer-name))
+
+(global-set-key "\C-cd" 'shell)
 
 
 
@@ -711,6 +766,11 @@ Second, the terminal created is in line mode by default."
                     (name . "^\\*info.*\\*$")
                     (name . "^\\*Man.*\\*$")
                     (name . "^\\*Help.*\\*$")))
+         ("gnus" (or
+                  (name . "\\`\\*Group\\*\\'")
+                  (name . "\\`\\*Server\\*\\'")
+                  (name . "\\`\\*Article .*\\*\\'")
+                  (name . "\\`\\*Summary .*\\*\\'")))
          ("elisp" (or
                    (mode . emacs-lisp-mode)
                    (name . "\\`\\*scratch\\*\\'")))
@@ -1614,6 +1674,7 @@ instead of the current word."
     (add-to-list 'Info-directory-list mmm-dir)))
 
 (when (locate-library "mmm-auto")
+
   (eval-after-load "mmm-mode"
     ;; It seems that mmm-mode 0.4.8 will reset the mmm-related face
     ;; attributes after loading mmm-mode.el.  To prevent resetting,
@@ -1621,8 +1682,9 @@ instead of the current word."
     '(progn
        ;; By default, mmm-mode uses faces with bright background for
        ;; the submodes.   I don't like the bright background for most faces.
-       (set-face-background 'mmm-code-submode-face nil)
-       (set-face-background 'mmm-default-submode-face nil)))
+       (set-face-background 'mmm-code-submode-face "black")
+       (set-face-background 'mmm-declaration-submode-face "black")
+       (set-face-background 'mmm-default-submode-face "black")))
 
   (require 'mmm-auto)
 
@@ -1934,6 +1996,13 @@ chance to change the name of the element."
 (defvar default-imap-port 993
   "Default port number for the IMAP4 protocol")
 
+(defvar default-imap-address "imap.gmail.com"
+  "Default IMAP server address")
+
+(defvar default-imap-stream 'ssl
+  "Default IMAP connection method.  See possible value from
+  `nnimap-stream'.")
+
 (defvar default-pop3-ssl-port 995
   "Default port number for the POP3 protocol over TSL/SSL")
 
@@ -1945,6 +2014,15 @@ Best used for `smtpmail-smtp-service' as the default value.")
   "Default port number for the SMTP protocol.
 Best used for `smtpmail-smtp-service' as the default value.")
 
+(defvar default-smtp-server "smtp.gmail.com"
+  "Default SMTP server address")
+
+(defvar company-firewall-on-effect nil
+  "t if behind the infamous company firewall")
+
+(when (string-match "^selune" system-name)
+  (setq company-firewall-on-effect t))
+  
 ;; Since `gnus-nntp-server' will override `gnus-select-method', force
 ;; `gnus-nntp-server' to nil.
 (setq gnus-nntp-server nil)
@@ -1953,13 +2031,34 @@ Best used for `smtpmail-smtp-service' as the default value.")
 ;;(setq gnus-select-method '(nntp "public.teranews.com"))
 
 ;; The select method for `M-x gnus'.
-(setq gnus-select-method `(nnimap "gmail"
-                                  (nnimap-address "imap.gmail.com")
-                                  (nnimap-server-port ,default-imap-port)
-                                  (nnimap-stream ssl)))
+(setq gnus-select-method '(nntp "news.easynews.com"))
+
+(when company-firewall-on-effect
+  ;; My company firewall does not allow out-going traffic except port 80/443.
+  ;;
+  ;; On machine inside of company, use alternative NNTP configuration.
+  ;;
+  ;; For external IMAP server, use ssh local port forwarding:
+  ;;
+  ;; localhost:8993 -> imap.gmail.com:993
+  ;;
+  (setq gnus-select-method '(nntp "proxy.news.easynews.com"
+                                  (nntp-port-number 80))
+        default-imap-port 8993
+        default-imap-stream "network"
+        default-imap-address "localhost"))
 
 ;; `C-u M-x gnus' will use the secondary select method.
 ;;(setq gnus-secondary-select-methods '(nntp "news.kornet.net"))
+(setq gnus-secondary-select-methods
+      `((nnimap "cinsky"
+                (nnimap-stream ,default-imap-stream)
+                (nnimap-address "imap.gmail.com")
+                (nnimap-server-port ,default-imap-port))
+        (nnimap "admin"
+                (nnimap-stream ,default-imap-stream)
+                (nnimap-address "imap.gmail.com")
+                (nnimap-server-port ,default-imap-port))))
 
 ;; If you need to use multiple SMTP accounts, read the
 ;; following articles:
@@ -2001,7 +2100,7 @@ Best used for `smtpmail-smtp-service' as the default value.")
 ;; Extra argument to "gnutls-cli"
 (setq starttls-extra-arguments nil)
 
-(setq smtpmail-smtp-server "smtp.gmail.com")
+(setq smtpmail-smtp-server default-smtp-server)
 (setq smtpmail-smtp-service default-smtp-ssl-port)
 
 ;; SMTP Username and password is located in seperated file for the security.
@@ -2249,6 +2348,7 @@ This function works iff color-theme-history-max-length is not NIL"
      (define-key org-mode-map [(control c) (control ?\\)]
        'org-table-convert-from-lines)
 
+     (define-key org-mode-map [(control c) ?t] 'org-todo)
      ;; When opening a link with `org-open-at-point' (C-c C-o), These
      ;; settings allow to use acroread for pdf files and to use ggv
      ;; for ps files.
@@ -2279,6 +2379,9 @@ This function works iff color-theme-history-max-length is not NIL"
 (global-set-key [(control c) ?b] 'org-iswitchb)
 (global-set-key [(control c) ?\"] 'org-capture)
 
+(org-remember-insinuate)
+(global-set-key [f8] 'org-capture)
+
 (let* ((org-path (getenv "ORG_PATH"))
        (my-org-directory (if org-path 
                              org-path 
@@ -2297,10 +2400,27 @@ This function works iff color-theme-history-max-length is not NIL"
         ;; Install all .org files in `my-org-directory' if exists
         (setq org-agenda-files
               (directory-files my-org-directory t ".*\\.org\\'"))
-        (setq org-default-notes-file notefile))
+        (setq org-default-notes-file notefile)
+        (setq org-directory my-org-directory))
     (lwarn '(dot-emacs) :warning
            (format "cannot access org files in %s." my-org-directory))))
 
+(setq org-capture-templates
+      '(("w" "Work-related TODO" entry
+         (file+headline (concat (file-name-as-directory org-directory)
+                                "work.org")
+                        "Tasks")
+         "* TODO %? %T\n  %i\n  %a")
+        ("p" "Personal TODO" entry
+         (file+headline (concat (file-name-as-directory org-directory)
+                                "personal.org")
+                        "Tasks")
+         "* TODO %? %T\n  %i\n  %a")
+        ("j" "Personal Journal (date based)" entry
+         (file+datetree (concat (file-name-as-directory org-directory)
+                                "personal.org"))
+         "* %?\n  Entered on %U\n  %i\n  %a")))
+      
 ;; (add-to-list 'org-agenda-files "~/.emacs.d/personal.org")
 
 (defvar org-table-convert-last-nrows	3
@@ -2441,25 +2561,47 @@ following:
      ;;
      ;; C-c [   py-shift-region-left
      ;; C-c ]   py-shift-region-right
-     (define-key py-mode-map [(control ?c) ?\]] 
-       'py-shift-region-right)
-     (define-key py-mode-map [(control ?c) ?\[] 
-       'py-shift-region-left)
-     (define-key py-mode-map [(control ?c) (control ?b)]
-       'py-execute-buffer)
-     (define-key py-mode-map [(control ?c) (control ?r)]
-       'py-execute-region)
-     (define-key py-mode-map [(control ?c) (control ?e)]
-       'py-execute-string)
 
-     (define-key py-mode-map [(control ?c) (control ?c)] 'py-comment-region)
-     (define-key py-mode-map [(control ?c) ?i] 'py-indent-region)
+     (let ((map (if (boundp 'python-mode-map)
+                    python-mode-map
+                  py-mode-map)))
+       (define-key map [(control ?c) ?\]] 
+         'py-shift-region-right)
+       (define-key map [(control ?c) ?\[] 
+         'py-shift-region-left)
 
-     (when (locate-file "pychecker" exec-path)
-       (define-key py-mode-map [(control ?c) ?c] 'py-pychecker-run))
+       ;; To eval string/region/buffer in native python,
+       ;; use py-execute-(string|region|buffer).
+       ;;
+       ;; To eval in ipython, use py-execute-(string|region|buffer)-ipython.
 
-     ;; python-mode uses `C-c C-d' for `py-pdbtrack-toggle-stack-tracking'
-     (define-key py-mode-map [(control ?c) (control ?d)] 'zap-to-nonspace)))
+       (if (and (executable-find "ipython")
+                (fboundp 'py-execute-region-ipython))
+           (progn
+             (define-key map [(control ?c) (control ?b)]
+               'py-execute-buffer-ipython)
+             (define-key map [(control ?c) (control ?r)]
+               'py-execute-region-ipython)
+             ;; py-execute-string-ipython is not provided yet
+             ;; (python-mode 6.0.10)
+             (define-key map [(control ?c) (control ?e)]
+               'py-execute-string))
+         (progn
+           (define-key map [(control ?c) (control ?b)]
+             'py-execute-buffer)
+           (define-key map [(control ?c) (control ?r)]
+             'py-execute-region)
+           (define-key map [(control ?c) (control ?e)]
+             'py-execute-string)))
+
+       (define-key map [(control ?c) (control ?c)] 'py-comment-region)
+       (define-key map [(control ?c) ?i] 'py-indent-region)
+
+       (when (locate-file "pychecker" exec-path)
+         (define-key map [(control ?c) ?c] 'py-pychecker-run))
+
+       ;; python-mode uses `C-c C-d' for `py-pdbtrack-toggle-stack-tracking'
+       (define-key map [(control ?c) (control ?d)] 'zap-to-nonspace))))
 
 (when (locate-library "python-mode")
   (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
@@ -2467,16 +2609,16 @@ following:
                                      interpreter-mode-alist))
   (require 'python-mode))
 
-
-(when (locate-library "ipython")
-  ;; Download ipython.el from http://ipython.scipy.org/dist/ipython.el
-  (require 'ipython)
-  (setq py-python-command-args '("-colors" "Linux")))
+;; ipython.el does not work with python-mode any longer. And since
+;; python-mode provides an interface to ipython, I'll stick to
+;; python-mode only from now on. -- cinsk
+  
 
 ;;;
 ;;; Ruby Mode
 ;;;
 (when (locate-library "ruby-mode")
+  ;; For Emacs 24, install ruby-mode and inf-ruby-mode via package.el
   (require 'ruby-mode)
 
   (add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
@@ -2522,8 +2664,52 @@ following:
       (save-excursion
         (save-restriction
           (widen)
-          (ruby-send-region (point-min) (point-max)))))))
-     
+          (ruby-send-region (point-min) (point-max))))))
+
+  ;;
+  ;; RVM irb uses its own prompt pattern which does not work properly 
+  ;; with ruby-mode.  There are two ways to resolve this.  One is to modify
+  ;; ruby-mode so that it can recognize RVM prompt pattern.  Another one is
+  ;; to modify $HOME/.irbrc to force RVM irb to use the original prompt pattern.
+  ;;
+  ;; [http://bugs.ruby-lang.org/issues/6950]
+  ;;
+  ;; Since it is not the defect of ruby-mode, I decided to use $HOME/.irbrc
+  ;; way.  You may need to insert following sentence in your .irbrc:
+  ;;
+  ;;   IRB.conf[:PROMPT_MODE] = :DEFAULT
+  ;;
+  ;; I'll leave the first solution as comments here in case of needs:
+  ;;
+  ;; The first prompt of Ruby 1.8 irb looks like "irb(main):001:0> ".
+  ;; Depending on the current string token, the subsequent prompts
+  ;; look like one of:
+  ;; 
+  ;;   irb(main):001:0> _
+  ;;   irb(main):005:0* _
+  ;;   irb(main):006:0' _
+  ;;   irb(main):007:0" _
+  ;;
+  ;; The first prompt of Ruby 1.9 irb looks like "ruby-1.9.2-p180 :001 > ".
+  ;; And subsequent prompts look like one of:
+  ;;
+  ;;   ruby-1.9.2-p180 :001 > _
+  ;;   ruby-1.9.2-p180 :002 >    _
+  ;;   ruby-1.9.2-p180 :003"> _
+  ;;   ruby-1.9.2-p180 :004'> _
+  ;;
+  ;; ----
+  ;;
+  ;; (and (string-equal inferior-ruby-first-prompt-pattern
+  ;;                    "^irb(.*)[0-9:]+0> *")
+  ;;      (setq inferior-ruby-first-prompt-pattern
+  ;;            "^\\(?:irb(.*)[0-9:]+0\\|ruby[-0-9.a-z]+ *:[0-9]+ *\\)> *"))
+  ;; (and (string-equal inferior-ruby-prompt-pattern
+  ;;                    "^\\(irb(.*)[0-9:]+[>*\"'] *\\)+")
+  ;;      (setq inferior-ruby-prompt-pattern
+  ;;            (concat "^\\(?:\\(irb(.*)[0-9:]+[>*\"'] *\\)+\\|"
+  ;;                    "ruby[-0-9.a-z]+ *:[0-9]+[ \"']> *\\)")))
+  )
 
 ;;;
 ;;; Maven
