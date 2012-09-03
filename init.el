@@ -2266,7 +2266,8 @@ This function works iff color-theme-history-max-length is not NIL"
 
   (random t)
   ;; Select random color theme from my favorite list
-  (color-theme-select-favorite))
+  ;;(color-theme-select-favorite)
+)
 
 
 ;;;
@@ -2966,6 +2967,18 @@ following:
   ;;(global-set-key [f11] 'ecb-next-action)
   )
 
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(mmm-declaration-submode-face ((t nil))))
 ;;; Local Variables:
 ;;; coding: utf-8
 ;;; End:
