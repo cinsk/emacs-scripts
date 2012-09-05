@@ -2412,7 +2412,12 @@ This function works iff color-theme-history-max-length is not NIL"
                                 "work.org")
                         "Tasks")
          "* TODO %? %T\n  %i\n  %a")
-        ("p" "Personal TODO" entry
+        ("p" "Personal Project-related TODO" entry
+         (file+headline (concat (file-name-as-directory org-directory)
+                                "pproject.org")
+                        "Tasks")
+         "* TODO %? %T\n  %i\n  %a")
+        ("P" "Personal TODO" entry
          (file+headline (concat (file-name-as-directory org-directory)
                                 "personal.org")
                         "Tasks")

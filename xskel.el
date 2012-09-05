@@ -125,6 +125,7 @@
   "#+STYLE: <style>pre { font-family: monospace; }</style>\n"
   "#+LINK: google http://www.google.com/search?q=%s\n"
   "#+LINK: rfc http://www.rfc-editor.org/rfc/rfc%s.txt\n"
+  "#+TODO: TODO(t) | DONE(d) CANCELED(c) POSTPONED\n"
   "#+DRAWERS: PROPERTIES CLOCK LOGBOOK COMMENT\n"
   "#+TITLE: " (skeleton-read "Agenda Title: " (buffer-name)) \n
   "#+AUTHOR: " (skeleton-read "Author: " (user-full-name)) \n
