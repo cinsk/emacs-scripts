@@ -2820,25 +2820,24 @@ following:
 ;;;
 (when (locate-library "yasnippet")
   (require 'yasnippet)
-  (yas/initialize)
+  ;;(yas/initialize)
+
   ;; The official document describes the snippets directory in
   ;; "~/.emacs.d/plugins/yasnippet-x.y.z/snippets", whereas Gentoo
   ;; yasnippet package installed them in
   ;; "/usr/share/emacs/etc/yasnippet/snippets".
-  (let* ((gentoo-dir "/usr/share/emacs/etc/yasnippet/snippets")
-         (official-prefix "~/.emacs.d/plugins")
-         ;; First, try the directory of the gentoo package.  If not
-         ;; found, try the official directory.  If the official
-         ;; directory contains more than one version, try to use the
-         ;; latest one (by sorting feature in `directory-files'.
-         (snippets-dir (if (file-exists-p gentoo-dir)
-                           gentoo-dir
-                         (if (file-directory-p official-prefix)
-                             (let ((files (directory-files official-prefix 
-                                                           t "yasnippet-.*")))
-                               (nth (- (length files) 1) files))))))
-    (if snippets-dir
-        (yas/load-directory snippets-dir)
+  (let ((dir (catch 'found
+               (mapc (lambda (path)
+                       (when (file-accessible-directory-p path)
+                         (setq snippet-dir path)
+                         (throw 'found path)))
+                     (list "/usr/share/emacs/etc/yasnippet/snippets"
+                           "~/.emacs.d/plugins"
+                           (file-name-directory
+                            (locate-library "yasnippet")))))))
+    (if dir
+        (progn (setq yas/root-directory dir)
+               (yas/load-directory yas/root-directory))
       (lwarn '(dot-emacs) :warning
              "yasnippet cannot find the snippet directory"))))
 
