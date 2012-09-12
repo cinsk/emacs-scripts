@@ -921,6 +921,7 @@ shell."
 ;; since minibuffer name is like " *Minibuf-1*" which is matched by
 ;; `iswitchb-buffer-ignore'.  Need to find the cause. -- cinsk
 ;;
+(setq iswitchb-buffer-ignore '("\\*Minibuf[^*]*\\*"))
 
 
 ;;;
