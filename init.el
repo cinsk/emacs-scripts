@@ -93,7 +93,8 @@
                       (font-spec :name "NanumGothicCoding")))
 
   (setq default-frame-alist (append default-frame-alist
-                                    '((width . 80) (height . 45))))
+                                    '((width . 80) (height . 45)
+                                      (alpha . (100 . 60)))))
 
   (when (display-graphic-p)
     (global-set-key [(meta ?c)] 'ns-copy-including-secondary))
@@ -198,6 +199,39 @@ by package.el")
 ;; placed in the first place. -- cinsk
 (setq ediff-make-wide-display-function 'cinsk/ediff-make-wide-display)
 (require 'ediff)
+
+(global-set-key [(meta ?D) ?f]
+                (lambda (arg) (interactive "P")
+                  (cinsk/select-command arg 'ediff-files 'ediff-files3)))
+(global-set-key [(meta ?D) ?b]
+                (lambda (arg) (interactive "P")
+                  (cinsk/select-command arg 'ediff-buffers 'ediff-buffers3)))
+(global-set-key [(meta ?D) ?d]
+                (lambda (arg) (interactive "P")
+                  (cinsk/select-command arg 'ediff-directories
+                                        'ediff-directories3)))
+(global-set-key [(meta ?D) ?v] 'ediff-revision)
+(global-set-key [(meta ?D) ?r] 
+                (lambda (arg) (interactive "P")
+                  (cinsk/select-command arg 'ediff-regions-wordwise
+                                        'ediff-regions-linewise)))
+(global-set-key [(meta ?D) ?w] 
+                (lambda (arg) (interactive "P")
+                  (cinsk/select-command arg 'ediff-windows-wordwise
+                                        'ediff-windows-linewise)))
+
+(global-set-key [(meta ?D) ?p] 'ediff-patch-file)
+(global-set-key [(meta ?D) ?P] 'ediff-patch-buffer)
+(global-set-key [(meta ?D) ?m] 
+                (lambda (arg) (interactive "P")
+                  (cinsk/select-command arg 'ediff-merge-revisions
+                                        'ediff-merge-revisions-with-ancestor)))
+(global-set-key [(meta ?D) (meta ?D)] 'ediff-show-registry)
+
+
+(defun cinsk/select-command (arg func1 func2)
+  "call interactively FUNC1 if ARG is nil, otherwise call FUNC2."
+  (call-interactively (if arg func2 func1)))
 
 (defun cinsk/ediff-revision-buffer-p (buf)
   "Return non-nil if BUF is the temporary revision file from `ediff-revision'."
@@ -429,6 +463,14 @@ to the display width"
        ;; TODO: Using zero in MacOS X seems to be fine.  Check in other system.
        0)))
 
+(defun macos-make-sub-frame ()
+  (interactive)
+  (let ((frame (make-frame)))
+    (scale-default-font-height 0.9 frame)
+    (set-frame-parameter frame 'height 54)
+    (set-frame-parameter frame 'left '(- 0))
+    (set-frame-parameter frame 'top '(- 5000))))
+    
 
 
 ;;;
@@ -500,9 +542,6 @@ New height will be calculated by (* FACTOR old-face-height)"
 ;;; Below configuration let the user uses "y" or "n" instead of using
 ;;; longer version.
 (defalias 'yes-or-no-p 'y-or-n-p)
-
-
-(defalias 'qrr 'query-replace-regexp)
 
 (defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
   "setq-if-equal set SYMBOL to NEW-VALUE iff it has OLD-VALUE.
@@ -639,6 +678,33 @@ supplied one, a warning message is generated."
   (add-hook 'dired-before-readin-hook
             (lambda ()
               (set (make-local-variable 'coding-system-for-read) 'utf-8)))
+  )
+
+
+;;;
+;;; Search and replace related configuration
+;;;
+(defalias 'qr 'query-replace)
+(defalias 'qrr 'query-replace-regexp)
+
+(progn
+  ;; The default key binding M-% and C-M-% are too difficult to type.
+  ;; Since M-# and C-M-# are not used by official bindings, I'll use them.
+  (global-set-key [(meta ?#)] 'query-replace)
+  (global-set-key [(control meta ?#)] 'query-replace-regexp)
+
+  ;; During isearch, M-% and C-M-% will also launching replace job
+  ;; with the last search string.  Thus, I'll add M-% and C-M-% for
+  ;; the consistence.
+  (define-key isearch-mode-map [(meta ?#)] 'isearch-query-replace)
+  (define-key isearch-mode-map [(control meta ?#)] 
+    'isearch-query-replace-regexp)
+    
+  ;; During isearch, `M-s w' will toggle word search, which is
+  ;; difficult to remember, so use `M-W' instead.
+  ;;
+  ;; Note that `M-w' works as original, `kill-ring-save'.
+  (define-key isearch-mode-map [(meta ?W)] 'isearch-toggle-word)
   )
 
 
