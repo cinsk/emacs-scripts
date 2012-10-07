@@ -967,6 +967,8 @@ shell."
 ;;; Prompt for arguments to the preprocessor for `c-macro-expand'
 (setq c-macro-prompt-flag t)
 
+(add-hook 'java-mode-hook (lambda () (subword-mode 1)))
+
 
 ;;;
 ;;; Use hippie expansion for dynamic abbreviation
@@ -2118,14 +2120,16 @@ Best used for `smtpmail-smtp-service' as the default value.")
 ;; `C-u M-x gnus' will use the secondary select method.
 ;;(setq gnus-secondary-select-methods '(nntp "news.kornet.net"))
 (setq gnus-secondary-select-methods
-      `((nnimap "cinsky"
-                (nnimap-stream ,default-imap-stream)
-                (nnimap-address "imap.gmail.com")
-                (nnimap-server-port ,default-imap-port))
-        (nnimap "admin"
-                (nnimap-stream ,default-imap-stream)
-                (nnimap-address "imap.gmail.com")
-                (nnimap-server-port ,default-imap-port))))
+      `((nnfolder "")
+        ;; (nnimap "cinsky"
+        ;;         (nnimap-stream ,default-imap-stream)
+        ;;         (nnimap-address "imap.gmail.com")
+        ;;         (nnimap-server-port ,default-imap-port))
+        ;; (nnimap "admin"
+        ;;         (nnimap-stream ,default-imap-stream)
+        ;;         (nnimap-address "imap.gmail.com")
+        ;;         (nnimap-server-port ,default-imap-port))
+        ))
 
 ;; If you need to use multiple SMTP accounts, read the
 ;; following articles:
