@@ -1240,6 +1240,13 @@ current window"
 ;;(global-set-key [S-iso-lefttab] 'reverse-other-window)
 ;;(global-set-key [(backtab)] 'reverse-other-window)
 (global-set-key [(control tab)] 'smart-other-frame-or-window)
+
+;; I want C-<tab> works consistently even in minibuffer-mode.
+;; Since, C-<tab> is bound to `file-cache-minibuffer-complete'
+;; in the minibuffer mode, I'll replace to S-<tab>.
+(define-key minibuffer-local-map [(backtab)] 'file-cache-minibuffer-complete)
+(define-key minibuffer-local-map [(control tab)] 'smart-other-frame-or-window)
+
 (global-set-key [(control x) ?w ?n] 'other-window)
 (global-set-key [(control x) ?w ?o] 'other-window)
 (global-set-key [(control x) ?w ?p] 'reverse-other-window)
@@ -2192,6 +2199,53 @@ Best used for `smtpmail-smtp-service' as the default value.")
                                        ,default-smtp-ssl-port
                                        nil nil)))
 
+
+(defun complete-contact-address-internal ()
+  (let ((name (completing-read "address: "
+                               my-google-contacts
+                               nil 'confirm)))
+    (if (string-match "@" name)
+        name
+      (let ((found (assoc name my-google-contacts))
+            (nam (if (string-match "\\(.*?\\) *([^)]*) *$" name)
+                     (match-string 1 name)
+                   name)))
+        (format "%s <%s>" nam (cdr found))))))
+
+(defun complete-contact-address (&optional arg)
+  (interactive "P")
+  (let ((address (complete-contact-address-internal))
+        (pos (point)))
+    (save-restriction
+      (save-match-data
+        (goto-char (point-min))
+        (re-search-forward (regexp-quote mail-header-separator)
+                           (point-max) t)
+        (beginning-of-line)
+        (let ((header-sep (point)))
+          (if (>= pos header-sep)
+              (progn
+                (goto-char (point-min))
+                (re-search-forward "^To:" header-sep t))
+            (goto-char pos))
+          (beginning-of-line)
+          (if (or (re-search-forward "^[^[:blank:]][^:]*:[[:blank:]]*$"
+                                     (line-end-position) t)
+                  (re-search-forward "^[[:blank:]]+$" (line-end-position) t))
+              (insert address)
+            (beginning-of-line)
+            (re-search-forward "[,[:blank:]]*$" (line-end-position) t)
+            (replace-match (format ", %s" address))))))))
+
+(eval-after-load "sendmail"
+  '(progn
+     (define-key mail-mode-map [(meta return)] 'complete-contact-address)
+
+     (let ((contacts (concat (file-name-as-directory user-emacs-directory)
+                             "contacts.el")))
+       (when (file-exists-p contacts)
+         (load-file contacts)))))
+    
 
 (defmacro time-loop (n &rest body)
   "Return time before and after N iteration of BODY.
