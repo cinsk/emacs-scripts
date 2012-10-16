@@ -36,11 +36,18 @@
       (other-frame arg)
     (tmm-menubar arg)))
 
+(defun set-exec-path-from-shell-path ()
+  (let ((newpath (shell-command-to-string "$SHELL -l -c 'echo $PATH'")))
+    (setenv "PATH" newpath)
+    (setq exec-path (split-string newpath path-separator))))
+
 (when (eq system-type 'darwin)
   (setq mac-option-modifier nil)
   (setq mac-command-modifier 'meta)
   ;; sets fn-delete to be right-delete
   (global-set-key [kp-delete] 'delete-char)
+
+  (set-exec-path-from-shell-path)
 
   (cond
     ;; prefer GNU ls over the native one.
