@@ -2602,6 +2602,23 @@ following:
                        (and (eq (forward-line) 0) (< (point) end))))
               (org-table-convert-region start end '(16))))))))
 
+(setq org-export-html-style "
+<link rel=\"stylesheet\" type=\"text/css\"
+      href=\"http://www.cinsk.org/bootstrap/bootstrap.css\"/>
+<link rel=\"stylesheet\" type=\"text/css\"
+      href=\"http://www.cinsk.org/bootstrap/bootstrap-responsive.css\"/>
+<link rel=\"stylesheet\" type=\"text/css\"
+      href=\"http://www.cinsk.org/bootstrap/docs.css\"/>
+<style type=\"text/css\">
+  <!--/*--><![CDATA[/*><!--*/
+  body { margin: 2% 6% 2% 10%; }
+  h2 { margin-left: -7%; }
+  h3 { margin-left: -5%; }
+  pre  { background-color: Black; color: White; }
+  /*]]>*/-->
+</style>
+")
+
 
 ;;;
 ;;; Emacs-wiki support
