@@ -4,6 +4,25 @@
 ;;; Window and Frame related configuration
 ;;;
 
+
+;; Set the default value for the title bar of the Emacs frame.  
+;;
+;; The possible format specifiers (e.g. %F or %b) are explained in
+;; the documentation of `mode-line-format'.
+
+(setq frame-title-format
+      (if (= (user-uid) 0)
+          ;; If Emacs running as root, print "ROOT" just in case
+          "%F - ROOT - %b"
+        "%F - %b"))
+
+(setq icon-title-format
+      (if (= (user-uid) 0)
+          "%F - ROOT"
+        "%F"))
+
+
+
 (defun toggle-current-window-dedication ()
   "Toggle current window as dedicated"
   (interactive)

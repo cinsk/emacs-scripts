@@ -273,65 +273,16 @@ supplied one, a warning message is generated."
 
 
 (cinsk/load-snippet "shell"
-                    'shell)
+  'shell)
 
-
-;;;
-;;; Buffer Menu
-;;;
-
-;; Sort by the 2nd column (buffer name) in Buffer list
-(setq Buffer-menu-sort-column 2)
-
-;; ibuffer - advanced buffer menu
-(global-set-key (kbd "C-x C-b") 'ibuffer)
-(autoload 'ibuffer "ibuffer" "List buffers." t)
-
-(setq ibuffer-saved-filter-groups
-      '(("default"
-         ("dired" (mode . dired-mode))
-         ("manual" (or
-                    (name . "^\\*info.*\\*$")
-                    (name . "^\\*Man.*\\*$")
-                    (name . "^\\*Help.*\\*$")))
-         ("gnus" (or
-                  (name . "\\`\\*Group\\*\\'")
-                  (name . "\\`\\*Server\\*\\'")
-                  (name . "\\`\\*Article .*\\*\\'")
-                  (name . "\\`\\*Summary .*\\*\\'")))
-         ("elisp" (or
-                   (mode . emacs-lisp-mode)
-                   (name . "\\`\\*scratch\\*\\'")))
-         ("internal" (or
-                      (name . "^TAGS$")
-                      (name . "^\\*.*\\*$"))))))
-
-(add-hook 'ibuffer-mode-hook
-          (lambda ()
-            (ibuffer-switch-to-saved-filter-groups "default")))
+(cinsk/load-snippet "buffer-menu"
+  'buffer-menu)
 
 
 ;;; When a user paste clipboard content in Emacs using mouse button 2,
 ;;; the content will be pasted in the place at mouse click.  Comment
 ;;; below line for the default behavior (at mouse click).
 (setq mouse-yank-at-point t)
-
-
-;;; Set the default value for the title bar of the Emacs frame.  
-;;;
-;;; The possible format specifiers (e.g. %F or %b) are explained in
-;;; the documentation of `mode-line-format'.
-
-(setq frame-title-format
-      (if (= (user-uid) 0)
-          ;; If Emacs running as root, print "ROOT" just in case
-          "%F - ROOT - %b"
-        "%F - %b"))
-
-(setq icon-title-format
-      (if (= (user-uid) 0)
-          "%F - ROOT"
-        "%F"))
 
 
 ;;;
@@ -405,12 +356,18 @@ supplied one, a warning message is generated."
 (setq iswitchb-default-method 'maybe-frame) ; ask to use another frame.
 
 ;;
-;; Sometimes, I found that minibuffers are in the buffer list which is
-;; very annoying.  I don't know why.  It should not be in the list
-;; since minibuffer name is like " *Minibuf-1*" which is matched by
-;; `iswitchb-buffer-ignore'.  Need to find the cause. -- cinsk
+;; Normally, switching buffer commands (e.g. `switch-to-buffer' or
+;; `iswitchb-buffer') ignore buffer that matched "^ ".
 ;;
-(setq iswitchb-buffer-ignore '("\\*Minibuf[^*]*\\*"))
+;; When I develop some lisp package, I need to switch to buffers that
+;; begins with "^ ".  Thus, I don't use "^ " as the value of
+;; `iswitchb-buffer-ignore'.
+;;
+;; The problem is, sometimes " *Minibuf-1*" buffer will be in the buffer
+;; list, which makes me annoying.  Thus, I'll explicitly ignore minibuffer-like
+;; names in `iswitchb-buffer-ignore'. -- cinsk
+;;
+(setq iswitchb-buffer-ignore '("^ \\*Minibuf[^*]*\\*"))
 
 
 ;;;
@@ -465,6 +422,9 @@ character to the spaces"
 (add-hook 'c++-mode-hook '(lambda () 
                             (make-local-variable 'write-contents-hooks)
                             (add-hook 'write-contents-hooks 'source-untabify)))
+(add-hook 'java-mode-hook '(lambda () 
+                             (make-local-variable 'write-contents-hooks)
+                             (add-hook 'write-contents-hooks 'source-untabify)))
 
 
 (cinsk/load-snippet "delete"
@@ -548,64 +508,8 @@ character to the spaces"
       (add-hook 'find-file-hook 'vim-modeline/do))))
 
 
-;;;
-;;; CVS
-;;;
-(defun pop-to-cvs-buffer (arg)
-  "Select \"*cvs*\" buffer in some window, preferably a different one.
-If the buffer is not found, call `cvs-examine' interactively.
-With a prefix argument, call `cvs-examine' with the prefix argument, 16."
-  (interactive "P")
-  (let ((buf (get-buffer "*cvs*")))
-    (if arg
-        (let ((prefix-arg '(16)))       ; C-u C-u
-          (call-interactively #'cvs-examine))
-      (if buf
-          (pop-to-buffer buf)
-        (call-interactively #'cvs-examine)))))
-
-;;(global-set-key [f2] #'pop-to-cvs-buffer)
-
-
-;;;
-;;; Git
-;;;
-(setq git-show-uptodate t
-      git-show-ignored t
-      git-show-unknown t)
-
-(eval-after-load "git"
-  '(progn
-     (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status)))
-
-(when (locate-library "git")
-  (require 'git))
-
-(when (locate-library "magit")
-  (require 'magit))
-
-(when nil
-  ;; I do not use egg anymore.
-  (let ((egg-dir (concat (file-name-as-directory 
-                          (expand-file-name user-emacs-directory)) "egg")))
-    (if (file-accessible-directory-p egg-dir)
-        (progn
-          (add-to-list 'load-path egg-dir)
-          (when (locate-library "egg")
-            (require 'egg))))))
-
-;;;
-;;; vc-jump
-;;;
-(when (locate-library "vc-jump")
-  (require 'vc-jump)
-  ;; I prefer magit over egg, egg over git
-  (add-to-list 'vc-status-assoc
-               (cons 'Git 
-                     (cond ((fboundp 'magit-status) #'magit-status)
-                           ((fboundp 'egg-status) #'egg-status)
-                           (#'git-status))))
-  (global-set-key [f12] 'vc-jump))
+(cinsk/load-snippet "vcs"
+  'version-control-system)
 
 
 (when (locate-library "winner")
@@ -717,129 +621,12 @@ starting number."
 ;;(add-hook 'temp-buffer-show-hook
 ;;          'fit-frame-if-one-window 'append)
 
-
-;;;
-;;; Emacs Lisp Mode
-;;;
-
-(add-hook 'emacs-lisp-mode-hook 
-          '(lambda ()
-             (safe-visit-tags-table (concat (file-name-as-directory 
-                                             user-emacs-directory)
-                                            "TAGS.emacs") t)))
-
-(eval-after-load "lisp-mode"
-  '(progn
-     (define-key emacs-lisp-mode-map [f5] 'eval-buffer)
-     (define-key emacs-lisp-mode-map [(control c) ?\|] 'eval-region)))
-
-
-;;;
-;;; Common Lisp Mode -- from clisp-2.38/editors.txt
-;;;
-;;; It seems that Emacs already have `lisp-eval-last-sexp' that has
-;;; the same feature of `
-
-;; clisp does not work with slime package for now -- cinsk
-;;(setq inferior-lisp-program "clisp -I -q -E utf-8")
-;;(setq inferior-lisp-program "sbcl")
-
-(defun lisp-macroexpand-region (start end &optional and-go)
-  "Macroexpand the current region in the inferior Lisp process.
-Prefix argument means switch to the Lisp buffer afterwards."
-  (interactive "r\nP")
-  (comint-send-string
-   (inferior-lisp-proc)
-   (format "(macroexpand-1 (quote %s))\n"
-           (buffer-substring-no-properties start end)))
-  (if and-go (switch-to-lisp t)))
-
-
-(defun lisp-macroexpand-sexp (&optional and-go)
-  "Macroexpand the next sexp in the inferior Lisp process.
-Prefix argument means switch to the Lisp buffer afterwards."
-  (interactive "P")
-  (lisp-macroexpand-region (point) (scan-sexps (point) 1) and-go))
-
-(eval-after-load "inf-lisp"
-  '(define-key inferior-lisp-mode-map [(control ?x) (control ?m)] 
-     'lisp-macro-expand-sexp))
-
-(define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
-
-
-;;;
-;;; slime
-;;;
-(when (locate-library "slime-autoloads")
-  (eval-after-load "slime" 
-    '(progn 
-       (slime-setup)
-       ;; C-c C-b slime-eval-buffer
-       ;; C-c C-e slime-eval-last-expression
-       ;; C-c C-r slime-eval-region
-
-       ;; `M-x slime-interrupt' moved to `C-c C-B' from `C-c C-b'
-       (move-key slime-mode-map [(control ?c) (control ?b)]
-                 [(control ?c) (control ?B)])
-       (move-key slime-mode-map [(control ?c) (control ?e)]
-                 [(control meta ?\:)])
-       ;; C-c v   slime-describe-symbol
-       ;; C-c f   slime-describe
-       ;;(define-key slime-mode-map [(control ?c) ?v]         'slime-describe-symbol)
-       ;;(define-key slime-mode-map [(control ?c) ?f]         'slime-describe-function)
-       (define-key slime-mode-map [(control ?c) (control ?e)]
-         'slime-eval-last-expression)
-       (define-key slime-mode-map [(control ?c) (control ?b)]
-         'slime-eval-buffer)))
-  (require 'slime-autoloads))
-
-
-;; clisp does not work with slime package for now -- cinsk
-;;(setq inferior-lisp-program "clisp -I -q -E utf-8")
-(if (locate-file "sbcl" exec-path)
-    (setq inferior-lisp-program "sbcl"))
-
-
-
-;;;
-;;; quack (enhanced support for scheme-mode)
-;;;
-(when (locate-library "quack")
-  (require 'quack)
-  (setq quack-browse-url-browser-function 'quack-w3m-browse-url-other-window)
-  (setq quack-fontify-style 'emacs)
-  (setq quack-default-program "mzscheme"))
-
-(defun scheme-grep-symbols-on-region ()
-  "Insert all global symbols into the selected buffer"
-  (interactive)
-  (let ((src (current-buffer))
-        (dst (get-buffer-create "*scheme-tmp*"))
-        (begin (region-beginning))
-        (end (region-end)))
-    (save-excursion
-      (set-buffer dst)
-      (erase-buffer)
-      (scheme-mode)
-      (insert "(provide "))
-    (save-excursion
-      (narrow-to-region begin end)
-      (goto-char (point-min))
-      (while (re-search-forward
-              "(define[ \t\v\n]+(?[ \t\v\n]*\\([^ )\t\v\n]*\\)" nil t)
-        (let ((word (match-string-no-properties 1)))
-          (set-buffer dst)
-          (insert word)
-          ;;(indent-according-to-mode)
-          ;;(newline)
-          (newline-and-indent)
-          (set-buffer src))))
-    ))
+(cinsk/load-snippet "lisp"
+  'lisp)
 
 
 (cinsk/load-snippet "latex"
-                    'latex-mode)
+  'latex-mode)
 
 
 (defun fill-text-line-paragraph (begin end)
@@ -925,190 +712,9 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 ;;(split-window-horizontally)
 
-
-;;;
-;;; gnus (news/e-mail) accounts settings
-;;;
-(require 'smtpmail)
-(require 'starttls)
+(cinsk/load-snippet "mail"
+  'mail-news-gnus)
 
-(defvar default-imap-port 993
-  "Default port number for the IMAP4 protocol")
-
-(defvar default-imap-address "imap.gmail.com"
-  "Default IMAP server address")
-
-(defvar default-imap-stream 'ssl
-  "Default IMAP connection method.  See possible value from
-  `nnimap-stream'.")
-
-(defvar default-pop3-ssl-port 995
-  "Default port number for the POP3 protocol over TSL/SSL")
-
-(defvar default-smtp-ssl-port 587
-  "Default port number for the encrypted SMTP protocol.
-Best used for `smtpmail-smtp-service' as the default value.")
-
-(defvar default-smtp-port 25
-  "Default port number for the SMTP protocol.
-Best used for `smtpmail-smtp-service' as the default value.")
-
-(defvar default-smtp-server "smtp.gmail.com"
-  "Default SMTP server address")
-
-(defvar company-firewall-on-effect nil
-  "t if behind the infamous company firewall")
-
-(when (string-match "^selune" system-name)
-  (setq company-firewall-on-effect t))
-  
-;; Since `gnus-nntp-server' will override `gnus-select-method', force
-;; `gnus-nntp-server' to nil.
-(setq gnus-nntp-server nil)
-
-;;(setq gnus-select-method '(nntp "news.kornet.net"))
-;;(setq gnus-select-method '(nntp "public.teranews.com"))
-
-;; The select method for `M-x gnus'.
-(setq gnus-select-method '(nntp "news.easynews.com"))
-
-(when company-firewall-on-effect
-  ;; My company firewall does not allow out-going traffic except port 80/443.
-  ;;
-  ;; On machine inside of company, use alternative NNTP configuration.
-  ;;
-  ;; For external IMAP server, use ssh local port forwarding:
-  ;;
-  ;; localhost:8993 -> imap.gmail.com:993
-  ;;
-  (setq gnus-select-method '(nntp "proxy.news.easynews.com"
-                                  (nntp-port-number 80))
-        default-imap-port 8993
-        default-imap-stream "network"
-        default-imap-address "localhost"))
-
-;; `C-u M-x gnus' will use the secondary select method.
-;;(setq gnus-secondary-select-methods '(nntp "news.kornet.net"))
-(setq gnus-secondary-select-methods
-      `((nnfolder "")
-        ;; (nnimap "cinsky"
-        ;;         (nnimap-stream ,default-imap-stream)
-        ;;         (nnimap-address "imap.gmail.com")
-        ;;         (nnimap-server-port ,default-imap-port))
-        ;; (nnimap "admin"
-        ;;         (nnimap-stream ,default-imap-stream)
-        ;;         (nnimap-address "imap.gmail.com")
-        ;;         (nnimap-server-port ,default-imap-port))
-        ))
-
-;; If you need to use multiple SMTP accounts, read the
-;; following articles:
-;;
-;;   http://linil.wordpress.com/2008/01/18/gnus-gmail/
-
-(setq send-mail-function 'smtpmail-send-it
-      message-send-mail-function 'smtpmail-send-it
-      mail-from-style nil
-      user-full-name "Seong-Kook Shin"
-      user-mail-address "cinsky@gmail.com"
-      message-signature-file "~/.signature"
-      smtpmail-debug-info t
-      smtpmail-debug-verb t)
-
-;;
-;; TODO: 1. set T if the external `gnutls-cli' exists
-;;       2. set nil if the external `starttls' exists
-;;       3. show warning message that SMTP will be not working.
-(setq starttls-use-gnutls t)
-
-(if starttls-use-gnutls
-    (let ((tls (locate-file "gnutls-cli" exec-path)))
-      (if (and tls (file-executable-p tls))
-          (setq starttls-gnutls-program tls)
-        (progn
-          (lwarn '(dot-emacs) :warning
-                 "GNUTLS command is not found, SMTP may not work correctly")
-          (setq starttls-use-gnutls nil)))))
-
-(if (not starttls-use-gnutls)
-    (let ((tls (locate-file "starttls" exec-path)))
-      (if (and tls (file-executable-p tls))
-          (setq starttls-program tls)
-        (lwarn '(dot-emacs) :warning
-               "STARTTLS command is not found, SMTP may not work correctly"))))
-
-
-;; Extra argument to "gnutls-cli"
-(setq starttls-extra-arguments nil)
-
-(setq smtpmail-smtp-server default-smtp-server)
-(setq smtpmail-smtp-service default-smtp-ssl-port)
-
-;; SMTP Username and password is located in seperated file for the security.
-;; The format of ~/.authinfo looks like:
-;;
-;;   machine imap.gmail.com login USER@gmail.com password PASSWORD port 993
-;;   machine smtp.gmail.com login USER@gmail.com password PASSWORD port 587
-;;
-;; Make sure that ~/.authinfo has access mode 600.
-
-(let ((netrc "~/.authinfo"))
-  (if (file-readable-p netrc)
-      (setq smtpmail-auth-credentials netrc)
-    (lwarn '(dot-emacs) :warning
-           "NETRC auth. file not exist, SMTP may not work correctly")))
-
-(setq smtpmail-starttls-credentials `((,smtpmail-smtp-server
-                                       ,default-smtp-ssl-port
-                                       nil nil)))
-
-
-(defun complete-contact-address-internal ()
-  (let ((name (completing-read "address: "
-                               my-google-contacts
-                               nil 'confirm)))
-    (if (string-match "@" name)
-        name
-      (let ((found (assoc name my-google-contacts))
-            (nam (if (string-match "\\(.*?\\) *([^)]*) *$" name)
-                     (match-string 1 name)
-                   name)))
-        (format "%s <%s>" nam (cdr found))))))
-
-(defun complete-contact-address (&optional arg)
-  (interactive "P")
-  (let ((address (complete-contact-address-internal))
-        (pos (point)))
-    (save-restriction
-      (save-match-data
-        (goto-char (point-min))
-        (re-search-forward (regexp-quote mail-header-separator)
-                           (point-max) t)
-        (beginning-of-line)
-        (let ((header-sep (point)))
-          (if (>= pos header-sep)
-              (progn
-                (goto-char (point-min))
-                (re-search-forward "^To:" header-sep t))
-            (goto-char pos))
-          (beginning-of-line)
-          (if (or (re-search-forward "^[^[:blank:]][^:]*:[[:blank:]]*$"
-                                     (line-end-position) t)
-                  (re-search-forward "^[[:blank:]]+$" (line-end-position) t))
-              (insert address)
-            (beginning-of-line)
-            (re-search-forward "[,[:blank:]]*$" (line-end-position) t)
-            (replace-match (format ", %s" address))))))))
-
-(eval-after-load "sendmail"
-  '(progn
-     (define-key mail-mode-map [(meta return)] 'complete-contact-address)
-
-     (let ((contacts (concat (file-name-as-directory user-emacs-directory)
-                             "contacts.el")))
-       (when (file-exists-p contacts)
-         (load-file contacts)))))
-    
 
 (defmacro time-loop (n &rest body)
   "Return time before and after N iteration of BODY.
