@@ -6,7 +6,7 @@
 
 ;;;
 ;;; You can download the latest version of this script at cinsk.org
-;;; 
+;;;
 ;;; $ # make sure that you don't have .emacs.d/ nor .emacs file
 ;;; $ rm -r .emacs.d .emacs
 ;;; $ # Get the source file from my repository
@@ -66,8 +66,8 @@
 
   (when nil
     ;; These configuration seems to stop working in recent version of
-    ;; Emacs 24.x. 
-    (set-fontset-font "fontset-standard" 'unicode 
+    ;; Emacs 24.x.
+    (set-fontset-font "fontset-standard" 'unicode
                       (font-spec :name "Consolas"
                                  :weight 'normal
                                  :slant 'normal
@@ -77,7 +77,7 @@
 
     (set-face-font 'default "fontset-standard"))
 
-  (when t
+  (when (display-graphic-p)
     ;; These configuration seems to work in
     ;; GNU Emacs 24.1.1 (x86_64-apple-darwin, NS apple-appkit-1038.36)
     ;; of 2012-06-11 on bob.porkrind.org
@@ -166,7 +166,7 @@
     ;; 23).  Thus, I'll force to load it here.
     (package-initialize)))
 
-;; I will install packages that is not managed by packages.el in 
+;; I will install packages that is not managed by packages.el in
 ;; "$HOME/.emacs.d/site-lisp".
 ;;
 ;; Note that packages in this directory has higher priority than others.
@@ -181,7 +181,7 @@ by package.el")
     (dolist (elem (directory-files-and-attributes dir))
       (let* ((fname (car elem))
              (attrs (cdr elem))
-             (path (expand-file-name 
+             (path (expand-file-name
                     (concat (file-name-as-directory dir)
                             fname))))
         (when (and (not (string-equal fname "."))
@@ -218,18 +218,18 @@ by package.el")
                   (cinsk/select-command arg 'ediff-directories
                                         'ediff-directories3)))
 (global-set-key [(meta ?D) ?v] 'ediff-revision)
-(global-set-key [(meta ?D) ?r] 
+(global-set-key [(meta ?D) ?r]
                 (lambda (arg) (interactive "P")
                   (cinsk/select-command arg 'ediff-regions-wordwise
                                         'ediff-regions-linewise)))
-(global-set-key [(meta ?D) ?w] 
+(global-set-key [(meta ?D) ?w]
                 (lambda (arg) (interactive "P")
                   (cinsk/select-command arg 'ediff-windows-wordwise
                                         'ediff-windows-linewise)))
 
 (global-set-key [(meta ?D) ?p] 'ediff-patch-file)
 (global-set-key [(meta ?D) ?P] 'ediff-patch-buffer)
-(global-set-key [(meta ?D) ?m] 
+(global-set-key [(meta ?D) ?m]
                 (lambda (arg) (interactive "P")
                   (cinsk/select-command arg 'ediff-merge-revisions
                                         'ediff-merge-revisions-with-ancestor)))
@@ -328,7 +328,7 @@ the left corder unchanged.")
   (interactive)
   (let ((w (prefix-numeric-value current-prefix-arg))
         (min-width (cond ((window-live-p ediff-window-A)
-                          (if (eq ediff-split-window-function 
+                          (if (eq ediff-split-window-function
                                   'split-window-vertically)
                               ;; ediff windows splitted like A/B
                               (window-width ediff-window-A)
@@ -357,18 +357,18 @@ It assumes that it is called from within the control buffer."
   (if (not (fboundp 'ediff-display-pixel-width))
       (error "Can't determine display width"))
   (let* ((frame-A (window-frame ediff-window-A))
-	 (frame-A-params (frame-parameters frame-A))
+         (frame-A-params (frame-parameters frame-A))
          (fw (frame-width frame-A))
          (fpw (frame-pixel-width frame-A))
-	 (cw (ediff-frame-char-width frame-A))
+         (cw (ediff-frame-char-width frame-A))
          (febw cw)                      ; frame external border width
          (fibw (- fpw (* fw cw)))       ; frame internal border width
          desired-fw desired-fpw desired-left)
 
     (setq ediff-wide-display-orig-parameters
-	  (list (cons 'left (max 0 (eval (cdr (assoc 'left frame-A-params)))))
-		(cons 'width (cdr (assoc 'width frame-A-params))))
-	  ediff-wide-display-frame frame-A)
+          (list (cons 'left (max 0 (eval (cdr (assoc 'left frame-A-params)))))
+                (cons 'width (cdr (assoc 'width frame-A-params))))
+          ediff-wide-display-frame frame-A)
 
     ;;(message "wide window width: %S" cinsk/ediff-wide-window-width)
     ;;(message "split function: %S" ediff-split-window-function)
@@ -398,7 +398,7 @@ It assumes that it is called from within the control buffer."
 
       (if (> (+ desired-left (+ (* desired-fw cw) fibw (/ febw 2)))
              (ediff-display-pixel-width))
-          (setq desired-left (- (ediff-display-pixel-width) 
+          (setq desired-left (- (ediff-display-pixel-width)
                                 (+ (* desired-fw cw) fibw (/ febw 2))))))
 
     ;; (message "resizing WIDTH to %S where LEFT to %S" desired-fw desired-left)
@@ -477,7 +477,7 @@ to the display width"
     (set-frame-parameter frame 'height 54)
     (set-frame-parameter frame 'left '(- 0))
     (set-frame-parameter frame 'top '(- 5000))))
-    
+
 
 
 ;;;
@@ -533,19 +533,19 @@ New height will be calculated by (* FACTOR old-face-height)"
                            (interactive)
                            (scale-default-font-height 1.1
                                                       (selected-frame))
-                           (message "New face height: %d" 
+                           (message "New face height: %d"
                                     (face-attribute 'default :height))))
     (global-set-key decr (lambda ()
                            (interactive)
                            (scale-default-font-height 0.9
                                                       (selected-frame))
-                           (message "New face height: %d" 
+                           (message "New face height: %d"
                                     (face-attribute 'default :height))))))
 
 ;;; Sometimes, Emacs asks for the confirmation of a command such as
 ;;; killing a buffer.  In that case, user should type "yes" or "no"
 ;;; directly.
-;;; 
+;;;
 ;;; Below configuration let the user uses "y" or "n" instead of using
 ;;; longer version.
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -704,9 +704,9 @@ supplied one, a warning message is generated."
   ;; with the last search string.  Thus, I'll add M-% and C-M-% for
   ;; the consistence.
   (define-key isearch-mode-map [(meta ?#)] 'isearch-query-replace)
-  (define-key isearch-mode-map [(control meta ?#)] 
+  (define-key isearch-mode-map [(control meta ?#)]
     'isearch-query-replace-regexp)
-    
+
   ;; During isearch, `M-s w' will toggle word search, which is
   ;; difficult to remember, so use `M-W' instead.
   ;;
@@ -729,7 +729,7 @@ supplied one, a warning message is generated."
 ;; shell in UTF-8 coding system.
 (defun unicode-shell (&optional encoding)
   "Execute the shell buffer in UTF-8 encoding.
-Note that you'll need to set the environment variable LANG and others 
+Note that you'll need to set the environment variable LANG and others
 appropriately."
   (interactive)
   (let ((coding-system-for-read (or encoding 'utf-8))
@@ -773,13 +773,13 @@ shell."
 
   ;; Pick the name of the new buffer.
   (setq term-ansi-buffer-name
-	(if new-buffer-name
-	    new-buffer-name
-	  (if term-ansi-buffer-base-name
-	      (if (eq term-ansi-buffer-base-name t)
-		  (file-name-nondirectory program)
-		term-ansi-buffer-base-name)
-	    "shell/term")))
+        (if new-buffer-name
+            new-buffer-name
+          (if term-ansi-buffer-base-name
+              (if (eq term-ansi-buffer-base-name t)
+                  (file-name-nondirectory program)
+                term-ansi-buffer-base-name)
+            "shell/term")))
 
   (setq term-ansi-buffer-name (concat "*" term-ansi-buffer-name "*"))
 
@@ -787,7 +787,7 @@ shell."
   ;; I'd like to have the term names have the *term-ansi-term<?>* form,
   ;; for now they have the *term-ansi-term*<?> form but we'll see...
   (when current-prefix-arg
-    (setq term-ansi-buffer-name 
+    (setq term-ansi-buffer-name
           (generate-new-buffer-name term-ansi-buffer-name)))
 
   (let* ((name (file-name-nondirectory program))
@@ -862,7 +862,7 @@ shell."
 (setq mouse-yank-at-point t)
 
 
-;;; Set the default value for the title bar of the Emacs frame.  
+;;; Set the default value for the title bar of the Emacs frame.
 ;;;
 ;;; The possible format specifiers (e.g. %F or %b) are explained in
 ;;; the documentation of `mode-line-format'.
@@ -890,7 +890,7 @@ shell."
 (global-set-key "\C-cc" 'compile)
 (global-set-key [(control ?c) (control ?c)] 'comment-region)
 
-(global-set-key [?\C-.] 'find-tag-other-window) ; C-x o 
+(global-set-key [?\C-.] 'find-tag-other-window) ; C-x o
 
 
 (global-set-key [(control c) ?i] 'indent-region)
@@ -941,13 +941,13 @@ shell."
 
 (add-hook 'c-mode-hook
           #'(lambda ()
-              (safe-visit-tags-table (concat (file-name-as-directory 
+              (safe-visit-tags-table (concat (file-name-as-directory
                                               user-emacs-directory)
                                              "TAGS.sys") t)))
 
 (add-hook 'c++-mode-hook
           #'(lambda ()
-              (safe-visit-tags-table (concat (file-name-as-directory 
+              (safe-visit-tags-table (concat (file-name-as-directory
                                               user-emacs-directory)
                                              "TAGS.sys") t)))
 
@@ -974,7 +974,8 @@ shell."
 ;;; Prompt for arguments to the preprocessor for `c-macro-expand'
 (setq c-macro-prompt-flag t)
 
-(add-hook 'java-mode-hook (lambda () (subword-mode 1)))
+(when (locate-library "subword")
+  (add-hook 'java-mode-hook (lambda () (subword-mode 1))))
 
 
 ;;;
@@ -987,7 +988,7 @@ shell."
 ;;;
 ;;; Switching between buffers using iswitchb
 ;;;
-(iswitchb-mode 1)			; smart buffer switching mode
+(iswitchb-mode 1)                       ; smart buffer switching mode
 (setq iswitchb-default-method 'maybe-frame) ; ask to use another frame.
 
 ;;
@@ -1019,15 +1020,15 @@ shell."
 (line-number-mode 1)                ; show line number in mode-line
 (column-number-mode 1)              ; show column number in mode-line
 
-(setq resize-minibuffer-mode t)		; ensure all contents of mini
-					; buffer visible
+(setq resize-minibuffer-mode t)         ; ensure all contents of mini
+                                        ; buffer visible
 
 (ffap-bindings)                         ; context-sensitive find-file
 
 ;;;
 ;;; TAB & space setting
 ;;;
-(setq-default indent-tabs-mode nil)	; do not insert tab character.
+(setq-default indent-tabs-mode nil)     ; do not insert tab character.
 
 (defun source-untabify ()
   "Stealed from Jamie Zawinski's homepage,
@@ -1045,17 +1046,53 @@ character to the spaces"
 
 ;; These hook configuration ensures that all tab characters in C, C++
 ;; source files are automatically converted to spaces on saving.
-(add-hook 'c-mode-hook '(lambda () 
-                          (make-local-variable 'write-contents-hooks)
-                          (add-hook 'write-contents-hooks 'source-untabify)))
-(add-hook 'c++-mode-hook '(lambda () 
+(defvar untabify-remove-trailing-spaces-on-write-modes
+  '(c-mode c++-mode java-mode emacs-lisp-mode lisp-mode nxml-mode)
+  "List of major mode that needs to convert tab characters into spaces,
+and to remove trailing whitespaces")
+
+(defun untabify-remove-trailing-spaces-on-write ()
+  "Utility function that removes tabs and trailing whitespaces"
+  (when (memq major-mode untabify-remove-trailing-spaces-on-write-modes)
+    (save-restriction
+      (widen)
+      (untabify (point-min) (point-max))
+      (delete-trailing-whitespace (point-min) (point-max))))
+  ;; Should return nil so that if this function is registered into
+  ;; `write-contents-functions', and if we need to propagate the control
+  ;; to the other functions in `write-contents-functions'.
+  ;;
+  ;; Personally, this function should be registered into
+  ;; `before-save-hook' anyway.
+  nil)
+
+(add-hook 'before-save-hook 'untabify-remove-trailing-spaces-on-write)
+
+;; As suggested in
+;;  http://stackoverflow.com/questions/935723/find-tab-characters-in-emacs,
+;;
+;; Following sexp visualize tab character.
+(add-hook 'font-lock-mode-hook
+          '(lambda ()
+             (when (memq major-mode
+                         untabify-remove-trailing-spaces-on-write-modes)
+               (font-lock-add-keywords nil
+                                       '(("\t" 0
+                                          'trailing-whitespace prepend))))))
+
+
+(when nil
+  (add-hook 'c-mode-hook '(lambda ()
                             (make-local-variable 'write-contents-hooks)
                             (add-hook 'write-contents-hooks 'source-untabify)))
+  (add-hook 'c++-mode-hook '(lambda ()
+                              (make-local-variable 'write-contents-hooks)
+                              (add-hook 'write-contents-hooks 'source-untabify))))
 
 
 ;;;
 ;;; hungray Delete
-;;; 
+;;;
 (defun zap-to-nonspace ()
   "Delete all whitespace up to the next non-whitespace char."
   (interactive)
@@ -1128,7 +1165,7 @@ NOTE: not fully implemented yet."
 (setq-default tags-case-fold-search nil)
 
 (fset 'find-next-tag "\C-u\256")        ; macro for C-u M-.
-(fset 'find-prev-tag "\C-u-\256")       ; macro for C-u - M-. 
+(fset 'find-prev-tag "\C-u-\256")       ; macro for C-u - M-.
 
 (global-set-key "\M-]" 'find-next-tag)
 (global-set-key "\M-[" 'find-prev-tag)
@@ -1200,7 +1237,7 @@ CONFIGURATION."
     nil))
 
 
-(defun reverse-other-window (arg) 
+(defun reverse-other-window (arg)
   "Reverse `other-window' with no argument"
   (interactive "p")
   (other-window (- arg)))
@@ -1287,7 +1324,7 @@ current window"
       ;; (message "position: %s" pos))
       (other-window (+ pos (let ((winlist (window-list)))
                              ;;(nconc winlist winlist)
-                             (position (first-window) 
+                             (position (first-window)
                                        winlist)))))))
 
 (defun smart-other-window ()
@@ -1401,7 +1438,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 
 (when nil
   ;; I do not use egg anymore.
-  (let ((egg-dir (concat (file-name-as-directory 
+  (let ((egg-dir (concat (file-name-as-directory
                           (expand-file-name user-emacs-directory)) "egg")))
     (if (file-accessible-directory-p egg-dir)
         (progn
@@ -1416,7 +1453,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
   (require 'vc-jump)
   ;; I prefer magit over egg, egg over git
   (add-to-list 'vc-status-assoc
-               (cons 'Git 
+               (cons 'Git
                      (cond ((fboundp 'magit-status) #'magit-status)
                            ((fboundp 'egg-status) #'egg-status)
                            (#'git-status))))
@@ -1522,7 +1559,7 @@ starting number."
   (interactive (list
                 (region-beginning)
                 (region-end)
-                (if current-prefix-arg 
+                (if current-prefix-arg
                     (prefix-numeric-value current-prefix-arg)
                   1)))
   (unless start (setq start 1))
@@ -1552,9 +1589,9 @@ starting number."
 ;;; Emacs Lisp Mode
 ;;;
 
-(add-hook 'emacs-lisp-mode-hook 
+(add-hook 'emacs-lisp-mode-hook
           '(lambda ()
-             (safe-visit-tags-table (concat (file-name-as-directory 
+             (safe-visit-tags-table (concat (file-name-as-directory
                                              user-emacs-directory)
                                             "TAGS.emacs") t)))
 
@@ -1592,7 +1629,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (lisp-macroexpand-region (point) (scan-sexps (point) 1) and-go))
 
 (eval-after-load "inf-lisp"
-  '(define-key inferior-lisp-mode-map [(control ?x) (control ?m)] 
+  '(define-key inferior-lisp-mode-map [(control ?x) (control ?m)]
      'lisp-macro-expand-sexp))
 
 (define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
@@ -1602,8 +1639,8 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;; slime
 ;;;
 (when (locate-library "slime-autoloads")
-  (eval-after-load "slime" 
-    '(progn 
+  (eval-after-load "slime"
+    '(progn
        (slime-setup)
        ;; C-c C-b slime-eval-buffer
        ;; C-c C-e slime-eval-last-expression
@@ -1703,7 +1740,7 @@ instead of the current word."
           (setq collect latex-command-name-history)
           (setq default (car latex-command-name-history))))
     (if range
-        (let ((cmdname (completing-read 
+        (let ((cmdname (completing-read
                         (if default
                             (format "Command name[%s]: " default)
                           "Command name: ")
@@ -1748,7 +1785,7 @@ instead of the current word."
 ;;;
 ;;; MMM mode
 ;;;
-(let ((mmm-dir (expand-file-name 
+(let ((mmm-dir (expand-file-name
                 (concat (file-name-as-directory user-emacs-directory)
                         "mmm-mode"))))
   ;; If MMM mode is installed in $HOME/.emacs.d/mmm-mode/
@@ -1761,7 +1798,7 @@ instead of the current word."
   (eval-after-load "mmm-mode"
     ;; It seems that mmm-mode 0.4.8 will reset the mmm-related face
     ;; attributes after loading mmm-mode.el.  To prevent resetting,
-    ;; set the background of the faces AFTER loading mmm-mode.el 
+    ;; set the background of the faces AFTER loading mmm-mode.el
     '(progn
        ;; By default, mmm-mode uses faces with bright background for
        ;; the submodes.   I don't like the bright background for most faces.
@@ -1780,7 +1817,7 @@ instead of the current word."
   ;; `mmm-submode-decoration-level' can be 0, 1, or 2. (0: no color)
   (setq mmm-submode-decoration-level 2)
 
-  (setq mmm-mode-ext-classes-alist 
+  (setq mmm-mode-ext-classes-alist
         '((xhtml-mode nil html-js)
           (xhtml-mode nil embedded-css)
           (html-mode nil html-js)
@@ -1836,7 +1873,7 @@ instead of the current word."
 (when (locate-library "nxml-mode")
   ;; Emacs 24.x built-int nxml-mode provides a package to be used with
   ;; `require'.
-  
+
   (require 'nxml-mode))
 
 (when (fboundp 'nxml-mode)
@@ -1873,9 +1910,9 @@ instead of the current word."
       (add-to-list 'rng-schema-locating-files "schemas.xml"))))
 
 
-                   
-      
-      
+
+
+
 
 
 
@@ -1886,7 +1923,7 @@ instead of the current word."
 By default, <para> element is used.  A prefix argument will give you a
 chance to change the name of the element."
   (interactive "*r\nP")
-  (let (curpos 
+  (let (curpos
         (done nil) (elname "para"))
     (if (not (eq (prefix-numeric-value prefix) 1))
         (setq elname (read-string "Element name: "
@@ -1930,20 +1967,20 @@ chance to change the name of the element."
   (require 'dired+))
 
 (add-hook 'dired-load-hook
-	  (lambda ()
-	    ;; Set dired-x global variables here.  For example:
-	    ;; (setq dired-guess-shell-gnutar "gtar")
-	    ;; Bind dired-x-find-file.
-	    (setq dired-x-hands-off-my-keys nil)
-	    ;; Make sure our binding preference is invoked.
-	    (dired-x-bind-find-file)
-	    ))
+          (lambda ()
+            ;; Set dired-x global variables here.  For example:
+            ;; (setq dired-guess-shell-gnutar "gtar")
+            ;; Bind dired-x-find-file.
+            (setq dired-x-hands-off-my-keys nil)
+            ;; Make sure our binding preference is invoked.
+            (dired-x-bind-find-file)
+            ))
 
 (add-hook 'dired-mode-hook
-	  (lambda ()
-	    ;; Set dired-x buffer-local variables here.  For example:
-	    (dired-omit-mode 1)
-	    ))
+          (lambda ()
+            ;; Set dired-x buffer-local variables here.  For example:
+            (dired-omit-mode 1)
+            ))
 
 (setq auto-mode-alist (cons '("[^/]\\.dired$" . dired-virtual-mode)
                             auto-mode-alist))
@@ -1954,7 +1991,7 @@ chance to change the name of the element."
   (setq dired-listing-switches (concat dired-listing-switches
                                        " --time-style=iso")))
 
-(defvar dired-desktop-open-program 
+(defvar dired-desktop-open-program
   (let ((open-sh (concat (file-name-as-directory user-emacs-directory)
                          "open.sh")))
     (cond ((eq system-type 'darwin) "open")
@@ -1972,13 +2009,13 @@ chance to change the name of the element."
     (save-window-excursion
       (dired-do-async-shell-command dired-desktop-open-program
                                     current-prefix-arg
-                                    (dired-get-marked-files 
+                                    (dired-get-marked-files
                                      t
                                      current-prefix-arg)))))
 (define-key dired-mode-map [(meta ?O)] 'dired-do-desktop-open)
 
 (when (string-match "\\bgnu\\b" (symbol-name system-type))
-  ;; If the operating system is gnu or gnu/linux, 
+  ;; If the operating system is gnu or gnu/linux,
   ;; we'll use GNU ls(1) --time-style option
   (setq dired-listing-switches
         (concat dired-listing-switches " --time-style=long-iso")))
@@ -2105,7 +2142,7 @@ Best used for `smtpmail-smtp-service' as the default value.")
 
 (when (string-match "^selune" system-name)
   (setq company-firewall-on-effect t))
-  
+
 ;; Since `gnus-nntp-server' will override `gnus-select-method', force
 ;; `gnus-nntp-server' to nil.
 (setq gnus-nntp-server nil)
@@ -2252,7 +2289,7 @@ Best used for `smtpmail-smtp-service' as the default value.")
                              "contacts.el")))
        (when (file-exists-p contacts)
          (load-file contacts)))))
-    
+
 
 (defmacro time-loop (n &rest body)
   "Return time before and after N iteration of BODY.
@@ -2319,13 +2356,13 @@ only in the `color-theme-favorites'.  The color theme is applied
 to FRAME (nil for current frame).
 
 This function returns the name of the color theme in string."
-  (let* ((theme-list (if favorite-only 
+  (let* ((theme-list (if favorite-only
                          color-theme-favorites
                        color-themes))
          (selected (nth (random (length theme-list)) theme-list))
          (theme-func (if (consp selected) (car selected) selected))
-         (theme-name (if (consp selected) 
-                         (cadr selected) 
+         (theme-name (if (consp selected)
+                         (cadr selected)
                        (symbol-name theme-func))))
     (with-selected-frame (or frame (selected-frame))
       (funcall theme-func)
@@ -2351,13 +2388,13 @@ This function returns the name of the color theme in string."
 (defun color-theme-apply (&optional arg)
   "Apply the color theme.
 
-If the argument is :random, this applies any color theme randomly, 
+If the argument is :random, this applies any color theme randomly,
 or if the argument is :next, this applies the next color theme in the
 installed color theme list.  or if the argument is a symbol indicates
 the color-theme function, it applies that color theme."
   (cond ((fboundp arg)  (apply arg nil))
         ((eq arg :random)  (color-theme-apply-random))
-        ((eq arg :next)	(let ((theme (color-theme-next-symbol)))
+        ((eq arg :next) (let ((theme (color-theme-next-symbol)))
                           (apply theme nil)
                           (message "%s installed" (symbol-name theme))))
         (t (error "Wrong type of argument"))))
@@ -2391,7 +2428,7 @@ This function works iff color-theme-history-max-length is not NIL"
   ;; If you want to select random color theme on every new frame,
   ;; uncomment this.
   ;; (add-hook 'after-make-frame-functions 'set-frame-color-theme)
-  (add-hook 'after-make-frame-functions 
+  (add-hook 'after-make-frame-functions
             (lambda (frame) (color-theme-apply-random 'favorite frame)))
   ;; color-theme-* is frame-local from now.
   (setq color-theme-is-global nil)
@@ -2444,7 +2481,7 @@ This function works iff color-theme-history-max-length is not NIL"
 (setq local-holidays
       '((holiday-fixed 11 1 "삼성전자 창립일")))
 
-(let ((cal-korea-path (expand-file-name 
+(let ((cal-korea-path (expand-file-name
                        (concat (file-name-as-directory user-emacs-directory)
                                "cal-korea-x"))))
   (when (file-accessible-directory-p cal-korea-path)
@@ -2461,7 +2498,7 @@ This function works iff color-theme-history-max-length is not NIL"
   '(progn
      (define-key outline-mode-map [(control down)]
        'outline-next-visible-heading)
-     (define-key outline-mode-map [(control up)] 
+     (define-key outline-mode-map [(control up)]
        'outline-previous-visible-heading)
      (define-key outline-mode-map [(control shift down)]
        'outline-forward-same-level)
@@ -2516,9 +2553,9 @@ This function works iff color-theme-history-max-length is not NIL"
 (global-set-key [f8] 'org-capture)
 
 (let* ((org-path (getenv "ORG_PATH"))
-       (my-org-directory (if org-path 
-                             org-path 
-                           (concat (file-name-as-directory 
+       (my-org-directory (if org-path
+                             org-path
+                           (concat (file-name-as-directory
                                     user-emacs-directory)
                                    "agenda"))))
   ;; All of my org agena files are located in `my-org-directory'.
@@ -2558,10 +2595,10 @@ This function works iff color-theme-history-max-length is not NIL"
          (file+datetree (concat (file-name-as-directory org-directory)
                                 "personal.org"))
          "* %?\n  Entered on %U\n  %i\n  %a")))
-      
+
 ;; (add-to-list 'org-agenda-files "~/.emacs.d/personal.org")
 
-(defvar org-table-convert-last-nrows	3
+(defvar org-table-convert-last-nrows    3
   "Default number of columns per row.  This is changed if user used
 another value")
 
@@ -2582,9 +2619,9 @@ following:
   (if (null nrows)
       (let ((nrows (string-to-number
                     (read-string
-                     (format "Number of columns per row[%d]: " 
+                     (format "Number of columns per row[%d]: "
                              org-table-convert-last-nrows)
-                     nil nil 
+                     nil nil
                      (number-to-string org-table-convert-last-nrows)))))
         (setq org-table-convert-last-nrows nrows)
         (save-excursion
@@ -2631,7 +2668,7 @@ following:
 ;;;
 ;;; Currently neither of them provides Korean dictionary.
 ;;; Currently, ispell complained that it does not have proper dictionary in
-;;; Korean language environment. 
+;;; Korean language environment.
 (eval-after-load "ispell"
   '(progn
      (setq ispell-dictionary "english")))
@@ -2725,11 +2762,11 @@ following:
     (add-hook 'ruby-mode-hook
               (lambda ()
                 (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
-                (define-key ruby-mode-map [(control ?c) (control ?c)] 
+                (define-key ruby-mode-map [(control ?c) (control ?c)]
                   'comment-region)
                 (define-key ruby-mode-map [(control ?c) (control ?b)]
                   'ruby-send-buffer)
-                (define-key ruby-mode-map [(control ?c) (control ?e)] 
+                (define-key ruby-mode-map [(control ?c) (control ?e)]
                   'ruby-send-block))
               ;; Make sure that this function is appended, not prepended
               'append))
@@ -2746,7 +2783,7 @@ following:
           (ruby-send-region (point-min) (point-max))))))
 
   ;;
-  ;; RVM irb uses its own prompt pattern which does not work properly 
+  ;; RVM irb uses its own prompt pattern which does not work properly
   ;; with ruby-mode.  There are two ways to resolve this.  One is to modify
   ;; ruby-mode so that it can recognize RVM prompt pattern.  Another one is
   ;; to modify $HOME/.irbrc to force RVM irb to use the original prompt pattern.
@@ -2763,7 +2800,7 @@ following:
   ;; The first prompt of Ruby 1.8 irb looks like "irb(main):001:0> ".
   ;; Depending on the current string token, the subsequent prompts
   ;; look like one of:
-  ;; 
+  ;;
   ;;   irb(main):001:0> _
   ;;   irb(main):005:0* _
   ;;   irb(main):006:0' _
@@ -2826,9 +2863,9 @@ following:
      (let ((map (if (boundp 'python-mode-map)
                     python-mode-map
                   py-mode-map)))
-       (define-key map [(control ?c) ?\]] 
+       (define-key map [(control ?c) ?\]]
          'py-shift-region-right)
-       (define-key map [(control ?c) ?\[] 
+       (define-key map [(control ?c) ?\[]
          'py-shift-region-left)
 
        ;; To eval string/region/buffer in native python,
@@ -2873,7 +2910,7 @@ following:
 ;; ipython.el does not work with python-mode any longer. And since
 ;; python-mode provides an interface to ipython, I'll stick to
 ;; python-mode only from now on. -- cinsk
-  
+
 
 ;;;
 ;;; Maven
@@ -2892,7 +2929,7 @@ following:
   (add-to-list 'compilation-error-regexp-alist 'maven3)
   ;// "[ERROR] /Users/.../KafkaBridge.java:[71,52] ';' expected"
 ))
-  
+
 
 
 ;;;
@@ -2918,7 +2955,7 @@ following:
        ;; Use system default configuration
        nil)
 
-      ((or (display-graphic-p) 
+      ((or (display-graphic-p)
            (= (call-process-shell-command "xset q") 0))
        ;; Even if (display-graphic-p) returns nil,
        ;; it may be possible to launch X application.
@@ -2932,14 +2969,14 @@ following:
        (setq browse-url-browser-function 'browse-url-w3m)))
 
 (add-to-list 'browse-url-filename-alist
-             '("\\`/home/\\([^/]+\\)/public_html/\\(.*\\)\\'" . 
+             '("\\`/home/\\([^/]+\\)/public_html/\\(.*\\)\\'" .
                "http://localhost/~\\1/\\2"))
 
 ;; gentoo: /var/www/localhost/htdocs
 ;; ubuntu: /var/www/
 ;; centos: /var/www/html/  /var/www/cgi-bin/
 (add-to-list 'browse-url-filename-alist
-             '("\\'/var/www/localhost/htdocs/\\(.*\\)\\'" . 
+             '("\\'/var/www/localhost/htdocs/\\(.*\\)\\'" .
                "http://localhost/\\1"))
 
 
@@ -3025,7 +3062,7 @@ following:
        ;; C-c C-e   scala-eval-definition  (TODO: check the symantics)
        (define-key scala-mode-map [(control ?c) (control ?e)]
          'scala-eval-definition)
-       ;; 
+       ;;
        ;; scala-undent-line: `C-<tab>' -> `<backtab>'
        (move-key scala-mode-map
                  [(control tab)] [backtab])
@@ -3122,7 +3159,7 @@ following:
         (progn (require 'cedet)
                (require 'ecb)))         ; load required packages
     (cond ((null ecb-minor-mode) (ecb-activate))
-          (t (if (null arg) 
+          (t (if (null arg)
                  (ecb-toggle-layout)
                (ecb-deactivate)))))
 
