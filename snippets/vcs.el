@@ -1,0 +1,65 @@
+;; -*-emacs-lisp-*-
+
+;;;
+;;; VCS(Version Control System) related configuration
+;;;
+
+;;
+;; CVS
+;;
+(defun pop-to-cvs-buffer (arg)
+  "Select \"*cvs*\" buffer in some window, preferably a different one.
+If the buffer is not found, call `cvs-examine' interactively.
+With a prefix argument, call `cvs-examine' with the prefix argument, 16."
+  (interactive "P")
+  (let ((buf (get-buffer "*cvs*")))
+    (if arg
+        (let ((prefix-arg '(16)))       ; C-u C-u
+          (call-interactively #'cvs-examine))
+      (if buf
+          (pop-to-buffer buf)
+        (call-interactively #'cvs-examine)))))
+
+;;(global-set-key [f2] #'pop-to-cvs-buffer)
+
+
+;;
+;; Git
+;;
+(setq git-show-uptodate t
+      git-show-ignored t
+      git-show-unknown t)
+
+(eval-after-load "git"
+  '(progn
+     (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status)))
+
+(when (locate-library "git")
+  (require 'git))
+
+(when (locate-library "magit")
+  (require 'magit))
+
+(when nil
+  ;; I do not use egg anymore.
+  (let ((egg-dir (concat (file-name-as-directory 
+                          (expand-file-name user-emacs-directory)) "egg")))
+    (if (file-accessible-directory-p egg-dir)
+        (progn
+          (add-to-list 'load-path egg-dir)
+          (when (locate-library "egg")
+            (require 'egg))))))
+
+;;
+;; vc-jump
+;;
+(when (locate-library "vc-jump")
+  (require 'vc-jump)
+  ;; I prefer magit over egg, egg over git
+  (add-to-list 'vc-status-assoc
+               (cons 'Git 
+                     (cond ((fboundp 'magit-status) #'magit-status)
+                           ((fboundp 'egg-status) #'egg-status)
+                           (#'git-status))))
+  (global-set-key [f12] 'vc-jump))
+
