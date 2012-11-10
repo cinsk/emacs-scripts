@@ -6,7 +6,7 @@
 
 ;;;
 ;;; You can download the latest version of this script at cinsk.org
-;;; 
+;;;
 ;;; $ # make sure that you don't have .emacs.d/ nor .emacs file
 ;;; $ rm -r .emacs.d .emacs
 ;;; $ # Get the source file from my repository
@@ -58,6 +58,10 @@
                              (format "%s: %s: %S" ,sname
                                      (car err) (cdr err)))))))))))
 
+(when (eq window-system 'x)
+  ;; enable clipboard
+  (setq x-select-enable-clipboard t))
+
 
 ;;; Although it is possible to set font faces in lisp code, I prefer
 ;;; to use X resource configuration.
@@ -106,7 +110,7 @@
     ;; 23).  Thus, I'll force to load it here.
     (package-initialize)))
 
-;; I will install packages that is not managed by packages.el in 
+;; I will install packages that is not managed by packages.el in
 ;; "$HOME/.emacs.d/site-lisp".
 ;;
 ;; Note that packages in this directory has higher priority than others.
@@ -121,7 +125,7 @@ by package.el")
     (dolist (elem (directory-files-and-attributes dir))
       (let* ((fname (car elem))
              (attrs (cdr elem))
-             (path (expand-file-name 
+             (path (expand-file-name
                     (concat (file-name-as-directory dir)
                             fname))))
         (when (and (not (string-equal fname "."))
@@ -260,9 +264,9 @@ supplied one, a warning message is generated."
   ;; with the last search string.  Thus, I'll add M-% and C-M-% for
   ;; the consistence.
   (define-key isearch-mode-map [(meta ?#)] 'isearch-query-replace)
-  (define-key isearch-mode-map [(control meta ?#)] 
+  (define-key isearch-mode-map [(control meta ?#)]
     'isearch-query-replace-regexp)
-    
+
   ;; During isearch, `M-s w' will toggle word search, which is
   ;; difficult to remember, so use `M-W' instead.
   ;;
@@ -296,7 +300,7 @@ supplied one, a warning message is generated."
 (global-set-key "\C-cc" 'compile)
 (global-set-key [(control ?c) (control ?c)] 'comment-region)
 
-(global-set-key [?\C-.] 'find-tag-other-window) ; C-x o 
+(global-set-key [?\C-.] 'find-tag-other-window) ; C-x o
 
 
 (global-set-key [(control c) ?i] 'indent-region)
@@ -352,7 +356,7 @@ supplied one, a warning message is generated."
 ;;;
 ;;; Switching between buffers using iswitchb
 ;;;
-(iswitchb-mode 1)			; smart buffer switching mode
+(iswitchb-mode 1)                       ; smart buffer switching mode
 (setq iswitchb-default-method 'maybe-frame) ; ask to use another frame.
 
 ;;
@@ -390,15 +394,15 @@ supplied one, a warning message is generated."
 (line-number-mode 1)                ; show line number in mode-line
 (column-number-mode 1)              ; show column number in mode-line
 
-(setq resize-minibuffer-mode t)		; ensure all contents of mini
-					; buffer visible
+(setq resize-minibuffer-mode t)         ; ensure all contents of mini
+                                        ; buffer visible
 
 (ffap-bindings)                         ; context-sensitive find-file
 
 ;;;
 ;;; TAB & space setting
 ;;;
-(setq-default indent-tabs-mode nil)	; do not insert tab character.
+(setq-default indent-tabs-mode nil)     ; do not insert tab character.
 
 (defun source-untabify ()
   "Stealed from Jamie Zawinski's homepage,
@@ -416,15 +420,48 @@ character to the spaces"
 
 ;; These hook configuration ensures that all tab characters in C, C++
 ;; source files are automatically converted to spaces on saving.
-(add-hook 'c-mode-hook '(lambda () 
-                          (make-local-variable 'write-contents-hooks)
-                          (add-hook 'write-contents-hooks 'source-untabify)))
-(add-hook 'c++-mode-hook '(lambda () 
+(defvar untabify-remove-trailing-spaces-on-write-modes
+  '(c-mode c++-mode java-mode emacs-lisp-mode lisp-mode nxml-mode)
+  "List of major mode that needs to convert tab characters into spaces,
+and to remove trailing whitespaces")
+
+(defun untabify-remove-trailing-spaces-on-write ()
+  "Utility function that removes tabs and trailing whitespaces"
+  (when (memq major-mode untabify-remove-trailing-spaces-on-write-modes)
+    (save-restriction
+      (widen)
+      (untabify (point-min) (point-max))
+      (delete-trailing-whitespace (point-min) (point-max))))
+  ;; Should return nil so that if this function is registered into
+  ;; `write-contents-functions', and if we need to propagate the control
+  ;; to the other functions in `write-contents-functions'.
+  ;;
+  ;; Personally, this function should be registered into
+  ;; `before-save-hook' anyway.
+  nil)
+
+(add-hook 'before-save-hook 'untabify-remove-trailing-spaces-on-write)
+
+;; As suggested in
+;;  http://stackoverflow.com/questions/935723/find-tab-characters-in-emacs,
+;;
+;; Following sexp visualize tab character.
+(add-hook 'font-lock-mode-hook
+          '(lambda ()
+             (when (memq major-mode
+                         untabify-remove-trailing-spaces-on-write-modes)
+               (font-lock-add-keywords nil
+                                       '(("\t" 0
+                                          'trailing-whitespace prepend))))))
+
+
+(when nil
+  (add-hook 'c-mode-hook '(lambda ()
                             (make-local-variable 'write-contents-hooks)
                             (add-hook 'write-contents-hooks 'source-untabify)))
-(add-hook 'java-mode-hook '(lambda () 
-                             (make-local-variable 'write-contents-hooks)
-                             (add-hook 'write-contents-hooks 'source-untabify)))
+  (add-hook 'c++-mode-hook '(lambda ()
+                              (make-local-variable 'write-contents-hooks)
+                              (add-hook 'write-contents-hooks 'source-untabify))))
 
 
 (cinsk/load-snippet "delete"
@@ -461,7 +498,7 @@ character to the spaces"
 (setq-default tags-case-fold-search nil)
 
 (fset 'find-next-tag "\C-u\256")        ; macro for C-u M-.
-(fset 'find-prev-tag "\C-u-\256")       ; macro for C-u - M-. 
+(fset 'find-prev-tag "\C-u-\256")       ; macro for C-u - M-.
 
 (global-set-key "\M-]" 'find-next-tag)
 (global-set-key "\M-[" 'find-prev-tag)
@@ -596,7 +633,7 @@ starting number."
   (interactive (list
                 (region-beginning)
                 (region-end)
-                (if current-prefix-arg 
+                (if current-prefix-arg
                     (prefix-numeric-value current-prefix-arg)
                   1)))
   (unless start (setq start 1))
@@ -782,7 +819,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 (setq local-holidays
       '((holiday-fixed 11 1 "삼성전자 창립일")))
 
-(let ((cal-korea-path (expand-file-name 
+(let ((cal-korea-path (expand-file-name
                        (concat (file-name-as-directory user-emacs-directory)
                                "cal-korea-x"))))
   (when (file-accessible-directory-p cal-korea-path)
@@ -806,7 +843,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 ;;; Currently neither of them provides Korean dictionary.
 ;;; Currently, ispell complained that it does not have proper dictionary in
-;;; Korean language environment. 
+;;; Korean language environment.
 (eval-after-load "ispell"
   '(progn
      (setq ispell-dictionary "english")))
@@ -901,7 +938,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
        ;; Use system default configuration
        nil)
 
-      ((or (display-graphic-p) 
+      ((or (display-graphic-p)
            (= (call-process-shell-command "xset q") 0))
        ;; Even if (display-graphic-p) returns nil,
        ;; it may be possible to launch X application.
@@ -915,14 +952,14 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
        (setq browse-url-browser-function 'browse-url-w3m)))
 
 (add-to-list 'browse-url-filename-alist
-             '("\\`/home/\\([^/]+\\)/public_html/\\(.*\\)\\'" . 
+             '("\\`/home/\\([^/]+\\)/public_html/\\(.*\\)\\'" .
                "http://localhost/~\\1/\\2"))
 
 ;; gentoo: /var/www/localhost/htdocs
 ;; ubuntu: /var/www/
 ;; centos: /var/www/html/  /var/www/cgi-bin/
 (add-to-list 'browse-url-filename-alist
-             '("\\'/var/www/localhost/htdocs/\\(.*\\)\\'" . 
+             '("\\'/var/www/localhost/htdocs/\\(.*\\)\\'" .
                "http://localhost/\\1"))
 
 
@@ -1085,7 +1122,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
         (progn (require 'cedet)
                (require 'ecb)))         ; load required packages
     (cond ((null ecb-minor-mode) (ecb-activate))
-          (t (if (null arg) 
+          (t (if (null arg)
                  (ecb-toggle-layout)
                (ecb-deactivate)))))
 
