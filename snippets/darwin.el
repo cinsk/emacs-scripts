@@ -60,7 +60,7 @@
 
   (set-face-font 'default "fontset-standard"))
 
-(when t
+(when (display-graphic-p)
   ;; These configuration seems to work in
   ;; GNU Emacs 24.1.1 (x86_64-apple-darwin, NS apple-appkit-1038.36)
   ;; of 2012-06-11 on bob.porkrind.org
