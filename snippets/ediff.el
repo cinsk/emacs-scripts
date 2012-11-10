@@ -22,18 +22,18 @@
                   (cinsk/select-command arg 'ediff-directories
                                         'ediff-directories3)))
 (global-set-key [(meta ?D) ?v] 'ediff-revision)
-(global-set-key [(meta ?D) ?r] 
+(global-set-key [(meta ?D) ?r]
                 (lambda (arg) (interactive "P")
                   (cinsk/select-command arg 'ediff-regions-wordwise
                                         'ediff-regions-linewise)))
-(global-set-key [(meta ?D) ?w] 
+(global-set-key [(meta ?D) ?w]
                 (lambda (arg) (interactive "P")
                   (cinsk/select-command arg 'ediff-windows-wordwise
                                         'ediff-windows-linewise)))
 
 (global-set-key [(meta ?D) ?p] 'ediff-patch-file)
 (global-set-key [(meta ?D) ?P] 'ediff-patch-buffer)
-(global-set-key [(meta ?D) ?m] 
+(global-set-key [(meta ?D) ?m]
                 (lambda (arg) (interactive "P")
                   (cinsk/select-command arg 'ediff-merge-revisions
                                         'ediff-merge-revisions-with-ancestor)))
@@ -64,18 +64,14 @@
 
 (eval-after-load "ediff"
   '(progn
-     (when nil
-       (add-hook 'ediff-before-setup-windows-hook
-                 'cinsk/ediff-widen-frame-for-vertical-setup)
-       (add-hook 'ediff-suspend-hook
-                 'cinsk/ediff-narrow-frame-for-vertical-setup)
-       (add-hook 'ediff-quit-hook
-                 'cinsk/ediff-narrow-frame-for-vertical-setup))
+     ;; I haven't digged much, but restoring the frame is not working
+     ;; (esp. on merge session) if `ediff-toggle-wide-display' is
+     ;; registered in `ediff-quit-hook'.  Registering
+     ;; `ediff-cleanup-hook' solves the problem. -- cinsk
 
-     ;; (add-hook 'ediff-quit-hook 'cinsk/ediff-restore-frame)
-     (add-hook 'ediff-quit-hook (lambda ()
-                                  (if ediff-wide-display-p
-                                      (ediff-toggle-wide-display))))
+     (add-hook 'ediff-cleanup-hook (lambda ()
+                                     (if ediff-wide-display-p
+                                         (ediff-toggle-wide-display))))
 
      ;; Change the algorithm perhaps find a smaller set of changes.
      ;; This makes `diff' slower.
@@ -132,7 +128,7 @@ the left corder unchanged.")
   (interactive)
   (let ((w (prefix-numeric-value current-prefix-arg))
         (min-width (cond ((window-live-p ediff-window-A)
-                          (if (eq ediff-split-window-function 
+                          (if (eq ediff-split-window-function
                                   'split-window-vertically)
                               ;; ediff windows splitted like A/B
                               (window-width ediff-window-A)
@@ -150,29 +146,31 @@ the left corder unchanged.")
 
 (ad-activate 'ediff-toggle-wide-display)
 
-;;; TODO: not working properly on ediff-merge session
-
 (defun cinsk/ediff-make-wide-display ()
   "Construct an alist of parameters for the wide display.
 Saves the old frame parameters in `ediff-wide-display-orig-parameters'.
 The frame to be resized is kept in `ediff-wide-display-frame'.
 This function modifies only the left margin and the width of the display.
 It assumes that it is called from within the control buffer."
+  ;;(message "cinsk/ediff-make-wide-display")
   (if (not (fboundp 'ediff-display-pixel-width))
       (error "Can't determine display width"))
   (let* ((frame-A (window-frame ediff-window-A))
-	 (frame-A-params (frame-parameters frame-A))
+         (frame-A-params (frame-parameters frame-A))
          (fw (frame-width frame-A))
          (fpw (frame-pixel-width frame-A))
-	 (cw (ediff-frame-char-width frame-A))
+         (cw (ediff-frame-char-width frame-A))
          (febw cw)                      ; frame external border width
          (fibw (- fpw (* fw cw)))       ; frame internal border width
          desired-fw desired-fpw desired-left)
 
     (setq ediff-wide-display-orig-parameters
-	  (list (cons 'left (max 0 (eval (cdr (assoc 'left frame-A-params)))))
-		(cons 'width (cdr (assoc 'width frame-A-params))))
-	  ediff-wide-display-frame frame-A)
+          (list (cons 'left (max 0 (eval (cdr (assoc 'left frame-A-params)))))
+                (cons 'width (cdr (assoc 'width frame-A-params))))
+          ediff-wide-display-frame frame-A)
+
+    ;;(message "ediff-wide-display-orig-parameters: %S"
+    ;;         ediff-wide-display-orig-parameters)
 
     ;;(message "wide window width: %S" cinsk/ediff-wide-window-width)
     ;;(message "split function: %S" ediff-split-window-function)
@@ -202,11 +200,10 @@ It assumes that it is called from within the control buffer."
 
       (if (> (+ desired-left (+ (* desired-fw cw) fibw (/ febw 2)))
              (ediff-display-pixel-width))
-          (setq desired-left (- (ediff-display-pixel-width) 
+          (setq desired-left (- (ediff-display-pixel-width)
                                 (+ (* desired-fw cw) fibw (/ febw 2))))))
 
     ;; (message "resizing WIDTH to %S where LEFT to %S" desired-fw desired-left)
-
     (modify-frame-parameters
      frame-A `((left . ,desired-left) (width . ,desired-fw)
                (user-position . t)))))
