@@ -8,7 +8,7 @@
            (locate-library "rng-auto"))
   ;; For legacy nxml-mode which does not use `provide' for nxml-mode.
   (load-library "rng-auto"))
-  
+
 
 ;; For nxml-version less than or equal to "20041004" (my Gentoo), I
 ;; need to load rng-loc.el to use `rng-schema-locating-files'.
@@ -45,8 +45,16 @@
 (when (locate-library "nxml-mode")
   ;; Emacs 24.x built-int nxml-mode provides a package to be used with
   ;; `require'.
-  
-  (require 'nxml-mode))
+
+  (require 'nxml-mode)
+
+  ;; Ubuntu bundled nxml requires to load rng-nxml explicitly,
+  ;; otherwise rng-schema-locating-files* variables will not be
+  ;; defined.
+  (when (locate-library "rng-nxml")
+    (require 'rng-nxml)
+    (and (fboundp 'rng-nxml-mode-init)
+         (rng-nxml-mode-init))))
 
 (when (fboundp 'nxml-mode)
   (setq auto-mode-alist (cons '("\\.lzx\\'" . lzx-nxml-mode)
@@ -59,6 +67,8 @@
 ;; Thus, I choose `nxml-mode' over other major modes.
 (add-to-list 'auto-mode-alist '("/public_html/.*\\.s?html?\\'" . nxml-mode))
 
+
+
 ;; Current nxml-mode package (nxml-mode-20041004-r3) in Gentoo Linux
 ;; install schema files (schemas.xml) in
 ;; "/usr/share/emacs/etc/nxml-mode/schema/", although
@@ -67,11 +77,12 @@
 ;;
 ;; If `rng-schema-locating-files-default' points wrong place, warn
 ;; for malfunction of nxml-mode's auto-completion (C-RET)
-(dolist (file rng-schema-locating-files-default)
-  (if (string-match "^/usr/" file)
-      (if (not (file-readable-p file))
-          (lwarn '(dot-emacs) :warning
-                 (format "cannot access default schema for nxml-mode")))))
+(when (boundp 'rng-schema-locating-files-default)
+  (dolist (file rng-schema-locating-files-default)
+    (if (string-match "^/usr/" file)
+        (if (not (file-readable-p file))
+            (lwarn '(dot-emacs) :warning
+                   (format "cannot access default schema for nxml-mode"))))))
 
 ;; Adding .emacs.d/schema/schemas.xml for schema searching path
 (let ((schema-file (concat (file-name-as-directory
@@ -89,7 +100,7 @@
 By default, <para> element is used.  A prefix argument will give you a
 chance to change the name of the element."
   (interactive "*r\nP")
-  (let (curpos 
+  (let (curpos
         (done nil) (elname "para"))
     (if (not (eq (prefix-numeric-value prefix) 1))
         (setq elname (read-string "Element name: "

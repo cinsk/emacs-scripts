@@ -180,7 +180,7 @@ by package.el")
 ;;; Sometimes, Emacs asks for the confirmation of a command such as
 ;;; killing a buffer.  In that case, user should type "yes" or "no"
 ;;; directly.
-;;; 
+;;;
 ;;; Below configuration let the user uses "y" or "n" instead of using
 ;;; longer version.
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -428,10 +428,8 @@ and to remove trailing whitespaces")
 (defun untabify-remove-trailing-spaces-on-write ()
   "Utility function that removes tabs and trailing whitespaces"
   (when (memq major-mode untabify-remove-trailing-spaces-on-write-modes)
-    (save-restriction
-      (widen)
-      (untabify (point-min) (point-max))
-      (delete-trailing-whitespace (point-min) (point-max))))
+    (untabify (point-min) (point-max))
+    (delete-trailing-whitespace))
   ;; Should return nil so that if this function is registered into
   ;; `write-contents-functions', and if we need to propagate the control
   ;; to the other functions in `write-contents-functions'.
@@ -691,7 +689,7 @@ starting number."
 
 
 (cinsk/load-snippet "mmm-mode"
-  (let ((mmm-dir (expand-file-name 
+  (let ((mmm-dir (expand-file-name
                   (concat (file-name-as-directory user-emacs-directory)
                           "mmm-mode"))))
     ;; If MMM mode is installed in $HOME/.emacs.d/mmm-mode/

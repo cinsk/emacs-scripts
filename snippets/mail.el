@@ -35,7 +35,7 @@ Best used for `smtpmail-smtp-service' as the default value.")
 
 (when (string-match "^selune" system-name)
   (setq company-firewall-on-effect t))
-  
+
 ;; Since `gnus-nntp-server' will override `gnus-select-method', force
 ;; `gnus-nntp-server' to nil.
 (setq gnus-nntp-server nil)
@@ -130,7 +130,8 @@ Best used for `smtpmail-smtp-service' as the default value.")
   (if (file-readable-p netrc)
       (setq smtpmail-auth-credentials netrc)
     (lwarn '(dot-emacs) :warning
-           "NETRC auth. file not exist, SMTP may not work correctly")))
+           "NETRC auth. file not exist, SMTP may not work correctly")
+    (with-temp-file netrc)))
 
 (setq smtpmail-starttls-credentials `((,smtpmail-smtp-server
                                        ,default-smtp-ssl-port
@@ -182,4 +183,4 @@ Best used for `smtpmail-smtp-service' as the default value.")
                              "contacts.el")))
        (when (file-exists-p contacts)
          (load-file contacts)))))
-    
+
