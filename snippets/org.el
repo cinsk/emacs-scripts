@@ -7,7 +7,7 @@
   '(progn
      (define-key outline-mode-map [(control down)]
        'outline-next-visible-heading)
-     (define-key outline-mode-map [(control up)] 
+     (define-key outline-mode-map [(control up)]
        'outline-previous-visible-heading)
      (define-key outline-mode-map [(control shift down)]
        'outline-forward-same-level)
@@ -34,7 +34,22 @@
      (add-to-list 'org-file-apps '("pdf" . "acroread %s"))
      (add-to-list 'org-file-apps '("ps" . "ggv %s"))))
 
-(require 'org-install)
+(when (locate-library "org-version")
+  ;; From Org-Mode version 7.9.2, there is no need to load
+  ;; 'org-install.  Worse, it will display a warning, which makes me
+  ;; uncomfortable.  Following sexp will load 'org-install if the
+  ;; installed version is lower than 7.9.2.
+  (require 'org-version)
+  (if (and (fboundp 'org-release)
+           (not (string-lessp (org-release) "7.9.2")))
+      nil                               ; do nothing
+    (require 'org-install)))
+
+;; According to http://orgmode.org/org.html#Conflicts, filladapt.el is
+;; not working well with Org, so disable it in org-mode.
+(add-hook 'org-mode-hook '(lambda ()
+                            (if (fboundp 'turn-off-filladapt-mode)
+                                (turn-off-filladapt-mode))))
 
 ;; Org mode requires font-locking on every org buffer
 ;; Since I use global-font-lock-mode, below sexp is not necessary.
@@ -51,7 +66,9 @@
 (setq org-hide-block-startup nil)
 (setq org-startup-folded 'showeverything)
 
-(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+(when (string-lessp emacs-version "22.2")
+  ;; From GNU Emacs version 22.2, ".org" extension use Org mode by default.
+  (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode)))
 
 (global-set-key [(control c) ?a] 'org-agenda)
 (global-set-key [(control c) ?l] 'org-store-link)
@@ -62,9 +79,9 @@
 (global-set-key [f8] 'org-capture)
 
 (let* ((org-path (getenv "ORG_PATH"))
-       (my-org-directory (if org-path 
-                             org-path 
-                           (concat (file-name-as-directory 
+       (my-org-directory (if org-path
+                             org-path
+                           (concat (file-name-as-directory
                                     user-emacs-directory)
                                    "agenda"))))
   ;; All of my org agena files are located in `my-org-directory'.
@@ -104,10 +121,10 @@
          (file+datetree (concat (file-name-as-directory org-directory)
                                 "personal.org"))
          "* %?\n  Entered on %U\n  %i\n  %a")))
-      
+
 ;; (add-to-list 'org-agenda-files "~/.emacs.d/personal.org")
 
-(defvar org-table-convert-last-nrows	3
+(defvar org-table-convert-last-nrows    3
   "Default number of columns per row.  This is changed if user used
 another value")
 
@@ -128,9 +145,9 @@ following:
   (if (null nrows)
       (let ((nrows (string-to-number
                     (read-string
-                     (format "Number of columns per row[%d]: " 
+                     (format "Number of columns per row[%d]: "
                              org-table-convert-last-nrows)
-                     nil nil 
+                     nil nil
                      (number-to-string org-table-convert-last-nrows)))))
         (setq org-table-convert-last-nrows nrows)
         (save-excursion

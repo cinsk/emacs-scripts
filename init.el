@@ -139,6 +139,17 @@ by package.el")
 (add-site-lisp-packages user-site-lisp-directory)
 
 
+(defun accessible-directories (&rest dirs)
+  "Return the list of directories that are accessible."
+  (let ((result nil))
+    (mapc (lambda (path)
+            (if (and (file-accessible-directory-p path)
+                     (not (member (file-name-as-directory path) result)))
+                (setq result (cons (file-name-as-directory path) result))))
+          dirs)
+    result))
+
+
 (cinsk/load-snippet "darwin"
   (eq system-type 'darwin))
 
@@ -428,10 +439,8 @@ and to remove trailing whitespaces")
 (defun untabify-remove-trailing-spaces-on-write ()
   "Utility function that removes tabs and trailing whitespaces"
   (when (memq major-mode untabify-remove-trailing-spaces-on-write-modes)
-    (save-restriction
-      (widen)
-      (untabify (point-min) (point-max))
-      (delete-trailing-whitespace (point-min) (point-max))))
+    (untabify (point-min) (point-max))
+    (delete-trailing-whitespace))
   ;; Should return nil so that if this function is registered into
   ;; `write-contents-functions', and if we need to propagate the control
   ;; to the other functions in `write-contents-functions'.
@@ -997,27 +1006,32 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;; YASnippet -- http://code.google.com/p/yasnippet/
 ;;;
 (when (locate-library "yasnippet")
+  ;; tested with yasnippet 0.8.0 (beta)
   (require 'yasnippet)
-  ;;(yas/initialize)
 
   ;; The official document describes the snippets directory in
   ;; "~/.emacs.d/plugins/yasnippet-x.y.z/snippets", whereas Gentoo
   ;; yasnippet package installed them in
   ;; "/usr/share/emacs/etc/yasnippet/snippets".
-  (let ((dir (catch 'found
-               (mapc (lambda (path)
-                       (when (file-accessible-directory-p path)
-                         (setq snippet-dir path)
-                         (throw 'found path)))
-                     (list "/usr/share/emacs/etc/yasnippet/snippets"
-                           "~/.emacs.d/plugins"
-                           (file-name-directory
-                            (locate-library "yasnippet")))))))
-    (if dir
-        (progn (setq yas/root-directory dir)
-               (yas/load-directory yas/root-directory))
-      (lwarn '(dot-emacs) :warning
-             "yasnippet cannot find the snippet directory"))))
+  (setq yas-snippet-dirs (accessible-directories
+                          "/usr/share/emacs/etc/yasnippet/snippets"
+                          "~/.emacs.d/plugins/yasnippet/snippets"
+                          (concat (file-name-directory
+                                   (locate-library "yasnippet"))
+                                  "snippets")
+                          "~/.emacs.d/yasnippets"))
+
+  ;; While old version (e.g. 0.6.1b) uses `yas/root-directory', and
+  ;; provides `yas/reload-all', new version uses `yas-snippets-dirs'
+  ;; and provides `yas-reload-all'.
+  (if (not (fboundp 'yas-reload-all))
+      (progn
+        (setq yas/root-directory yas-snippet-dirs)
+        (and (fboundp 'yas/reload-all)
+             (yas/reload-all)))
+    ;; Otherwise, use the new interface.
+    (and (fboundp 'yas-reload-all)
+         (yas-reload-all))))
 
 
 (cinsk/load-snippet "scala"
