@@ -4,3 +4,6 @@
 [submodule "vim-modeline"]
 	path = vim-modeline
 	url = https://github.com/cinsk/emacs-vim-modeline.git
+[submodule "filladapt"]
+	path = filladapt
+	url = https://github.com/cinsk/filladapt.git
