@@ -203,7 +203,8 @@ following:
 
 
 
-(when (fboundp 'org-set-emph-re)
+(when (and (> emacs-major-version 22)
+           (fboundp 'org-set-emph-re))
   ;; Current org-mode mark-up algorithm does not support marking
   ;; partial word. (e.g. =partial=word)
   ;;
