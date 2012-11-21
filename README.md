@@ -57,3 +57,4 @@ List of used & customized packages
 * yasnippet
 * scala
 * ess
+* filladapt
