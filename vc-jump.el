@@ -30,7 +30,7 @@
 ;;;
 ;;; `vc-jump' switches the current buffer (possibly in another window)
 ;;; to the Version Controlled status buffer. (inspired by `dired-jump')
-;;; 
+;;;
 ;;; For example, if you're editing a file controlled by CVS, `vc-jump'
 ;;; executes `cvs-status' in the file's directory.  Likewise, if the
 ;;; current file is controlled by GIT, `vc-jump' executes `git-status'
@@ -56,11 +56,11 @@
   (require 'cl))
 
 (autoload #'svn-status "psvn" "Entry point into svn-status mode" t)
-(autoload #'cvs-status "pcvs" "Entry point into cvs mode" t) 
+(autoload #'cvs-status "pcvs" "Entry point into cvs mode" t)
 (autoload #'git-status "git" "Entry point into git-status mode" t)
 
 (when nil
-  ;; Currently not used 
+  ;; Currently not used
   (defvar vc-jump-on-failed nil               ; #'dired-jump
     "This function is called if `vc-jump' failed")
   (defvar vc-buffer-names
@@ -81,15 +81,18 @@
         (find-buffer-impl regexp buflist)))))
 
 (defvar vc-status-assoc
-      '((Git . git-status)
+      '((Git . (lambda (dir)
+                 (cond ((fboundp 'magit-status) 'magit-status)
+                       ((fboundp 'egg-status) 'egg-status)
+                       (t 'git-status))))
         (SVN . svn-status)
-        (CVS . (lambda (dir) 
-                 (cvs-status dir 
+        (CVS . (lambda (dir)
+                 (cvs-status dir
                              (cvs-flags-query 'cvs-status-flags
                                               "cvs status flags")))))
       "association list for (VC-SYSTEM . STATUS-FUNCTION)")
 
-      
+
 (defun vc-responsible-backend-noerror (file)
   (catch 'found
     ;; First try: find a responsible backend.  If this is for registration,
@@ -111,7 +114,7 @@
   (interactive)
   (let* ((fname (buffer-file-name))
          (dname (if fname
-                    (if (file-directory-p fname) 
+                    (if (file-directory-p fname)
                         fname
                       (file-name-directory fname))
                   default-directory)))
@@ -119,7 +122,11 @@
     (if (or fname dname)
         (let ((func (vc-status-function (or fname dname))))
           (if func
-              (apply func (list dname))
+              (cond ((symbolp func) (apply func (list dname)))
+                    ((functionp func) (apply (apply func (list dname))
+                                             (list dname)))
+                    (t (message "vc-jump: can't handle %S type"
+                                (type-of func))))
             (message "vc-jump: No known VCS for %s" (buffer-name)))))))
 
 

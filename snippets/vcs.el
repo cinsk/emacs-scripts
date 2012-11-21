@@ -42,7 +42,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 
 (when nil
   ;; I do not use egg anymore.
-  (let ((egg-dir (concat (file-name-as-directory 
+  (let ((egg-dir (concat (file-name-as-directory
                           (expand-file-name user-emacs-directory)) "egg")))
     (if (file-accessible-directory-p egg-dir)
         (progn
@@ -56,10 +56,10 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 (when (locate-library "vc-jump")
   (require 'vc-jump)
   ;; I prefer magit over egg, egg over git
-  (add-to-list 'vc-status-assoc
-               (cons 'Git 
-                     (cond ((fboundp 'magit-status) #'magit-status)
-                           ((fboundp 'egg-status) #'egg-status)
-                           (#'git-status))))
+  ;; (add-to-list 'vc-status-assoc
+  ;;              (cons 'Git
+  ;;                    (cond ((fboundp 'magit-status) #'magit-status)
+  ;;                          ((fboundp 'egg-status) #'egg-status)
+  ;;                          (#'git-status))))
   (global-set-key [f12] 'vc-jump))
 
