@@ -11,3 +11,5 @@ auto-save-list/
 elpa
 # packages installed manually
 site-lisp
+*~
+/unmaintained

@@ -34,9 +34,9 @@
      (let ((map (if (boundp 'python-mode-map)
                     python-mode-map
                   py-mode-map)))
-       (define-key map [(control ?c) ?\]] 
+       (define-key map [(control ?c) ?\]]
          'py-shift-region-right)
-       (define-key map [(control ?c) ?\[] 
+       (define-key map [(control ?c) ?\[]
          'py-shift-region-left)
 
        ;; To eval string/region/buffer in native python,
@@ -47,6 +47,7 @@
        (if (and (executable-find "ipython")
                 (fboundp 'py-execute-region-ipython))
            (progn
+             (setq-default py-shell-name "ipython")
              (define-key map [(control ?c) (control ?b)]
                'py-execute-buffer-ipython)
              (define-key map [(control ?c) (control ?r)]

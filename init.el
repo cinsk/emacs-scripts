@@ -928,10 +928,10 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;; w3m
 ;;;
 (when (locate-library "w3m")
+  (setq w3m-use-cookies t)
   (require 'w3m-load))
 
 
-(setq w3m-use-cookies t)
 
 
 ;;;
@@ -1096,52 +1096,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;(global-set-key [f3] 'dired-jump)
 
 
-
 
-;;;
-;;; elscreen
-;;;
-(eval-after-load "elscreen"
-  '(progn
-     (define-key elscreen-map "\C-z" 'elscreen-toggle)
-     (setq elscreen-display-screen-number nil)
-     ))
-
-(when nil
-  ;; Don't know why, but in my system configuration,
-  ;; when Emacs 23.1.50 autoloads elscreen 1.4.6, launching emacs
-  ;; with filename causes "Symbol's value as variable is void: dir" error.
-  (when (locate-library "elscreen")
-    (require 'elscreen)))
-
-
-;;;
-;;; ecb settings; I do not use ECB any more -- cinsk.
-;;;
-(when nil
-  (when window-system
-    (autoload 'ecb-activate "ecb" "Emacs Code Browser" t)
-    (eval-after-load "ecb"
-      '(progn
-         (setq ecb-toggle-layout-sequence
-               '("left3" "left-symboldef" "left8"))
-         (setq ecb-tip-of-the-day nil)
-         (set-face-font 'ecb-default-general-face
-                        "-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*")
-         )))
-
-  (defun ecb-next-action (arg)
-    (interactive "P")
-    (or (featurep 'ecb)
-        (progn (require 'cedet)
-               (require 'ecb)))         ; load required packages
-    (cond ((null ecb-minor-mode) (ecb-activate))
-          (t (if (null arg)
-                 (ecb-toggle-layout)
-               (ecb-deactivate)))))
-
-  ;;(global-set-key [f11] 'ecb-next-action)
-  )
 
 ;;; Local Variables:
 ;;; coding: utf-8

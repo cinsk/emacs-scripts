@@ -181,3 +181,49 @@ following:
   /*]]>*/-->
 </style>
 ")
+
+;;
+;; yasnippet support (tested with yasnippets 0.8.0 beta)
+;;
+;; See also http://orgmode.org/org.html#Conflicts
+;;
+(defun yas-org-very-safe-expand ()
+  (let ((yas-fallback-behavior 'return-nil))
+    (and (fboundp 'yas-expand) (yas-expand))))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            ;; (make-variable-buffer-local 'yas/trigger-key)
+            ;; (setq yas/trigger-key [tab])
+            (add-to-list 'org-tab-first-hook
+                         'yas-org-very-safe-expand)
+            ;; (define-key yas/keymap [tab] 'yas/next-field)
+            ))
+
+
+
+
+(when (and (> emacs-major-version 22)
+           (fboundp 'org-set-emph-re))
+  ;; Current org-mode mark-up algorithm does not support marking
+  ;; partial word. (e.g. =partial=word)
+  ;;
+  ;; On some languages that have postposition, which has no word
+  ;; boundary with the previous noun (e.g. Korean aka josa),
+  ;; marking-up partial word is essential.
+  ;;
+  ;; To work around current implementation, it is possible to insert
+  ;; invisible unicode character such as "word joiner" character,
+  ;; \u2060, between the noun and the postposition, to enable partial
+  ;; word.  Thus the text will be "=partial=\u2060word", and adding
+  ;; this special character to `org-emphasis-regexp-components' will
+  ;; do the trick. (Use `ucs-insert' to insert the character into the
+  ;; text)
+  ;;
+  ;; See the original idea from:
+  ;;   http://thread.gmane.org/gmane.emacs.orgmode/46197/focus=46263
+  (org-set-emph-re 'org-emphasis-regexp-components
+                   '(" \t('\"{"
+                     "- \t.,:!?;'\")}\\\u2060"
+                     " \t\r\n,\"'⁠"
+                     "." 1)))
