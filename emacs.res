@@ -63,9 +63,9 @@ Emacs*Fontset-8:-*-Terminus-*-*-*-*-20-*-*-*-*-*-fontset-term20,\
           latin:-*-Terminus-*-*-*-*-20-*-*-*-*-*-*-*,\
          hangul:-*-NanumGothic_Coding-*-*-*-*-17-*-*-*-*-*-*-*
 
-Emacs*Fontset-8:-*-Consolas-*-*-*-*-*-*-*-*-*-*-fontset-con,\
-          latin:-*-Consolas-*-*-*-*-*-*-*-*-90-*-*,\
-        hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-180-*-*
+!Emacs*Fontset-8:-*-Consolas-*-*-*-*-*-*-*-*-*-*-fontset-con,\
+!          latin:-*-Consolas-*-*-*-*-*-*-*-*-90-*-*,\
+!        hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-180-*-*
 
 Emacs*Fontset-9:-etl-fixed-*-*-*-*-16-*-*-*-*-*-fontset-fixed,\
           latin:-etl-fixed-*-*-*-*-16-*-*-*-*-*-*-*,\
