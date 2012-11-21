@@ -40,6 +40,11 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 (when (locate-library "magit")
   (require 'magit))
 
+(when (locate-library "markdown-mode")
+  ;; See https://github.com/magit/magit/issues/424
+  (require 'markdown-mode)
+  (define-derived-mode magit-log-edit-mode markdown-mode "Magit Log Edit"))
+
 (when nil
   ;; I do not use egg anymore.
   (let ((egg-dir (concat (file-name-as-directory

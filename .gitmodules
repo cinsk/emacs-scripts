@@ -7,3 +7,6 @@
 [submodule "filladapt"]
 	path = filladapt
 	url = https://github.com/cinsk/filladapt.git
+[submodule "package"]
+	path = package
+	url = https://github.com/technomancy/package.el
