@@ -822,7 +822,11 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
       (setq diary-file my-diary-file)))
 
 (setq mark-holidays-in-calendar t)
-(setq mark-diary-entries-in-calendar t)
+
+(when (and (boundp 'diary-file)
+           (file-readable-p diary-file))
+  (setq mark-diary-entries-in-calendar t))
+
 (add-hook 'diary-display-hook 'fancy-diary-display)
 
 (setq local-holidays
