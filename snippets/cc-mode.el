@@ -27,13 +27,13 @@
 ;;; C & C++
 (add-hook 'c-mode-hook
           #'(lambda ()
-              (safe-visit-tags-table (concat (file-name-as-directory 
+              (safe-visit-tags-table (concat (file-name-as-directory
                                               user-emacs-directory)
                                              "TAGS.sys") t)))
 
 (add-hook 'c++-mode-hook
           #'(lambda ()
-              (safe-visit-tags-table (concat (file-name-as-directory 
+              (safe-visit-tags-table (concat (file-name-as-directory
                                               user-emacs-directory)
                                              "TAGS.sys") t)))
 
@@ -59,6 +59,6 @@
 (setq c-macro-prompt-flag t)
 
 ;;; Java
-(add-hook 'java-mode-hook (lambda () (subword-mode 1)))
-
-
+(add-hook 'java-mode-hook (lambda ()
+                            (subword-mode 1)
+                            (c-set-offset 'statement-cont '++)))
