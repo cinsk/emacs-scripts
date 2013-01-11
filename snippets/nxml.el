@@ -132,3 +132,18 @@ chance to change the name of the element."
                 (if (>= (point) (1- (point-max)))
                     (setq done t))
                 )))))))
+
+;;
+;; html5 related setting
+;;
+(let ((html5-el (concat (file-name-as-directory
+                         (expand-file-name user-emacs-directory))
+                        "html5-el"))
+      (schema (concat (file-name-as-directory
+                       (expand-file-name user-emacs-directory))
+                      "schema/relaxng/xhtml5.rnc")))
+  (when (and (file-accessible-directory-p html5-el)
+             (file-readable-p schema))
+    (add-to-list 'load-path html5-el)
+    (when (locate-library "whattf-dt")
+      (require 'whattf-dt))))
