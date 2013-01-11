@@ -382,7 +382,7 @@ supplied one, a warning message is generated."
 ;; list, which makes me annoying.  Thus, I'll explicitly ignore minibuffer-like
 ;; names in `iswitchb-buffer-ignore'. -- cinsk
 ;;
-(setq iswitchb-buffer-ignore '("^ \\*Minibuf[^*]*\\*"))
+;; (setq iswitchb-buffer-ignore '("^ \\*Minibuf[^*]*\\*"))
 
 
 ;;;
@@ -806,7 +806,9 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 ;;; htmlize
 ;;;
-(setq htmlize-convert-nonascii-to-entities nil)
+(when (locate-library "htmlize")
+  (require 'htmlize)
+  (setq htmlize-convert-nonascii-to-entities nil))
 
 
 ;;;
