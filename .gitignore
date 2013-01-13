@@ -7,6 +7,8 @@
 /TAGS*
 # auto-saves 
 auto-save-list/
+# untested schemas
+/schema/xmpp/
 # packages installed by package.el
 elpa
 # packages installed manually

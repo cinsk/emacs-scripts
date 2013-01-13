@@ -37,6 +37,15 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 (when (locate-library "git")
   (require 'git))
 
+(let ((magit-git-dir (concat (expand-file-name user-emacs-directory)
+                             "magit")))
+  (when (file-accessible-directory-p magit-git-dir)
+    (add-to-list 'load-path magit-git-dir)
+    (add-to-list 'Info-directory-list magit-git-dir))
+
+  (when (locate-library "50magit")
+    (require '50magit)))
+
 (when (locate-library "magit")
   (require 'magit))
 
