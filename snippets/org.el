@@ -227,3 +227,52 @@ following:
                      "- \t.,:!?;'\")}\\\u2060"
                      " \t\r\n,\"'⁠"
                      "." 1)))
+
+(define-key org-mode-map [(control c) (control ?\;)] '(lambda ()
+                                                        (interactive)
+                                                        (ucs-insert #x2060)))
+
+
+(defvar cinsk/mode-name-list
+  (let (lst)
+    (mapatoms (lambda (sym)
+                (let ((name (symbol-name sym)))
+                  (if (string-match "^\\([^-]*\\)-mode$" name)
+                      (push (match-string 1 name) lst)))))
+    lst)
+  "names of the Emacs mode that can be used in SRC block in org-mode")
+
+(defvar cinsk/org-sourcefy-history nil
+  "history variable for `org-sourcefy'.")
+
+(setq cinsk/org-sourcefy-history nil)
+
+(defun cinsk/org-sourcefy (mode begin end)
+  "Enclose the current region with #+BEGIN_SRC ... #+END_SRC"
+  (interactive
+   (list
+    (let ((initial (and (boundp 'cinsk/org-sourcefy-history)
+                    (car cinsk/org-sourcefy-history))))
+      ;; don't know why, but HIST arg in `completing-read' is not working
+      (completing-read "mode: " cinsk/mode-name-list nil t initial
+                       'cinsk/org-sourcefy-history))
+    (region-beginning)
+    (region-end)))
+
+  (let ((text (buffer-substring-no-properties begin end))
+        require-newline-at-end)
+    (goto-char end)
+    (if (not (bolp))
+        (setq require-newline-at-end t))
+
+    (delete-region begin end)
+    (goto-char begin)
+    (push-mark)
+    (insert (if (bolp) "" "\n")
+            (format "#+BEGIN_SRC %s\n" mode)
+            text
+            (if require-newline-at-end "\n" "")
+            "#+END_SRC\n")
+    (push mode cinsk/org-sourcefy-history)))
+
+(define-key org-mode-map [(control c) ?s] 'cinsk/org-sourcefy)
