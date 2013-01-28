@@ -95,7 +95,14 @@
                               "notes.org")))
         ;; Install all .org files in `my-org-directory' if exists
         (setq org-agenda-files
-              (directory-files my-org-directory t ".*\\.org\\'"))
+              (if (boundp 'org-agenda-file-regexp)
+                  ;; I don't know since when `org-agenda-file-regexp'
+                  ;; can accept directory name.  So if it does exists,
+                  ;; use the directory name, otherwise add files
+                  ;; manually.
+                  (list my-org-directory)
+                (directory-files my-org-directory t "\\`[^.#].*\\.org\\'")))
+
         (setq org-default-notes-file notefile)
         (setq org-directory my-org-directory))
     (lwarn '(dot-emacs) :warning
@@ -254,7 +261,7 @@ following:
     (let ((initial (and (boundp 'cinsk/org-sourcefy-history)
                     (car cinsk/org-sourcefy-history))))
       ;; don't know why, but HIST arg in `completing-read' is not working
-      (completing-read "mode: " cinsk/mode-name-list nil t initial
+      (completing-read "mode: " cinsk/mode-name-list nil 'confirm initial
                        'cinsk/org-sourcefy-history))
     (region-beginning)
     (region-end)))
