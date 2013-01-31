@@ -50,6 +50,12 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 
 (when (locate-library "markdown-mode")
   ;; See https://github.com/magit/magit/issues/424
+
+  ;; If we don't force to load the module magit here,
+  ;; `magit-log-edit-mode' will not have correct keymaps.  Don't know
+  ;; why. -- cinsk
+  (require 'magit)
+
   (require 'markdown-mode)
   (define-derived-mode magit-log-edit-mode markdown-mode "Magit Log Edit"))
 
