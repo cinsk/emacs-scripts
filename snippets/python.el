@@ -48,6 +48,11 @@
                 (fboundp 'py-execute-region-ipython))
            (progn
              (setq-default py-shell-name "ipython")
+             ;; The default prompt of ipython is not working properly
+             ;; it contains some ^A (ASCII 1) which makes completion
+             ;; not working.
+             (setq-default python-python-command-args '("-i" "--classic"))
+
              (define-key map [(control ?c) (control ?b)]
                'py-execute-buffer-ipython)
              (define-key map [(control ?c) (control ?r)]
@@ -71,7 +76,14 @@
          (define-key map [(control ?c) ?c] 'py-pychecker-run))
 
        ;; python-mode uses `C-c C-d' for `py-pdbtrack-toggle-stack-tracking'
-       (define-key map [(control ?c) (control ?d)] 'zap-to-nonspace))))
+       (define-key map [(control ?c) (control ?d)] 'zap-to-nonspace))
+
+     (when (and (boundp 'py-shell-map)
+                (null (lookup-key py-shell-map [(control ?a)])))
+       ;; `move-beginning-of-line' (C-a) ignore the prompt, which is
+       ;; inconvinient.
+       (define-key py-shell-map [(control ?a)]
+         'comint-bol-or-process-mark))))
 
 (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
 (setq interpreter-mode-alist (cons '("python" . python-mode)
