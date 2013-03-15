@@ -235,9 +235,22 @@ following:
                      " \t\r\n,\"'⁠"
                      "." 1)))
 
+;; unicode: word joiner
+;;
+;; To mark-up certain text (e.g. /"hello"/ga), place 'word joiner'
+;; character in /"hello"/<!>ga, where <!> represents the position for the
+;; word joiner.
 (define-key org-mode-map [(control c) (control ?\;)] '(lambda ()
                                                         (interactive)
                                                         (ucs-insert #x2060)))
+;; unicode: zero width space
+;;
+;; To mark-up certain text (e.g. ="hello"=), place 'zero width space'
+;; character in =<!>"hello"<!>=, where <!> represent the two position
+;; for the zero width space character.
+(define-key org-mode-map [(control c) (control ?\')] '(lambda ()
+                                                        (interactive)
+                                                        (ucs-insert #x200B)))
 
 
 (defvar cinsk/mode-name-list

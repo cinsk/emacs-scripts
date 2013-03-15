@@ -558,6 +558,14 @@ and to remove trailing whitespaces")
   'version-control-system)
 
 
+(when (locate-library "cmake-mode")
+  (require 'cmake-mode)
+  (setq auto-mode-alist
+        (append '(("CMakeLists\\.txt\\'" . cmake-mode)
+                  ("\\.cmake\\'" . cmake-mode))
+                auto-mode-alist)))
+
+
 (when (locate-library "winner")
   ;; A history manager for window configuration.
   ;; `C-c left' for undo, `C-c right' for redo
