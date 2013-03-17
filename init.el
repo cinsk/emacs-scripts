@@ -299,6 +299,12 @@ supplied one, a warning message is generated."
 ;;; below line for the default behavior (at mouse click).
 (setq mouse-yank-at-point t)
 
+;; browse-kill-ring: interactive kill-ring navigation
+(when (locate-library "browse-kill-ring")
+  (unless (fboundp 'browse-kill-ring)
+    (require 'browse-kill-ring))
+  (global-set-key [(control ?c) (control ?k)] 'browse-kill-ring))
+
 
 ;;;
 ;;; If you are intended BS (backspace) key to work

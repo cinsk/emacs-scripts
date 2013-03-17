@@ -42,7 +42,17 @@
   (require 'org-version)
   (if (and (fboundp 'org-release)
            (not (string-lessp (org-release) "7.9.2")))
-      nil                               ; do nothing
+      ;; Around orgmode version 7.9.2 and version 7.9.3, if the module,
+      ;; org-version is loaded, then some of org-related symbols are
+      ;; accessible (e.g. `org-mode-map').
+      ;;
+      ;; From orgmode 7.9.4, however, `org-mode-map' is not loaded unless
+      ;; org module is loaded.  Thus, I loaded org module below.
+      ;;
+      ;; TODO: Move all of org specific configuration below to the
+      ;;       `eval-after-load' if possible
+      (require 'org)
+    ;; nil                               ; do nothing
     (require 'org-install)))
 
 ;; According to http://orgmode.org/org.html#Conflicts, filladapt.el is
@@ -75,7 +85,7 @@
 (global-set-key [(control c) ?b] 'org-iswitchb)
 (global-set-key [(control c) ?\"] 'org-capture)
 
-(org-remember-insinuate)
+;;(org-remember-insinuate)
 (global-set-key [f8] 'org-capture)
 
 (let* ((org-path (getenv "ORG_PATH"))
