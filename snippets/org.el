@@ -184,11 +184,11 @@ following:
 
 (setq org-export-html-style "
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://www.cinsk.org/bootstrap/bootstrap.css\"/>
+      href=\"http://www.cinsk.org/bootstrap/css/bootstrap.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://www.cinsk.org/bootstrap/bootstrap-responsive.css\"/>
+      href=\"http://www.cinsk.org/bootstrap/css/bootstrap-responsive.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://www.cinsk.org/bootstrap/docs.css\"/>
+      href=\"http://www.cinsk.org/bootstrap/css/docs.css\"/>
 <style type=\"text/css\">
   <!--/*--><![CDATA[/*><!--*/
   body { margin: 2% 6% 2% 10%; }
