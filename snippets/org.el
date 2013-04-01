@@ -42,7 +42,17 @@
   (require 'org-version)
   (if (and (fboundp 'org-release)
            (not (string-lessp (org-release) "7.9.2")))
-      nil                               ; do nothing
+      ;; Around orgmode version 7.9.2 and version 7.9.3, if the module,
+      ;; org-version is loaded, then some of org-related symbols are
+      ;; accessible (e.g. `org-mode-map').
+      ;;
+      ;; From orgmode 7.9.4, however, `org-mode-map' is not loaded unless
+      ;; org module is loaded.  Thus, I loaded org module below.
+      ;;
+      ;; TODO: Move all of org specific configuration below to the
+      ;;       `eval-after-load' if possible
+      (require 'org)
+    ;; nil                               ; do nothing
     (require 'org-install)))
 
 ;; According to http://orgmode.org/org.html#Conflicts, filladapt.el is
@@ -75,7 +85,7 @@
 (global-set-key [(control c) ?b] 'org-iswitchb)
 (global-set-key [(control c) ?\"] 'org-capture)
 
-(org-remember-insinuate)
+;;(org-remember-insinuate)
 (global-set-key [f8] 'org-capture)
 
 (defun cinsk/org-refresh-agenda-files (&optional directory)
@@ -192,11 +202,11 @@ following:
 
 (setq org-export-html-style "
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://www.cinsk.org/bootstrap/bootstrap.css\"/>
+      href=\"http://www.cinsk.org/bootstrap/css/bootstrap.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://www.cinsk.org/bootstrap/bootstrap-responsive.css\"/>
+      href=\"http://www.cinsk.org/bootstrap/css/bootstrap-responsive.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://www.cinsk.org/bootstrap/docs.css\"/>
+      href=\"http://www.cinsk.org/bootstrap/css/docs.css\"/>
 <style type=\"text/css\">
   <!--/*--><![CDATA[/*><!--*/
   body { margin: 2% 6% 2% 10%; }
@@ -253,9 +263,22 @@ following:
                      " \t\r\n,\"'⁠"
                      "." 1)))
 
+;; unicode: word joiner
+;;
+;; To mark-up certain text (e.g. /"hello"/ga), place 'word joiner'
+;; character in /"hello"/<!>ga, where <!> represents the position for the
+;; word joiner.
 (define-key org-mode-map [(control c) (control ?\;)] '(lambda ()
                                                         (interactive)
                                                         (ucs-insert #x2060)))
+;; unicode: zero width space
+;;
+;; To mark-up certain text (e.g. ="hello"=), place 'zero width space'
+;; character in =<!>"hello"<!>=, where <!> represent the two position
+;; for the zero width space character.
+(define-key org-mode-map [(control c) (control ?\')] '(lambda ()
+                                                        (interactive)
+                                                        (ucs-insert #x200B)))
 
 
 (defvar cinsk/mode-name-list
