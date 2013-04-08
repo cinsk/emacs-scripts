@@ -80,5 +80,6 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
   ;;                    (cond ((fboundp 'magit-status) #'magit-status)
   ;;                          ((fboundp 'egg-status) #'egg-status)
   ;;                          (#'git-status))))
-  (global-set-key [f12] 'vc-jump))
+  (global-set-key [f12] 'vc-jump)
+  (global-set-key [(control ?x) ?j] 'vc-jump))
 

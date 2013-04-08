@@ -88,6 +88,24 @@
 ;;(org-remember-insinuate)
 (global-set-key [f8] 'org-capture)
 
+(defun cinsk/org-refresh-agenda-files (&optional directory)
+  "Refresh `org-agenda-files' to the ORG files in DIRECTORY.
+
+Filenames that matches Dropbox conflict will not be included."
+  (let ((dir (or directory org-directory)))
+    (when (file-accessible-directory-p dir)
+      (setq org-agenda-files
+            (let ((files (directory-files dir t
+                                          "\\`[^.#].*\\.org\\'"))
+                  (conflict-regexp
+                   "(.*?[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}).org$"))
+              (delete nil (mapcar
+                           (lambda (filename)
+                             (if (string-match conflict-regexp
+                                               filename)
+                                 nil
+                               filename)) files)))))))
+
 (let* ((org-path (getenv "ORG_PATH"))
        (my-org-directory (if org-path
                              org-path
@@ -104,14 +122,14 @@
       (let ((notefile (concat (file-name-as-directory my-org-directory)
                               "notes.org")))
         ;; Install all .org files in `my-org-directory' if exists
-        (setq org-agenda-files
-              (if (boundp 'org-agenda-file-regexp)
-                  ;; I don't know since when `org-agenda-file-regexp'
-                  ;; can accept directory name.  So if it does exists,
-                  ;; use the directory name, otherwise add files
-                  ;; manually.
-                  (list my-org-directory)
-                (directory-files my-org-directory t "\\`[^.#].*\\.org\\'")))
+        ;;
+        ;; Currently `my-org-directory' is maintained by Dropbox.
+        ;; I don't know what causes this, but Dropbox leaves some conflicted
+        ;; copy in the form of "sample (XXX's conflicted copy 2009-10-15).org"
+        ;; or "sample (XXX와(과) 충돌하는 사본 2013-02-22).org" in Korean.
+        ;;
+        ;; Thus, I'll add non-conflicted filenames into `org-agenda-files'.
+        (cinsk/org-refresh-agenda-files my-org-directory)
 
         (setq org-default-notes-file notefile)
         (setq org-directory my-org-directory))
@@ -240,7 +258,7 @@ following:
   ;; See the original idea from:
   ;;   http://thread.gmane.org/gmane.emacs.orgmode/46197/focus=46263
   (org-set-emph-re 'org-emphasis-regexp-components
-                   '(" \t('\"{"
+                   '(" \t('\"{\\\u2060"
                      "- \t.,:!?;'\")}\\\u2060"
                      " \t\r\n,\"'⁠"
                      "." 1)))
