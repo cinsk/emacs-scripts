@@ -949,7 +949,17 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 (when (locate-library "w3m")
   (setq w3m-use-cookies t)
-  (require 'w3m-load))
+  (require 'w3m-load)
+
+  ;; If you have an error message like:
+  ;; "w3m-toolbar-define-keys: `keymap' is reserved for embedded parent maps"
+  ;;
+  ;; set `w3m-use-toolbar' to nil might help.
+  ;;
+  ;; Reference: http://emacs-w3m.namazu.org/ml/msg11491.html
+
+  (setq w3m-use-toolbar nil)
+  )
 
 
 
