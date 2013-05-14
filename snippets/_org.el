@@ -28,6 +28,28 @@
        'org-table-convert-from-lines)
 
      (define-key org-mode-map [(control c) ?t] 'org-todo)
+
+     (define-key org-mode-map [(control c) ?s] 'cinsk/org-sourcefy)
+
+     ;; unicode: word joiner
+     ;;
+     ;; To mark-up certain text (e.g. /"hello"/ga), place 'word joiner'
+     ;; character in /"hello"/<!>ga, where <!> represents the position for the
+     ;; word joiner.
+     (define-key org-mode-map [(control c) (control ?\;)]
+       '(lambda ()
+          (interactive)
+          (ucs-insert #x2060)))
+     ;; unicode: zero width space
+     ;;
+     ;; To mark-up certain text (e.g. ="hello"=), place 'zero width space'
+     ;; character in =<!>"hello"<!>=, where <!> represent the two position
+     ;; for the zero width space character.
+     (define-key org-mode-map [(control c) (control ?\')]
+       '(lambda ()
+          (interactive)
+          (ucs-insert #x200B)))
+
      ;; When opening a link with `org-open-at-point' (C-c C-o), These
      ;; settings allow to use acroread for pdf files and to use ggv
      ;; for ps files.
@@ -54,6 +76,7 @@
       (require 'org)
     ;; nil                               ; do nothing
     (require 'org-install)))
+
 
 ;; According to http://orgmode.org/org.html#Conflicts, filladapt.el is
 ;; not working well with Org, so disable it in org-mode.
@@ -263,23 +286,6 @@ following:
                      " \t\r\n,\"'⁠"
                      "." 1)))
 
-;; unicode: word joiner
-;;
-;; To mark-up certain text (e.g. /"hello"/ga), place 'word joiner'
-;; character in /"hello"/<!>ga, where <!> represents the position for the
-;; word joiner.
-(define-key org-mode-map [(control c) (control ?\;)] '(lambda ()
-                                                        (interactive)
-                                                        (ucs-insert #x2060)))
-;; unicode: zero width space
-;;
-;; To mark-up certain text (e.g. ="hello"=), place 'zero width space'
-;; character in =<!>"hello"<!>=, where <!> represent the two position
-;; for the zero width space character.
-(define-key org-mode-map [(control c) (control ?\')] '(lambda ()
-                                                        (interactive)
-                                                        (ucs-insert #x200B)))
-
 
 (defvar cinsk/mode-name-list
   (let (lst)
@@ -322,5 +328,3 @@ following:
             (if require-newline-at-end "\n" "")
             "#+END_SRC\n")
     (push mode cinsk/org-sourcefy-history)))
-
-(define-key org-mode-map [(control c) ?s] 'cinsk/org-sourcefy)

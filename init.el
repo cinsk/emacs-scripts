@@ -49,8 +49,7 @@
          (let ((pred (progn ,@body)))
            (when pred
              (condition-case err
-                 (progn
-                   (load absname)
+                 (when (load absname)
                    (message "%s loaded" (file-name-nondirectory ,sname))
                    (add-to-list 'cinsk/loaded-init-files absname)
                    t)
@@ -858,7 +857,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
       (setq holiday-general-holidays cal-korea-x-korean-holidays))))
 
 
-(cinsk/load-snippet "org" (locate-library "org"))
+(cinsk/load-snippet "_org" (locate-library "org"))
 
 
 ;;;
