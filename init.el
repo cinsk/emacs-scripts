@@ -16,6 +16,10 @@
 ;;;
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 ;;;
+
+(defvar cinsk/init-began (current-time)
+  "The time that Emacs start to load init files")
+
 (setq user-emacs-directory "~/.emacs.d/")
 
 (if (not (file-accessible-directory-p user-emacs-directory))
@@ -39,20 +43,32 @@
 
 \(fn SNIPPET BODY...)"
   (declare (indent 1) (debug t))
-  (let ((sname (make-symbol "SNIPPET")))
+  (let ((sname (make-symbol "SNIPPET"))
+        (began (make-symbol "BEGAN"))
+        (absname (make-symbol "ABS-NAME")))
     `(let* ((,sname ,snippet)
-            (absname (if (file-name-absolute-p ,sname)
-                         ,sname
+            (,absname (if (file-name-absolute-p ,sname)
+                          ,sname
                        (concat (expand-file-name ,cinsk/snippets-directory)
                                "/" ,sname))))
-       (unless (member absname cinsk/loaded-init-files)
+       (unless (member ,absname cinsk/loaded-init-files)
          (let ((pred (progn ,@body)))
            (when pred
              (condition-case err
-                 (when (load absname)
-                   (message "%s loaded" (file-name-nondirectory ,sname))
-                   (add-to-list 'cinsk/loaded-init-files absname)
-                   t)
+                 (let* ((,began (current-time))
+                        (result (load ,absname)))
+                     (with-current-buffer (get-buffer-create "*snippets*")
+                       (if (not result)
+                           (insert (format "%3.5f  [fail] %s\n"
+                                           0 ,absname))
+                         (message "snippet %s loaded"
+                                  (file-name-nondirectory ,sname))
+                         (insert (format "%3.5f  [okay] %s\n"
+                                         (float-time
+                                          (time-subtract (current-time)
+                                                         ,began))
+                                         ,absname))
+                         (add-to-list 'cinsk/loaded-init-files ,absname))))
                (error (lwarn 'dot-emacs :warning
                              (format "%s: %s: %S" ,sname
                                      (car err) (cdr err)))))))))))
@@ -1125,7 +1141,15 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;(global-set-key [f3] 'dired-jump)
 
 
+(defun cinsk/report-loaded-snippets ()
+  (with-current-buffer (get-buffer-create "*snippets*")
+    (sort-numeric-fields 1 (point-min) (point-max))
+    (goto-char (point-max))
+    (insert (format "--\n%3.5f  TOTAL\n"
+                    (float-time (time-subtract (current-time)
+                                               cinsk/init-began))))))
 
+(cinsk/report-loaded-snippets)
 
 ;;; Local Variables:
 ;;; coding: utf-8
