@@ -106,9 +106,15 @@
           (schema-file (concat (file-name-as-directory
                                 (expand-file-name user-emacs-directory))
                                "schema/schemas-html5.xml"))
-          (oldschama-file (concat (file-name-as-directory
+          (oldschema-file (concat (file-name-as-directory
                                    (expand-file-name user-emacs-directory))
                                   "schema/schemas.xml")))
+
+      (when (locate-library "rng-loc")
+        ;; loading "rng-loc" is required, otherwise,
+        ;; `rng-schema-locating-files-default' and
+        ;; `rng-schema-locating-files' are not defined
+        (require 'rng-loc))
 
       (if (and (file-accessible-directory-p html5-el)
                (file-readable-p schema)
