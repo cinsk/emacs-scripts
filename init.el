@@ -740,7 +740,7 @@ starting number."
 
 
 
-(cinsk/load-snippet "nxml"
+(cinsk/load-snippet "_nxml"
   (or (locate-library "nxml-mode")
       ;; For legacy nxml-mode which does not use `provide' for nxml-mode.
       (locate-library "rng-auto")))
