@@ -5,7 +5,7 @@
 ;;;
 
 
-;; Set the default value for the title bar of the Emacs frame.  
+;; Set the default value for the title bar of the Emacs frame.
 ;;
 ;; The possible format specifiers (e.g. %F or %b) are explained in
 ;; the documentation of `mode-line-format'.
@@ -72,7 +72,7 @@ CONFIGURATION."
     nil))
 
 
-(defun reverse-other-window (arg) 
+(defun reverse-other-window (arg)
   "Reverse `other-window' with no argument"
   (interactive "p")
   (other-window (- arg)))
@@ -159,7 +159,7 @@ current window"
       ;; (message "position: %s" pos))
       (other-window (+ pos (let ((winlist (window-list)))
                              ;;(nconc winlist winlist)
-                             (position (first-window) 
+                             (position (first-window)
                                        winlist)))))))
 
 (defun smart-other-window ()
@@ -289,3 +289,106 @@ to the display width"
        ;;
        ;; TODO: Using zero in MacOS X seems to be fine.  Check in other system.
        0)))
+
+
+(defun adjacent-window (dir window)
+  "Return the adjacent window of the given WINDOW based on the direction, DIR
+
+DIR can be one of 'left, 'right, 'up, 'bottom.  If there is no window
+for given DIR, this function returns nil.   If there are more than one
+windows toward that DIR, it returns one of the window."
+  (let* ((edges (window-edges (selected-window)))
+         (left (car edges))
+         (top (cadr edges))
+         (right (caddr edges))
+         (bottom (cadddr edges))
+         (vfringe (max (- (window-total-height (selected-window))
+                          (window-body-height (selected-window))) 1))
+         (hfringe (max (- (window-total-width (selected-window))
+                             (window-body-width (selected-window))) 1))
+         (point (cond ((eq dir 'left) (cons (- left hfringe) (1+ top)))
+                      ((eq dir 'right) (cons (+ right hfringe) (1+ top)))
+                      ((eq dir 'up) (cons (1+ left) (- top vfringe)))
+                      ((eq dir 'down) (cons (1+ left) (+ bottom vfringe))))))
+    ;; I don't know what is the right value for hfringe and vfringe.
+    ;; See the Section 28.3 Window Sizes of elisp reference for more.
+    (some (lambda (w) w)
+          (mapcar (lambda (w)
+                    (let ((r (coordinates-in-window-p point w)))
+                               (if r w nil)))
+                           (window-list)))))
+
+(defun move-window-border-up (&optional amount)
+  "Move the window border upward.
+
+If the selected window is the top-most window, then it moves the
+bottom border upward. (This causes the selected window shrinks
+vertically.)  Otherwise it moves top border upward. (This causes
+the selected window grows vertically.)"
+  (interactive "p")
+  (setq amount (if (eq amount 0) 1 amount))
+  (let ((win (adjacent-window 'up (selected-window))))
+    (if win
+        ;; this is not the top-most window
+        (adjust-window-trailing-edge win (- amount))
+      ;; this is the top-most window
+      (adjust-window-trailing-edge (selected-window) (- amount)))))
+
+(defun move-window-border-down (&optional amount)
+  "Move the window border downward.
+
+If the selected window is the bottom-most window, then it moves
+the top border downward. (This causes the selected window shrinks
+vertically.)  Otherwise it moves bottom border downward. (This
+causes the selected window grows vertically.)"
+  (interactive "p")
+  (setq amount (if (eq amount 0) 1 amount))
+  (let ((win (adjacent-window 'down (selected-window))))
+    (if win
+        ;; this is not the bottom-most window
+        (adjust-window-trailing-edge (selected-window) amount)
+      ;; this is the bottom-most window
+      (window-resize (selected-window) (- amount)))))
+
+(defun move-window-border-left (&optional amount)
+  "Move the window border leftward.
+
+If the selected window is the left-most window, then it moves the
+right border leftward. (This causes the selected window shrinks
+horizontally.)  Otherwise it moves left border leftward. (This
+causes the selected window grows horizontally.)"
+  (interactive "p")
+  (setq amount (if (eq amount 0) 1 amount))
+  (let ((win (adjacent-window 'left (selected-window))))
+    (message "left: %S" win)
+    (if win
+        ;; this is not the left-most window
+        (adjust-window-trailing-edge win (- amount) t)
+        ;; this is the left-most window
+      (adjust-window-trailing-edge (selected-window) (- amount) t)
+      )))
+
+
+(defun move-window-border-right (&optional amount)
+  "Move the window border rightward.
+
+If the selected window is the right-most window, then it moves
+the left border rightward. (This causes the selected window
+shrinks horizontally.)  Otherwise it moves right border
+rightward. (This causes the selected window grows horizontally.)"
+  (interactive "p")
+  (setq amount (if (eq amount 0) 1 amount))
+  (let ((win (adjacent-window 'right (selected-window))))
+    (message "right: %S" win)
+    (if win
+        ;; this is not the right-most window
+        (adjust-window-trailing-edge (selected-window) amount t)
+        ;; this is the right-most window
+      (window-resize (selected-window) (- amount) 'horizontal))))
+
+
+
+(global-set-key [(meta shift up)] 'move-window-border-up)
+(global-set-key [(meta shift down)] 'move-window-border-down)
+(global-set-key [(meta shift left)] 'move-window-border-left)
+(global-set-key [(meta shift right)] 'move-window-border-right)
