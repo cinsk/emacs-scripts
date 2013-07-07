@@ -387,10 +387,10 @@ rightward. (This causes the selected window grows horizontally.)"
       (window-resize (selected-window) (- amount) 'horizontal))))
 
 
-(global-set-key [(control ?x) ?w up)] 'move-window-border-up)
-(global-set-key [(control ?x) ?w down)] 'move-window-border-down)
-(global-set-key [(control ?x) ?w left)] 'move-window-border-left)
-(global-set-key [(control ?x) ?w right)] 'move-window-border-right)
+(global-set-key [(control ?x) ?w up] 'move-window-border-up)
+(global-set-key [(control ?x) ?w down] 'move-window-border-down)
+(global-set-key [(control ?x) ?w left] 'move-window-border-left)
+(global-set-key [(control ?x) ?w right] 'move-window-border-right)
 
 (global-set-key [(meta shift up)] 'move-window-border-up)
 (global-set-key [(meta shift down)] 'move-window-border-down)
