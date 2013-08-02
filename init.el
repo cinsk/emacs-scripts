@@ -1096,8 +1096,8 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 ;;; ESS(Emacs Speaks Statistics) setting for R.
 ;;;
-(when (locate-library "ess-site")
-  (require 'ess-site))
+(cinsk/load-snippet "_ess"
+  (locate-library "ess-site"))
 
 
 ;;; To save & load Emacs session, following lines should be the last
