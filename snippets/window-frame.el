@@ -215,17 +215,19 @@ calls `iswitchb'"
 ;;
 ;; Quick Frame Configuration Load/Save
 ;;
-(global-set-key [(control f3)] '(lambda ()
-                                  "Quick frame load"
-                                  (interactive)
-                                  (jump-to-register ?\x3)
-                                  (message "Load saved frame configuration")))
+(when nil
+  (global-set-key [(control f3)] '(lambda ()
+                                    "Quick frame load"
+                                    (interactive)
+                                    (jump-to-register ?\x3)
+                                    (message "Load saved frame configuration")))
 
-(global-set-key [(control f4)] '(lambda ()
-                                  "Quick frame save"
-                                  (interactive)
-                                  (frame-configuration-to-register ?\x3)
-                                  (message "Frame configuration saved")))
+  (global-set-key [(control f4)] '(lambda ()
+                                    "Quick frame save"
+                                    (interactive)
+                                    (frame-configuration-to-register ?\x3)
+                                    (message "Frame configuration saved"))))
+
 
 
 (defun frame-position-for-resizing (width height &optional frame display)
@@ -396,3 +398,35 @@ rightward. (This causes the selected window grows horizontally.)"
 (global-set-key [(meta shift down)] 'move-window-border-down)
 (global-set-key [(meta shift left)] 'move-window-border-left)
 (global-set-key [(meta shift right)] 'move-window-border-right)
+
+
+
+
+(defun load-or-save-frame-configuration (&optional arg)
+  (interactive "P")
+  (let* ((cmdvec (this-command-keys))
+         (lastchar (aref cmdvec (1- (length cmdvec)))))
+    (if current-prefix-arg
+        (progn
+          (frame-configuration-to-register lastchar)
+          (message "frame-configuration saved to register %c" lastchar))
+      (jump-to-register lastchar)
+      (message "frame-configuration restored from register %c" lastchar))))
+
+
+(defvar frame-configuration-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map [?1] 'load-or-save-frame-configuration)
+    (define-key map [?2] 'load-or-save-frame-configuration)
+    (define-key map [?3] 'load-or-save-frame-configuration)
+    (define-key map [?4] 'load-or-save-frame-configuration)
+    (define-key map [?5] 'load-or-save-frame-configuration)
+    (define-key map [?6] 'load-or-save-frame-configuration)
+    (define-key map [?7] 'load-or-save-frame-configuration)
+    (define-key map [?8] 'load-or-save-frame-configuration)
+    (define-key map [?9] 'load-or-save-frame-configuration)
+    (define-key map [?0] 'load-or-save-frame-configuration)
+    map)
+  "hotkey keymap for save/load frameconfiguration")
+
+(global-set-key [(control f3)] frame-configuration-map)

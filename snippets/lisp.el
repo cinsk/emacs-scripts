@@ -9,9 +9,9 @@
 ;;; Emacs Lisp Mode
 ;;;
 
-(add-hook 'emacs-lisp-mode-hook 
+(add-hook 'emacs-lisp-mode-hook
           '(lambda ()
-             (safe-visit-tags-table (concat (file-name-as-directory 
+             (safe-visit-tags-table (concat (file-name-as-directory
                                              user-emacs-directory)
                                             "TAGS.emacs") t)))
 
@@ -49,7 +49,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (lisp-macroexpand-region (point) (scan-sexps (point) 1) and-go))
 
 (eval-after-load "inf-lisp"
-  '(define-key inferior-lisp-mode-map [(control ?x) (control ?m)] 
+  '(define-key inferior-lisp-mode-map [(control ?x) (control ?m)]
      'lisp-macro-expand-sexp))
 
 (define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
@@ -59,8 +59,8 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;; slime
 ;;;
 (when (locate-library "slime-autoloads")
-  (eval-after-load "slime" 
-    '(progn 
+  (eval-after-load "slime"
+    '(progn
        (slime-setup)
        ;; C-c C-b slime-eval-buffer
        ;; C-c C-e slime-eval-last-expression
@@ -124,3 +124,25 @@ Prefix argument means switch to the Lisp buffer afterwards."
           (set-buffer src))))
     ))
 
+
+(when (locate-library "eldoc")
+  (require 'eldoc)
+  (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode))
+
+(when (and nil (locate-library "paredit"))
+  (autoload 'enable-paredit-mode "paredit"
+    "Turn on pseudo-structural editing of Lisp code." t)
+
+  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
+  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
+  (add-hook 'ielm-mode-hook             #'enable-paredit-mode)
+  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
+  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
+  (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
+
+  ;; See http://www.emacswiki.org/emacs/ParEdit
+  (eldoc-add-command
+   'paredit-backward-delete
+   'paredit-close-round))

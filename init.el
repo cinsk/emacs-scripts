@@ -172,6 +172,7 @@ by package.el")
 (cinsk/load-snippet "X"
   (eq window-system 'x))
 
+
 
 (cinsk/load-snippet "ediff"
   ;; Note that some external packages loads 'ediff by themselves, such
@@ -699,6 +700,9 @@ starting number."
 (cinsk/load-snippet "lisp"
   'lisp)
 
+(cinsk/load-snippet "_clojure"
+  (locate-library "clojure-mode"))
+
 
 (cinsk/load-snippet "latex"
   'latex-mode)
@@ -954,6 +958,10 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 (cinsk/load-snippet "python"
   (locate-library "python-mode"))
+
+
+(cinsk/load-snippet "_js"
+  (locate-library "js-comint"))
 
 
 (cinsk/load-snippet "maven" 'maven)

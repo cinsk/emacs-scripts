@@ -148,19 +148,25 @@
   ":END:\n"
   "\n" _)
 
-(add-to-list 'auto-insert-alist 
+(defun org-safe-skeleton ()
+  "Call `org-skeleton' iff the buffer is created by the user"
+  (when (and (buffer-file-name)
+             (string-match "^[^* ]" (buffer-name)))
+    (org-skeleton)))
+
+(add-to-list 'auto-insert-alist
              '(("\\.h\\'" . "C header")
                . c-header-skeleton))
 
 (add-to-list 'auto-insert-alist
              '(("\\.\\(H\\|hh\\|hpp\\|hxx\\)\\'" . "C++ header")
                . cxx-header-skeleton))
-             
+
 (add-to-list 'auto-insert-alist
              '(("\\.\\(html\\|htm\\|xhtml\\)\\'" . "HTML file")
                . xhtml-skeleton))
 
-(add-to-list 'auto-insert-alist '("\\.org\\'" . org-skeleton))
+(add-to-list 'auto-insert-alist '("\\.org\\'" . org-safe-skeleton))
 
 (add-to-list 'auto-insert-alist
              '(python-mode . py-init-skeleton))

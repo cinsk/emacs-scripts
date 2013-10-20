@@ -32,14 +32,28 @@
     (add-hook 'ruby-mode-hook
               (lambda ()
                 (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
-                (define-key ruby-mode-map [(control ?c) (control ?c)] 
+                (define-key ruby-mode-map [(control ?c) (control ?c)]
                   'comment-region)
                 (define-key ruby-mode-map [(control ?c) (control ?b)]
                   'ruby-send-buffer)
-                (define-key ruby-mode-map [(control ?c) (control ?e)] 
+                (define-key ruby-mode-map [(control ?c) (control ?e)]
                   'ruby-send-block))
               ;; Make sure that this function is appended, not prepended
               'append))
+
+  (when (boundp 'inf-ruby-minor-mode-map)
+    ;; In inf-ruby version 2.2.7, `inf-ruby-keys' is not defined, so
+    ;; above sexp is not evaulated.  Instead, the minor mode map,
+    ;; `inf-ruby-minor-mode-map' is defined.  So I'll put all key
+    ;; bindings in it.
+    (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
+    (define-key ruby-mode-map [(control ?c) (control ?c)]
+      'comment-region)
+    (define-key ruby-mode-map [(control ?c) (control ?b)]
+      'ruby-send-buffer)
+    (define-key ruby-mode-map [(control ?c) (control ?e)]
+      'ruby-send-region))
+
 
   (if (fboundp 'ruby-send-buffer)
       (lwarn '(dot-emacs) :warning
@@ -53,7 +67,7 @@
           (ruby-send-region (point-min) (point-max))))))
 
   ;;
-  ;; RVM irb uses its own prompt pattern which does not work properly 
+  ;; RVM irb uses its own prompt pattern which does not work properly
   ;; with ruby-mode.  There are two ways to resolve this.  One is to modify
   ;; ruby-mode so that it can recognize RVM prompt pattern.  Another one is
   ;; to modify $HOME/.irbrc to force RVM irb to use the original prompt pattern.
@@ -70,7 +84,7 @@
   ;; The first prompt of Ruby 1.8 irb looks like "irb(main):001:0> ".
   ;; Depending on the current string token, the subsequent prompts
   ;; look like one of:
-  ;; 
+  ;;
   ;;   irb(main):001:0> _
   ;;   irb(main):005:0* _
   ;;   irb(main):006:0' _
