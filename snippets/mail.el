@@ -183,4 +183,3 @@ Best used for `smtpmail-smtp-service' as the default value.")
                              "contacts.el")))
        (when (file-exists-p contacts)
          (load-file contacts)))))
-

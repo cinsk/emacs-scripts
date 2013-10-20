@@ -30,6 +30,15 @@
 
 ;;(eval-when-compile (require 'cl))
 
+(defun cinsk/safe-call-skeleton (func)
+  "call FUNC if and only if the cuurent buffer looks like an user
+created file buffer."
+  (save-match-data
+   (unless (or (string-match "\\`[* ]" (buffer-name))
+               (null (buffer-file-name)))
+     (funcall func))))
+
+
 (defun c-file-name-macro ()
   "Return a string in XXX_H__ form where XXX is the upcase name of the file"
   (upcase (concat (file-name-nondirectory
@@ -148,12 +157,6 @@
   ":END:\n"
   "\n" _)
 
-(defun org-safe-skeleton ()
-  "Call `org-skeleton' iff the buffer is created by the user"
-  (when (and (buffer-file-name)
-             (string-match "^[^* ]" (buffer-name)))
-    (org-skeleton)))
-
 (add-to-list 'auto-insert-alist
              '(("\\.h\\'" . "C header")
                . c-header-skeleton))
@@ -166,7 +169,9 @@
              '(("\\.\\(html\\|htm\\|xhtml\\)\\'" . "HTML file")
                . xhtml-skeleton))
 
-(add-to-list 'auto-insert-alist '("\\.org\\'" . org-safe-skeleton))
+(add-to-list 'auto-insert-alist '("\\.org\\'" . (lambda ()
+                                                  (cinsk/safe-call-skeleton
+                                                   'org-skeleton))))
 
 (add-to-list 'auto-insert-alist
              '(python-mode . py-init-skeleton))

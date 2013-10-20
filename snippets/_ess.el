@@ -23,21 +23,18 @@
     (ess-display-help-on-object "read.table")
     (let ((params (read-from-minibuffer
                    (format "additional parameter(s) [%s]: " tmpfile))))
-      (message "cat %s > %s" tmpfile fifo)
-      (message "existence: %S %S" (file-readable-p tmpfile) (file-readable-p fifo))
       (let ((proc (start-process-shell-command
-                   "ess-fifo" (get-buffer-create "*FIFO*")
+                   "ess-fifo" nil
                    (format "cat %s > %s" tmpfile fifo))))
-                                        ;(list-processes)
         (process-put proc 'fifo fifo)
         (process-put proc 'data tmpfile)
         (set-process-sentinel
          proc
          (lambda (p event)
-           (message "sentinel[%S] %S %s" p (process-status p) event)
-           ;;(ignore-errors (delete-file (process-get p 'fifo)))
-           ;;(ignore-errors (delete-file (process-get p 'data)))
-           )))
+           ;; (message "sentinel[%S] %S %s" p (process-status p) event)
+           (ignore-errors (delete-file (process-get p 'fifo)))
+           (ignore-errors (delete-file (process-get p 'data))))))
+      (ess-switch-to-ESS 'eob-p)
       (ess-eval-linewise
        (format "read.table(fifo(\"%s\"), %s)" fifo params))
                                         ;(ess-switch-to-ESS 'eob-p)
