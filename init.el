@@ -1051,9 +1051,11 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 ;;; lua
 ;;;
-(when (locate-library "lua-mode")
-   (autoload 'lua-mode "lua-mode" "Major mode for lua script")
-   (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode)))
+(cinsk/load-snippet "_lua"
+  (when (locate-library "lua-mode")
+    (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
+    (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode))))
+
 
 ;;;
 ;;; YASnippet -- http://code.google.com/p/yasnippet/
