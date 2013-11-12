@@ -47,6 +47,13 @@
   (make-local-variable 'nxml-child-indent)
   (setq nxml-child-indent 4))
 
+;;
+;; python-mode version 6.0.10 has `(defvar nxml-child-indent nil)' in
+;; its source code.  This causes indentation on nxml-mode not working.
+;; So, I just define the variable `nxml-child-indent' forcefully to
+;; remedy this.
+(setq nxml-child-indent 2)
+
 (eval-after-load "nxml-mode"
   '(progn
      ;; Make a slash automatically completes the end-tag

@@ -389,8 +389,12 @@ supplied one, a warning message is generated."
 ;;;
 ;;; Switching between buffers using iswitchb
 ;;;
-(iswitchb-mode 1)                       ; smart buffer switching mode
-(setq iswitchb-default-method 'maybe-frame) ; ask to use another frame.
+;;(iswitchb-mode 1)                       ; smart buffer switching mode
+;;(setq iswitchb-default-method 'maybe-frame) ; ask to use another frame.
+
+(ido-mode 1)
+(setq ido-default-buffer-method 'maybe-frame)
+(setq ido-use-filename-at-point 'guess)
 
 ;;
 ;; Normally, switching buffer commands (e.g. `switch-to-buffer' or
@@ -430,7 +434,10 @@ supplied one, a warning message is generated."
 (setq resize-minibuffer-mode t)         ; ensure all contents of mini
                                         ; buffer visible
 
-(ffap-bindings)                         ; context-sensitive find-file
+;; I'll try the `ido-use-filename-at-point' instead ffap for now
+;;
+;;(setq ffap-require-prefix t)
+;;(ffap-bindings)                         ; context-sensitive find-file
 
 ;;;
 ;;; TAB & space setting
