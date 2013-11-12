@@ -389,12 +389,45 @@ supplied one, a warning message is generated."
 ;;;
 ;;; Switching between buffers using iswitchb
 ;;;
-;;(iswitchb-mode 1)                       ; smart buffer switching mode
-;;(setq iswitchb-default-method 'maybe-frame) ; ask to use another frame.
 
-(ido-mode 1)
-(setq ido-default-buffer-method 'maybe-frame)
-(setq ido-use-filename-at-point 'guess)
+(unless (locate-library "ido")
+  (iswitchb-mode 1)                     ; smart buffer switching mode
+  (setq iswitchb-default-method 'maybe-frame)) ; ask to use another frame.
+
+(when (locate-library "ido")
+  (ido-mode 1)
+  (setq ido-default-buffer-method 'maybe-frame)
+  (setq ido-use-filename-at-point 'guess)
+
+  (when (boundp 'ido-file-completion-map)
+    ;; The default binding `C-x C-f' is too much for me
+    (define-key ido-file-completion-map [(control return)] 'ido-enter-dired)))
+
+(defvar java-src-home (list (concat
+                             (file-name-as-directory
+                              (expand-file-name (getenv "JAVA_HOME")))
+                             "src"))
+  "Default directory for the Java source installed")
+
+(defun ffap-java-mode (name)
+  "Return a pathname for the Java package, NAME"
+  (catch 'found
+    ;; TODO: search the current directory for the name
+    (dolist (home java-src-home)
+      (let ((srcpath (apply 'file-name-join home
+                            (mapcar (lambda (tok)
+                                      (if (string-equal tok "*")
+                                          "."
+                                        tok))
+                                    (split-string name "\\.")))))
+        (if (file-directory-p srcpath)
+            (throw 'found srcpath)
+          (setq srcpath (concat srcpath ".java"))
+          (message "%S" srcpath)
+          (if (file-readable-p srcpath)
+              (throw 'found srcpath)))))))
+
+(add-to-list 'ffap-alist '(java-mode . ffap-java-mode))
 
 ;;
 ;; Normally, switching buffer commands (e.g. `switch-to-buffer' or
