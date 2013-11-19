@@ -998,8 +998,6 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   (setq w3m-use-toolbar nil)
   )
 
-
-
 
 ;;;
 ;;; browse-url configuration
@@ -1015,6 +1013,8 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
        nil)
 
       ((or (display-graphic-p)
+           ;; TODO: If DISPLAY environment variable is wrong,
+           ;;       xset will hang!
            (= (call-process-shell-command "xset q") 0))
        ;; Even if (display-graphic-p) returns nil,
        ;; it may be possible to launch X application.
