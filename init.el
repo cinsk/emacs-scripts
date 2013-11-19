@@ -156,13 +156,12 @@ by package.el")
 
 (defun accessible-directories (&rest dirs)
   "Return the list of directories that are accessible."
-  (let ((result nil))
-    (mapc (lambda (path)
-            (if (and (file-accessible-directory-p path)
-                     (not (member (file-name-as-directory path) result)))
-                (setq result (cons (file-name-as-directory path) result))))
-          dirs)
-    result))
+  (remove nil
+          (mapcar (lambda (p)
+                    (let ((path (expand-file-name p)))
+                      (when (file-accessible-directory-p path)
+                        path)))
+                  dirs)))
 
 
 (cinsk/load-snippet "darwin"
@@ -1072,11 +1071,15 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
     (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode))))
 
 
+(icomplete-mode 1)
+
+
 ;;;
 ;;; YASnippet -- http://code.google.com/p/yasnippet/
 ;;;
 (when (locate-library "yasnippet")
   ;; tested with yasnippet 0.8.0 (beta)
+
   (require 'yasnippet)
 
   ;; The official document describes the snippets directory in
@@ -1084,24 +1087,36 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   ;; yasnippet package installed them in
   ;; "/usr/share/emacs/etc/yasnippet/snippets".
   (setq yas-snippet-dirs (accessible-directories
-                          "/usr/share/emacs/etc/yasnippet/snippets"
-                          "~/.emacs.d/plugins/yasnippet/snippets"
-                          (concat (file-name-directory
-                                   (locate-library "yasnippet"))
-                                  "snippets")
                           "~/.emacs.d/yasnippets"))
 
-  ;; While old version (e.g. 0.6.1b) uses `yas/root-directory', and
-  ;; provides `yas/reload-all', new version uses `yas-snippets-dirs'
-  ;; and provides `yas-reload-all'.
-  (if (not (fboundp 'yas-reload-all))
-      (progn
-        (setq yas/root-directory yas-snippet-dirs)
-        (and (fboundp 'yas/reload-all)
-             (yas/reload-all)))
-    ;; Otherwise, use the new interface.
-    (and (fboundp 'yas-reload-all)
-         (yas-reload-all))))
+                          ;; (concat (file-name-directory
+                          ;;          (locate-library "yasnippet"))
+                          ;;         "snippets")
+                          ;; "/usr/share/emacs/etc/yasnippet/snippets"))
+
+  (yas-global-mode 1)
+
+  (setq yas/prompt-functions '(yas-ido-prompt
+                               yas-x-prompt
+                               yas-dropdown-prompt
+                               yas-completing-prompt
+                               yas-no-prompt))
+
+  (when nil
+    ;; While old version (e.g. 0.6.1b) uses `yas/root-directory', and
+    ;; provides `yas/reload-all', new version uses `yas-snippets-dirs'
+    ;; and provides `yas-reload-all'.
+    (if (not (fboundp 'yas-reload-all))
+        (progn
+          (setq yas/root-directory yas-snippet-dirs)
+          (and (fboundp 'yas/reload-all)
+               (yas/reload-all)))
+      ;; Otherwise, use the new interface.
+      (and (fboundp 'yas-reload-all)
+           (yas-reload-all))))
+
+
+  )
 
 
 (cinsk/load-snippet "scala"
