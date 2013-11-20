@@ -155,13 +155,14 @@ by package.el")
 
 
 (defun accessible-directories (&rest dirs)
-  "Return the list of directories that are accessible."
-  (remove nil
-          (mapcar (lambda (p)
-                    (let ((path (expand-file-name p)))
-                      (when (file-accessible-directory-p path)
-                        path)))
-                  dirs)))
+  "Return the list of directories that are accessible.
+
+Each elements in DIRS will be expanded using `expand-file-name'."
+  (remove nil (mapcar (lambda (path)
+                        (setq path (expand-file-name path))
+                        (if (file-accessible-directory-p path)
+                            path))
+                      dirs)))
 
 
 (cinsk/load-snippet "darwin"
@@ -382,8 +383,19 @@ supplied one, a warning message is generated."
 ;;; Use hippie expansion for dynamic abbreviation
 ;;;
 (when (locate-library "hippie-exp")
-  (global-set-key [(meta ?/)] 'hippie-expand))
+  (global-set-key [(meta ?/)] 'hippie-expand)
 
+  (setq hippie-expand-try-functions-list
+        '(try-complete-file-name-partially
+          try-complete-file-name
+          try-expand-all-abbrevs
+          try-expand-line
+          try-expand-dabbrev
+          try-expand-dabbrev-all-buffers
+          try-expand-dabbrev-from-kill
+          try-expand-list
+          try-complete-lisp-symbol-partially
+          try-complete-lisp-symbol)))
 
 ;;;
 ;;; Switching between buffers using iswitchb/ido
