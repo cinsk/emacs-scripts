@@ -26,16 +26,18 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 ;;
 ;; Git
 ;;
-(setq git-show-uptodate t
-      git-show-ignored t
-      git-show-unknown t)
-
 (eval-after-load "git"
   '(progn
+     (setq git-show-uptodate t
+           git-show-ignored t
+           git-show-unknown t)
      (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status)))
 
-(when (locate-library "git")
-  (require 'git))
+(when nil
+  ;; Currently, I'm using magit, not git package.
+  ;; (require 'git) will consume about 4 second(s) in my system.
+  (when (locate-library "git")
+    (require 'git)))
 
 (let ((magit-git-dir (concat (expand-file-name user-emacs-directory)
                              "magit")))
