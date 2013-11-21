@@ -3,8 +3,9 @@
 ;;;
 ;;; Mail/News related configuration
 ;;;
-(require 'smtpmail)
-(require 'starttls)
+
+;;(require 'smtpmail)
+;;(require 'starttls)
 
 (defvar default-imap-port 993
   "Default port number for the IMAP4 protocol")
@@ -53,10 +54,17 @@ Best used for `smtpmail-smtp-service' as the default value.")
   ;;
   ;; For external IMAP server, use ssh local port forwarding:
   ;;
-  ;; localhost:8993 -> imap.gmail.com:993
+  ;; LocalForward 8995 imap.gmail.com:995
+  ;; LocalForward 8587 smtp.gmail.com:587
   ;;
+  ;; and, add following entry in the ~/.authinfo:
+  ;;
+  ;; machine localhost login YOUR-ID@gmail.com password YOUR-PASSWORD port 8587
+
   (setq gnus-select-method '(nntp "proxy.news.easynews.com"
                                   (nntp-port-number 80))
+        default-smtp-ssl-port 8587
+        default-smtp-server "localhost"
         default-imap-port 8993
         default-imap-stream "network"
         default-imap-address "localhost"))
