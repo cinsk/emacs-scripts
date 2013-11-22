@@ -17,9 +17,6 @@
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 ;;;
 
-(defvar cinsk/init-began (current-time)
-  "The time that Emacs start to load init files")
-
 (setq user-emacs-directory "~/.emacs.d/")
 
 (if (not (file-accessible-directory-p user-emacs-directory))
@@ -30,49 +27,6 @@
 (setq load-path (cons (expand-file-name user-emacs-directory) load-path))
 
 
-(defvar cinsk/loaded-init-files nil
-  "List of loaded snippets.")
-
-(defvar cinsk/snippets-directory
-  (concat (expand-file-name user-emacs-directory)
-          "snippets")
-  "Directory contains the init snippets.")
-
-(defmacro cinsk/load-snippet (snippet &rest body)
-  "If the last sexp of the BODY results non-nil, load the init script, SNIPPET.
-
-\(fn SNIPPET BODY...)"
-  (declare (indent 1) (debug t))
-  (let ((sname (make-symbol "SNIPPET"))
-        (began (make-symbol "BEGAN"))
-        (absname (make-symbol "ABS-NAME")))
-    `(let* ((,sname ,snippet)
-            (,absname (if (file-name-absolute-p ,sname)
-                          ,sname
-                       (concat (expand-file-name ,cinsk/snippets-directory)
-                               "/" ,sname))))
-       (unless (member ,absname cinsk/loaded-init-files)
-         (let ((pred (progn ,@body)))
-           (when pred
-             (condition-case err
-                 (let* ((,began (current-time))
-                        (result (load ,absname)))
-                     (with-current-buffer (get-buffer-create "*snippets*")
-                       (if (not result)
-                           (insert (format "%3.5f  [fail] %s\n"
-                                           0 ,absname))
-                         (message "snippet %s loaded"
-                                  (file-name-nondirectory ,sname))
-                         (insert (format "%3.5f  [okay] %s\n"
-                                         (float-time
-                                          (time-subtract (current-time)
-                                                         ,began))
-                                         ,absname))
-                         (add-to-list 'cinsk/loaded-init-files ,absname))))
-               (error (lwarn 'dot-emacs :warning
-                             (format "%s: %s: %S" ,sname
-                                     (car err) (cdr err)))))))))))
-
 (when (eq window-system 'x)
   ;; enable clipboard
   (setq x-select-enable-clipboard t))
@@ -154,6 +108,12 @@ by package.el")
 (add-site-lisp-packages user-site-lisp-directory)
 
 
+
+(setq uinit/snippets-directory "~/.emacs.d/snippets")
+
+(require 'uinit)
+
+
 (defun accessible-directories (&rest dirs)
   "Return the list of directories that are accessible.
 
@@ -165,16 +125,16 @@ Each elements in DIRS will be expanded using `expand-file-name'."
                       dirs)))
 
 
-(cinsk/load-snippet "darwin"
+(uinit/load "darwin"
   (eq system-type 'darwin))
 
 
-(cinsk/load-snippet "X"
+(uinit/load "X"
   (eq window-system 'x))
 
 
 
-(cinsk/load-snippet "ediff"
+(uinit/load "ediff"
   ;; Note that some external packages loads 'ediff by themselves, such
   ;; as magit and color-theme.  Since
   ;; `ediff-make-wide-display-function' should be set before loading
@@ -200,7 +160,7 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;; Emacs.Font: fontset-dejavu
 ;;;
 
-(cinsk/load-snippet "fonts"
+(uinit/load "fonts"
   'fonts)
 
 
@@ -211,20 +171,6 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;; Below configuration let the user uses "y" or "n" instead of using
 ;;; longer version.
 (defalias 'yes-or-no-p 'y-or-n-p)
-
-(defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
-  "setq-if-equal set SYMBOL to NEW-VALUE iff it has OLD-VALUE.
-It compare the old value with OLD-VALUE using `equal' then
-set it to NEW-VALUE if the old value matched.
-If NOWARN is nil, and the old value is not matched with the
-supplied one, a warning message is generated."
-  `(progn
-     (if (equal ,symbol ,old-value)
-         (setq ,symbol ,new-value)
-       (if (not ,nowarn)
-           (progn (message "%s has unexpected value `%S'"
-                           (symbol-name ',symbol) ,symbol)
-                  ,old-value)))))
 
 (defun move-key (keymap old-key new-key)
   "Move the key definition from OLD-KEY to NEW-KEY in KEYMAP."
@@ -253,7 +199,7 @@ supplied one, a warning message is generated."
 
 
 
-(cinsk/load-snippet "cc-mode"
+(uinit/load "cc-mode"
                     'cc-mode)
 
 
@@ -271,7 +217,7 @@ supplied one, a warning message is generated."
   (tool-bar-mode -1)                   ; -1 to hide, 1 to show
   )
 
-(cinsk/load-snippet "korean"
+(uinit/load "korean"
   enable-multibyte-characters)
 
 
@@ -303,10 +249,10 @@ supplied one, a warning message is generated."
 
 
 
-(cinsk/load-snippet "shell"
+(uinit/load "shell"
   'shell)
 
-(cinsk/load-snippet "buffer-menu"
+(uinit/load "buffer-menu"
   'buffer-menu)
 
 
@@ -521,7 +467,7 @@ and to remove trailing whitespaces")
                               (add-hook 'write-contents-hooks 'source-untabify))))
 
 
-(cinsk/load-snippet "delete"
+(uinit/load "delete"
                     'delete)
 
 
@@ -576,7 +522,7 @@ and to remove trailing whitespaces")
 
 
 
-(cinsk/load-snippet "window-frame"
+(uinit/load "window-frame"
                     'window-frame)
 
 ;;;
@@ -602,7 +548,7 @@ and to remove trailing whitespaces")
       (add-hook 'find-file-hook 'vim-modeline/do))))
 
 
-(cinsk/load-snippet "vcs"
+(uinit/load "vcs"
   'version-control-system)
 
 
@@ -723,14 +669,14 @@ starting number."
 ;;(add-hook 'temp-buffer-show-hook
 ;;          'fit-frame-if-one-window 'append)
 
-(cinsk/load-snippet "lisp"
+(uinit/load "lisp"
   'lisp)
 
-(cinsk/load-snippet "_clojure"
+(uinit/load "_clojure"
   (locate-library "clojure-mode"))
 
 
-(cinsk/load-snippet "latex"
+(uinit/load "latex"
   'latex-mode)
 
 
@@ -758,7 +704,7 @@ starting number."
 
 
 
-(cinsk/load-snippet "mmm-mode"
+(uinit/load "mmm-mode"
   (let ((mmm-dir (expand-file-name
                   (concat (file-name-as-directory user-emacs-directory)
                           "mmm-mode"))))
@@ -770,13 +716,13 @@ starting number."
 
 
 
-(cinsk/load-snippet "_nxml"
+(uinit/load "_nxml"
   (or (locate-library "nxml-mode")
       ;; For legacy nxml-mode which does not use `provide' for nxml-mode.
       (locate-library "rng-auto")))
 
 
-(cinsk/load-snippet "dired"
+(uinit/load "dired"
   'dired)
 
 
@@ -817,7 +763,7 @@ starting number."
 
 ;;(split-window-horizontally)
 
-(cinsk/load-snippet "mail"
+(uinit/load "mail"
   'mail-news-gnus)
 
 
@@ -841,7 +787,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
      ret))
 
 
-(cinsk/load-snippet "color" 'color-theme)
+(uinit/load "color" 'color-theme)
 
 
 
@@ -903,7 +849,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
       (setq holiday-general-holidays cal-korea-x-korean-holidays))))
 
 
-(cinsk/load-snippet "_org" (locate-library "org"))
+(uinit/load "_org" (locate-library "org"))
 
 
 ;;;
@@ -979,18 +925,18 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 
 
-(cinsk/load-snippet "ruby"
+(uinit/load "ruby"
   (locate-library "ruby-mode"))
 
-(cinsk/load-snippet "python"
+(uinit/load "python"
   (locate-library "python-mode"))
 
 
-(cinsk/load-snippet "_js"
+(uinit/load "_js"
   (locate-library "js-comint"))
 
 
-(cinsk/load-snippet "maven" 'maven)
+(uinit/load "maven" 'maven)
 
 
 ;;;
@@ -1077,7 +1023,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 ;;; lua
 ;;;
-(cinsk/load-snippet "_lua"
+(uinit/load "_lua"
   (when (locate-library "lua-mode")
     (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
     (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode))))
@@ -1131,24 +1077,14 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   )
 
 
-(cinsk/load-snippet "scala"
-  ;; Currently, Scala 2.8.x is not provided by gentoo portage. Thus, I
-  ;; will use the binary distribution from the Scala repository in
-  ;; /opt/scala
-  (when (not (locate-library "scala-mode-auto"))
-    (let* ((scala-mode-path "/opt/scala/misc/scala-tool-support/emacs")
-           (scala-file (concat (file-name-as-directory scala-mode-path)
-                               "scala-mode-auto.el")))
-      (if (file-exists-p scala-file)
-          (add-to-list 'load-path scala-mode-path))))
-  (locate-library "scala-mode-auto"))
+(uinit/load "scala" t)
 
 
 
 ;;;
 ;;; ESS(Emacs Speaks Statistics) setting for R.
 ;;;
-(cinsk/load-snippet "_ess"
+(uinit/load "_ess"
   (locate-library "ess-site"))
 
 
@@ -1192,16 +1128,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;(global-set-key [f2] 'ff-find-other-file)
 ;;(global-set-key [f3] 'dired-jump)
 
-
-(defun cinsk/report-loaded-snippets ()
-  (with-current-buffer (get-buffer-create "*snippets*")
-    (sort-numeric-fields 1 (point-min) (point-max))
-    (goto-char (point-max))
-    (insert (format "--\n%3.5f  TOTAL\n"
-                    (float-time (time-subtract (current-time)
-                                               cinsk/init-began))))))
-
-(cinsk/report-loaded-snippets)
+(uinit/summarize)
 
 ;;; Local Variables:
 ;;; coding: utf-8

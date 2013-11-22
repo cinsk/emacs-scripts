@@ -9,21 +9,37 @@
 (when (locate-library "dired+")
   (require 'dired+))
 
+
+(defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
+  "setq-if-equal set SYMBOL to NEW-VALUE iff it has OLD-VALUE.
+It compare the old value with OLD-VALUE using `equal' then
+set it to NEW-VALUE if the old value matched.
+If NOWARN is nil, and the old value is not matched with the
+supplied one, a warning message is generated."
+  `(progn
+     (if (equal ,symbol ,old-value)
+         (setq ,symbol ,new-value)
+       (if (not ,nowarn)
+           (progn (message "%s has unexpected value `%S'"
+                           (symbol-name ',symbol) ,symbol)
+                  ,old-value)))))
+
+
 (add-hook 'dired-load-hook
-	  (lambda ()
-	    ;; Set dired-x global variables here.  For example:
-	    ;; (setq dired-guess-shell-gnutar "gtar")
-	    ;; Bind dired-x-find-file.
-	    (setq dired-x-hands-off-my-keys nil)
-	    ;; Make sure our binding preference is invoked.
-	    (dired-x-bind-find-file)
-	    ))
+          (lambda ()
+            ;; Set dired-x global variables here.  For example:
+            ;; (setq dired-guess-shell-gnutar "gtar")
+            ;; Bind dired-x-find-file.
+            (setq dired-x-hands-off-my-keys nil)
+            ;; Make sure our binding preference is invoked.
+            (dired-x-bind-find-file)
+            ))
 
 (add-hook 'dired-mode-hook
-	  (lambda ()
-	    ;; Set dired-x buffer-local variables here.  For example:
-	    (dired-omit-mode 1)
-	    ))
+          (lambda ()
+            ;; Set dired-x buffer-local variables here.  For example:
+            (dired-omit-mode 1)
+            ))
 
 (setq auto-mode-alist (cons '("[^/]\\.dired$" . dired-virtual-mode)
                             auto-mode-alist))
@@ -34,7 +50,7 @@
   (setq dired-listing-switches (concat dired-listing-switches
                                        " --time-style=iso")))
 
-(defvar dired-desktop-open-program 
+(defvar dired-desktop-open-program
   (let ((open-sh (concat (file-name-as-directory user-emacs-directory)
                          "open.sh")))
     (cond ((eq system-type 'darwin) "open")
@@ -52,13 +68,13 @@
     (save-window-excursion
       (dired-do-async-shell-command dired-desktop-open-program
                                     current-prefix-arg
-                                    (dired-get-marked-files 
+                                    (dired-get-marked-files
                                      t
                                      current-prefix-arg)))))
 (define-key dired-mode-map [(meta ?O)] 'dired-do-desktop-open)
 
 (when (string-match "\\bgnu\\b" (symbol-name system-type))
-  ;; If the operating system is gnu or gnu/linux, 
+  ;; If the operating system is gnu or gnu/linux,
   ;; we'll use GNU ls(1) --time-style option
   (setq dired-listing-switches
         (concat dired-listing-switches " --time-style=long-iso")))
@@ -110,4 +126,3 @@
 
 (eval-after-load "dired"
   '(define-key dired-mode-map [(control return)] 'dired-find-file-other-frame))
-

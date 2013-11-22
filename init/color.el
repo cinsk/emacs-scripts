@@ -45,13 +45,13 @@ only in the `color-theme-favorites'.  The color theme is applied
 to FRAME (nil for current frame).
 
 This function returns the name of the color theme in string."
-  (let* ((theme-list (if favorite-only 
+  (let* ((theme-list (if favorite-only
                          color-theme-favorites
                        color-themes))
          (selected (nth (random (length theme-list)) theme-list))
          (theme-func (if (consp selected) (car selected) selected))
-         (theme-name (if (consp selected) 
-                         (cadr selected) 
+         (theme-name (if (consp selected)
+                         (cadr selected)
                        (symbol-name theme-func))))
     (with-selected-frame (or frame (selected-frame))
       (funcall theme-func)
@@ -62,13 +62,13 @@ This function returns the name of the color theme in string."
   "Return the next color-theme symbol of THEME"
   (let ((found 0) (next nil))
     (catch 'found
-      (mapcar (lambda (entry)
-                (if (and (= found 1) (null next))
-                    (progn (setq next (car entry))
-                           (throw 'found t)))
-                (if (eq (car entry) theme)
-                    (setq found 1)))
-              color-themes))
+      (mapc (lambda (entry)
+              (if (and (= found 1) (null next))
+                  (progn (setq next (car entry))
+                         (throw 'found t)))
+              (if (eq (car entry) theme)
+                  (setq found 1)))
+            color-themes))
     (if (and (= found 1) (null next))
         (setq next (car (caddr color-themes)))
       next)))
@@ -77,13 +77,13 @@ This function returns the name of the color theme in string."
 (defun color-theme-apply (&optional arg)
   "Apply the color theme.
 
-If the argument is :random, this applies any color theme randomly, 
+If the argument is :random, this applies any color theme randomly,
 or if the argument is :next, this applies the next color theme in the
 installed color theme list.  or if the argument is a symbol indicates
 the color-theme function, it applies that color theme."
   (cond ((fboundp arg)  (apply arg nil))
         ((eq arg :random)  (color-theme-apply-random))
-        ((eq arg :next)	(let ((theme (color-theme-next-symbol)))
+        ((eq arg :next) (let ((theme (color-theme-next-symbol)))
                           (apply theme nil)
                           (message "%s installed" (symbol-name theme))))
         (t (error "Wrong type of argument"))))
@@ -117,7 +117,7 @@ This function works iff color-theme-history-max-length is not NIL"
   ;; If you want to select random color theme on every new frame,
   ;; uncomment this.
   ;; (add-hook 'after-make-frame-functions 'set-frame-color-theme)
-  (add-hook 'after-make-frame-functions 
+  (add-hook 'after-make-frame-functions
             (lambda (frame) (color-theme-apply-random 'favorite frame)))
   ;; color-theme-* is frame-local from now.
   (setq color-theme-is-global nil)
