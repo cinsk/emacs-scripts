@@ -55,6 +55,10 @@
     (when (re-search-forward "^[0-9.]+ +\\[[^]]*\\] +\\(.*\\)$" nil t)
       (goto-char (match-beginning 1)))))
 
+(defun uinit/kill-buffer ()
+  (interactive)
+  (kill-buffer uinit/buffer-name))
+
 (defun uinit/source-file-name ()
   (let (fname)
     (save-excursion
@@ -131,6 +135,7 @@ init script."
   (define-key init-report-mode-map [(o)] 'uinit/find-file-other-window)
   (define-key init-report-mode-map [(p)] 'uinit/previous-line)
   (define-key init-report-mode-map [(n)] 'uinit/next-line)
+  (define-key init-report-mode-map [(q)] 'uinit/kill-buffer)
   )
 
 (when nil
