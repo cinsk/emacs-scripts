@@ -109,7 +109,7 @@ by package.el")
 
 
 
-(setq uinit/snippets-directory "~/.emacs.d/snippets")
+(setq uinit/snippets-directory "~/.emacs.d/init")
 
 (require 'uinit)
 
