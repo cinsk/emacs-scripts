@@ -4,9 +4,12 @@
                     (ffap-java/java-home-redhat)
                     (ffap-java/java-home-darwin)
                     (ffap-java/java-home-gentoo))))
-  "List of directories separated by ':' for Java sources")
+  "List of elements separated by ':' for Java sources
 
-(defvar ffap-java/tmp-directory "/tmp/java-src/")
+Each elements must be a directory name or a jar archive name")
+
+(defvar ffap-java/tmp-directory "/tmp/java-src/"
+"Extracted sources from jar archive will be stored here.")
 
 (defvar ffap-java/debug-buffer (get-buffer-create "*ffap-java*"))
 
