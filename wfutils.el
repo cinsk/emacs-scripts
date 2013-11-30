@@ -27,13 +27,13 @@
 
 (defvar wfu/frame-ordered-policies
   '((x . (lambda (f)
-           (+ (* (display-pixel-height) (frame-parameter f 'left))
-              (frame-parameter f 'top))))
-    (y . (lambda (f) (frame-parametr f 'top)
-           (+ (* (display-pixel-width) (frame-parameter f 'top))
-              (frame-parameter f 'left))))
-    (d . (lambda (f) (let ((left (frame-parameter f 'left))
-                           (top (frame-parameter f 'top)))
+           (+ (* (display-pixel-height) (wfu/frame-left f))
+              (wfu/frame-top f))))
+    (y . (lambda (f)
+           (+ (* (display-pixel-width) (wfu/frame-top f))
+              (wfu/frame-left f))))
+    (d . (lambda (f) (let ((left (wfu/frame-left f))
+                           (top (wfu/frame-top f)))
                        (sqrt (+ (* left left) (* top top)))))))
   "Policies alist for `wfu/frame-list-ordered'.
 
@@ -50,6 +50,20 @@ lower number has higher priority.")
 
 The actual function is defined in `frame-ordered-policies'.")
 
+
+(defun wfu/frame-left (&optional frame)
+  "Return number representation of frame parameter, 'left"
+  (let ((p (frame-parameter frame 'left)))
+    (cond ((numberp p) p)
+          ((eq '+ (car p)) (cadr p))
+          ((eq '- (car p)) (- (display-pixel-width) (cadr p))))))
+
+(defun wfu/frame-top (&optional frame)
+  "Return number representation of frame parameter, 'top"
+  (let ((p (frame-parameter frame 'top)))
+    (cond ((numberp p) p)
+          ((eq '+ (car p)) (cadr p))
+          ((eq '- (car p)) (- (display-pixel-height) (cadr p))))))
 
 (defun wfu/window-list-ordered (&optional frame)
   "Return a ordered list of windows of FRAME.
