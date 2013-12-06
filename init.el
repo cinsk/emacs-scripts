@@ -1029,7 +1029,34 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
     (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode))))
 
 
+;; I tried helm-mode, which looks promising, but it does not seem to
+;; have enough short-cut mechanism to boost user's input.  For
+;; example, completing q-r-r is not possible for
+;; `query-replace-regexp'.  And if there are multiple choices, I need
+;; to navigate using up/down shortcut, with careful on-looking to the
+;; helm buffer.  It distract me from what I try to do.  Until helm
+;; updated, or until I found better way, I'll stick to
+;; 'icomplete-mode.
 (icomplete-mode 1)
+(when (locate-library "icomplete+")
+  (require 'icomplete+))
+
+(when (> emacs-major-version 23)
+  ;; completion cycling
+  (setq completion-cycle-threshold t))
+
+(when (and nil (locate-library "helm-config"))
+  (require 'helm-config)
+  (helm-mode 1)
+  (define-key global-map [remap find-file] 'helm-find-files)
+  (define-key global-map [remap occur] 'helm-occur)
+  (define-key global-map [remap list-buffers] 'helm-buffers-list)
+  (define-key global-map [remap dabbrev-expand] 'helm-dabbrev)
+  (define-key lisp-interaction-mode-map [remap completion-at-point]
+    'helm-lisp-completion-at-point)
+  (define-key emacs-lisp-mode-map       [remap completion-at-point]
+    'helm-lisp-completion-at-point)
+  (add-hook 'kill-emacs-hook #'(lambda () (delete-file "$TMP"))))
 
 
 ;;;
@@ -1045,7 +1072,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   ;; yasnippet package installed them in
   ;; "/usr/share/emacs/etc/yasnippet/snippets".
   (setq yas-snippet-dirs (accessible-directories
-                          "~/.emacs.d/yasnippets"))
+                          "~/.emacs.d/snippets"))
 
                           ;; (concat (file-name-directory
                           ;;          (locate-library "yasnippet"))
@@ -1122,6 +1149,8 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 (autoload 'calc "calc" "The Emacs Calculator" t)
 (global-set-key [f10] 'calc)
 (global-set-key [(control f10)] 'quick-calc)
+
+
 
 
 
