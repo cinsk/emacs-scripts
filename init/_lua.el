@@ -15,5 +15,5 @@
      (define-key lua-mode-map [(control ?c) (control ?e)] 'lua-send-lua-region)
      ))
 
-
-(require 'lua-mode)
+(when (locate-library "lua-mode")
+  (require 'lua-mode))

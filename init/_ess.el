@@ -4,7 +4,8 @@
 ;;; ESS configuration
 ;;;
 
-(require 'ess-site)
+(when (locate-library "ess-site")
+  (require 'ess-site))
 
 (defun R-table-region (beg end)
   (interactive "r")

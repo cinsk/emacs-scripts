@@ -20,7 +20,7 @@
                                 color-theme-comidia
                                 color-theme-dark-blue2
                                 color-theme-dark-laptop
-                                color-theme-taylor
+                                ;; color-theme-taylor
                                 color-theme-billw
                                 color-theme-robin-hood)
   "My favorite color theme list")

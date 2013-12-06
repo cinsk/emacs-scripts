@@ -4,7 +4,8 @@
 ;;; javascript configuration
 ;;;
 
-(require 'js-comint)
+(when (locate-library "js-comint")
+  (require 'js-comint))
 
 (let ((path (executable-find "js")))
   (when path
