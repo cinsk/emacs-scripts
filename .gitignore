@@ -14,5 +14,6 @@ elpa
 # packages installed manually
 site-lisp
 *~
+*.elc
 /unmaintained
 /abbrev_defs
