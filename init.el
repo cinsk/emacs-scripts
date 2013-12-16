@@ -700,7 +700,7 @@ starting number."
 
 
 
-(uinit/load "mmm-mode" 'deferred)
+(uinit/load "_mmm" 'deferred)
 
 
 
