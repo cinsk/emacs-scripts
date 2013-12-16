@@ -27,31 +27,6 @@
 (setq load-path (cons (expand-file-name user-emacs-directory) load-path))
 
 
-;;; Although it is possible to set font faces in lisp code, I prefer
-;;; to use X resource configuration.
-;;;
-(when nil
-  ;; "NanumGothic_Coding-12"
-  ;; (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-12"))
-  ;; (set-face-font 'default "fontset-default")
-  ;; (set-fontset-font "fontset-default" '(#x1100. #xffdc)
-  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
-  ;; (set-fontset-font "fontset-default" 'ascii
-  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
-  ;; (set-fontset-font "fontset-default" 'latin-iso8859-1
-  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
-  ;; (set-fontset-font "fontset-default" 'hangul
-  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
-  ;; (set-fontset-font "fontset-default" '(#xe0bc. #xf66e)
-  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
-  ;; (set-fontset-font "fontset-default" 'kana
-  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
-  ;; (set-fontset-font "fontset-default" 'han
-  ;;                   '("NanumGothic_Coding" . "unicode-bmp"))
-  )
-
-
-
 ;;;
 ;;; package
 ;;;
@@ -138,23 +113,6 @@ Each elements in DIRS will be expanded using `expand-file-name'."
   'ediff)
 
 
-;;;
-;;; Due to my preference, I configure fonts of Emacs using X
-;;; resources.  If you are not sure, insert following configuration in
-;;; your $HOME/.Xdefaults-hostname where hostname is the name of the
-;;; host, or the file specified in $XENVIRONMENT.  See X(7) for more.
-;;;
-;;; Emacs.Fontset-0:-*-DejaVu Sans Mono-*-*-*-*-14-*-*-*-*-*-fontset-dejavu,\
-;;;           latin:-*-DejaVu Sans Mono-*-*-*-*-14-*-*-*-*-*-*-*, \
-;;;          hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-*-*-*-*
-;;;
-;;; Emacs*Fontset-2:-*-Consolas-*-*-*-*-14-*-*-*-*-*-fontset-consolas,\
-;;;           latin:-*-Consolas-*-*-*-*-14-*-*-*-*-*-*,\
-;;;         hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-*-*-*
-;;;
-;;; Emacs.Font: fontset-dejavu
-;;;
-
 (uinit/load "fonts"
   'fonts)
 
@@ -195,7 +153,7 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 
 
 (uinit/load "cc-mode"
-                    'cc-mode)
+  'cc-mode)
 
 
 
@@ -464,7 +422,7 @@ and to remove trailing whitespaces")
 
 
 (uinit/load "delete"
-                    'delete)
+  'delete)
 
 
 (when nil
