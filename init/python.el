@@ -88,7 +88,9 @@
 (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
 (setq interpreter-mode-alist (cons '("python" . python-mode)
                                    interpreter-mode-alist))
-(require 'python-mode)
+
+(when (locate-library "python-mode")
+  (require 'python-mode))
 
 ;; ipython.el does not work with python-mode any longer. And since
 ;; python-mode provides an interface to ipython, I'll stick to

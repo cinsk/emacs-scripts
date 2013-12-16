@@ -6,7 +6,6 @@
 
 ;; Note that the default font for Emacs should not be handled here.
 ;;
-;; For MacOSX (darwin), look at darwin.el.
 
 (defun xftp (&optional frame)
   "Return t if FRAME support XFT font backend."
@@ -54,7 +53,10 @@ New height will be calculated by (* FACTOR old-face-height)"
                                     (face-attribute 'default :height))))))
 
 
-(defun cinsk/fontconfig-remove-unavailable (specs)
+(defun fontutil/remove-unavailable (specs)
+  "Remove unavailable font specification from the SPECS.
+
+See `fontutil/fontconfig' for the definition of SPECS."
   (remq nil (mapcar (lambda (elt)
                       (let ((fc (car (cdr elt))))
                         (unless (listp fc)
@@ -63,8 +65,8 @@ New height will be calculated by (* FACTOR old-face-height)"
                             elt)))
                     specs)))
 
-(defvar cinsk/fontconfig
-  (cinsk/fontconfig-remove-unavailable
+(defvar fontutil/fontconfig
+  (fontutil/remove-unavailable
    '(("scodepro-14" . (((:family "SourceCodePro" :size 14)
                         (hangul :family "NanumGothicCoding" :size 16)
                         (symbol :family "Symbola" :size 15))))
@@ -125,9 +127,12 @@ symbolic glyphs, then the FONT-SPEC might be
 As you can see in above, each font can have different size.  (This
 is useful for CJK fonts)")
 
-(defun cinsk/apply-fontconfig (name)
-  (let ((fonts (car (cdr (assoc name cinsk/fontconfig))))
-        (params (cadr (cdr (assoc name cinsk/fontconfig)))))
+(defun fontutil/apply (name)
+  "Apply font specification, NAME.
+
+See also `fontutil/fontconfig' for the possible candidates"
+  (let ((fonts (car (cdr (assoc name fontutil/fontconfig))))
+        (params (cadr (cdr (assoc name fontutil/fontconfig)))))
     (unless (listp (car fonts))
       (setq fonts (list fonts)))
     (when (car fonts)
@@ -139,10 +144,13 @@ is useful for CJK fonts)")
       (dolist (f (frame-list))
         (modify-frame-parameters f params)))))
 
-(defun set-font (name)
-  (interactive (list (completing-read "font: " cinsk/fontconfig)))
+(defun fontutil/set-font (name)
+  "Apply font specification, NAME from `fontutil/fontconfig'"
+  (interactive (list (completing-read "font: " fontutil/fontconfig)))
                                       ;; (lambda (f)
                                       ;;   (list-fonts (apply #'font-spec
                                       ;;                      (car (cdr f)))))
                                       ;; t nil)))
-  (cinsk/apply-fontconfig name))
+  (fontutil/apply name))
+
+(provide 'fontutil)

@@ -124,10 +124,10 @@ init script."
                                       ("^\\([0-9.]+\\) +\\([A-Z]+\\)$"
                                        (1 font-lock-warning-face)
                                        (2 font-lock-doc-face))))
-  (setq font-lock-keywords snippets-font-lock-keywords)
-  (setq font-lock-defaults '((snippets-font-lock-keywords) t nil nil))
   (make-local-variable 'font-lock-keywords)
   (make-local-variable 'font-lock-defaults)
+  (setq font-lock-keywords snippets-font-lock-keywords)
+  (setq font-lock-defaults '((snippets-font-lock-keywords) t nil nil))
 
   (setq buffer-read-only t)
   (define-key init-report-mode-map [(return)] 'uinit/find-file)

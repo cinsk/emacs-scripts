@@ -27,11 +27,6 @@
 (setq load-path (cons (expand-file-name user-emacs-directory) load-path))
 
 
-(when (eq window-system 'x)
-  ;; enable clipboard
-  (setq x-select-enable-clipboard t))
-
-
 ;;; Although it is possible to set font faces in lisp code, I prefer
 ;;; to use X resource configuration.
 ;;;
