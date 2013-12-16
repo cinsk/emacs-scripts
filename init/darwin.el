@@ -60,38 +60,82 @@
 
   (set-face-font 'default "fontset-standard"))
 
-(setq fontconfig-data
-      '("Inconsolata" . (:family "Inconsolata")))
+;; (setq fontconfig-data
+;;       '("Inconsolata" . (:family "Inconsolata")))
 
 
 (defvar cinsk/fontconfig
-  '(("inconsolata" . ((:family "Inconsolata" :height 160)
-                      ((width . 80) (height . 50)
-                       (line-spacing . 2)
-                       (alpha . (100 . 85)))))
-    ("monaco" . ((:family "Monaco" :height 135)
-                 ((width . 80) (height . 45)
-                  (line-spacing . nil)
-                  (alpha . (100 . 85))))))
+  '(("scodepro-14" . (((:family "Source_Code_Pro" :size 14)
+                    (hangul :family "NanumGothicCoding" :size 16)
+                    (symbol :family "Symbola" :size 15))))
+    ("scodepro-15" . (((:family "Source_Code_Pro" :size 15)
+                    (hangul :family "NanumGothicCoding" :size 18)
+                    (symbol :family "Symbola" :size 15))))
+    ("scodepro-16" . (((:family "Source_Code_Pro" :size 16)
+                    (hangul :family "NanumGothicCoding" :size 20)
+                    (symbol :family "Symbola" :size 15))))
+    ("inconsolata-14" . (((:family "Inconsolata" :size 14)
+                          (hangul :family "NanumGothicCoding" :size 14)
+                          (symbol :family "Symbola" :size 15))))
+    ("inconsolata-15" . (((:family "Inconsolata" :size 15)
+                          (hangul :family "NanumGothicCoding" :size 16)
+                          (symbol :family "Symbola" :size 15))))
+    ("inconsolata-16" . (((:family "Inconsolata" :size 16)
+                          (hangul :family "NanumGothicCoding" :size 16)
+                          (symbol :family "Symbola" :size 15))))
+    ("monaco-14" . (((:family "Monaco" :size 14)
+                     (hangul :family "NanumGothicCoding" :size 16)
+                     (symbol :family "Symbola" :size 15))))
+    ("monaco-15" . (((:family "Monaco" :size 15)
+                     (hangul :family "NanumGothicCoding" :size 18)
+                     (symbol :family "Symbola" :size 15))))
+    ("monaco-16" . (((:family "Monaco" :size 16)
+                     (hangul :family "NanumGothicCoding" :size 20)
+                     (symbol :family "Symbola" :size 15)))))
   "Font and Frame configuration list
 
 Each element has a form of (FONT-SPEC FRAME-SPEC), where
-FONT-SPEC is a list of face parameters, and FRAME-SPEC is a list
-of frame parameters")
+FONT-SPEC is a list of font properties, and FRAME-SPEC is a list
+of frame parameters.
+
+See `font-spec' for the list of font properties.
+
+You can specify multiple font in FONT-SPEC; In this case, FONT-SPEC
+is a list of font specs, where the first element is font properties
+for the default font, and the rest elements are for the additional
+font properties.  Except the first element, all elements have
+TARGET as a prefix element.  See `set-fontset-font' for the possible
+TARGET.  For example, if you want to use font XXX as the default font,
+and you want to use YYY for Korean script, hangul, and use ZZZ for
+symbolic glyphs, then the FONT-SPEC might be
+
+  ((:family \"XXX\" :size 14)
+   (hangul :family \"YYY\" :size 16)
+   (symbol :family \"ZZZ\") :size 15)
+
+As you can see in above, each font can have different size.  (This
+is useful for CJK fonts)")
 
 (defun cinsk/apply-fontconfig (name)
-  (let ((spec (cdr (assoc name cinsk/fontconfig))))
-    (apply #'set-face-attribute (append (list 'default nil) (car spec)))
-    (setq default-frame-alist (cadr spec))
-    (dolist (f (frame-list))
-      (modify-frame-parameters f (cadr spec)))))
+  (let ((fonts (car (cdr (assoc name cinsk/fontconfig))))
+        (params (cadr (cdr (assoc name cinsk/fontconfig)))))
+    (unless (listp (car fonts))
+      (setq fonts (list fonts)))
+    (when (car fonts)
+      (set-face-attribute 'default nil :font (apply 'font-spec (car fonts))))
+    (dolist (aux (cdr fonts))
+      (set-fontset-font t (car aux) (apply 'font-spec (cdr aux))))
+    (when params
+      (setq default-frame-alist params)
+      (dolist (f (frame-list))
+        (modify-frame-parameters f params)))))
 
 (defun set-font (name)
-  (interactive (list (completing-read "font: " cinsk/fontconfig
-                                      (lambda (f)
-                                        (list-fonts (apply #'font-spec
-                                                           (car (cdr f)))))
-                                      t nil)))
+  (interactive (list (completing-read "font: " cinsk/fontconfig)))
+                                      ;; (lambda (f)
+                                      ;;   (list-fonts (apply #'font-spec
+                                      ;;                      (car (cdr f)))))
+                                      ;; t nil)))
   (cinsk/apply-fontconfig name))
 
 (when (display-graphic-p)
@@ -115,13 +159,11 @@ of frame parameters")
 
   ;; You may add :size POINT in below font-spec if you want to use
   ;; specific size of Hangul font regardless of default font size
-  (set-font "inconsolata")
-  (set-fontset-font t 'hangul
-                    (font-spec :name "NanumGothicCoding")))
+  (set-font "inconsolata-15"))
 
 (setq default-frame-alist (append default-frame-alist
                                   '((width . 80) (height . 45)
-                                    (line-spacing . 2)
+                                    ;;(line-spacing . 2)
                                     (alpha . (100 . 85)))))
 
 (when (display-graphic-p)
@@ -134,4 +176,4 @@ of frame parameters")
 (unless (member "/usr/local/bin" exec-path)
   (add-to-list 'exec-path "/usr/local/bin"))
 
-(desktop-save-mode 1)
+;; (desktop-save-mode 1)

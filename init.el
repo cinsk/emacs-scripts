@@ -278,6 +278,7 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 
 (global-set-key "\C-cc" 'compile)
 (global-set-key [(control ?c) (control ?c)] 'comment-region)
+(setq comment-empty-lines t)
 
 (global-set-key [?\C-.] 'find-tag-other-window) ; C-x o
 
@@ -704,15 +705,7 @@ starting number."
 
 
 
-(uinit/load "mmm-mode"
-  (let ((mmm-dir (expand-file-name
-                  (concat (file-name-as-directory user-emacs-directory)
-                          "mmm-mode"))))
-    ;; If MMM mode is installed in $HOME/.emacs.d/mmm-mode/
-    (when (file-accessible-directory-p mmm-dir)
-      (add-to-list 'load-path mmm-dir)
-      (add-to-list 'Info-directory-list mmm-dir))
-    (locate-library "mmm-auto")))
+(uinit/load "mmm-mode" 'deferred)
 
 
 
@@ -942,6 +935,26 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 ;;; w3m
 ;;;
+
+;; Nov. 24 2013,  In Mac
+;; The current emacs-w3m-1.4.4.tar.gz does not support emacs version 24.
+;; unpack the source, do the following:
+;;
+;;  $ autoconf
+;;  $ ./configure --prefix=SOMEWHERE
+;;  $ make all
+;;  $ make install
+;;  $ cp SOMEWHERE/share/emacs/site-lisp/w3m/* ~/.emacs.d/w3m
+;;  # There's some problem to load byte compiled w3m package
+;;  $ rm ~/.emacs.d/w3m/*.elc
+;;  # Search all .el files for widget-mouse-face and comment the line
+;;  # that make widget-mouse-face buffer local.
+
+(let ((w3mdir (concat (expand-file-name user-emacs-directory)
+                    "w3m")))
+  (when (file-directory-p w3mdir)
+    (add-to-list 'load-path w3mdir)))
+
 (when (locate-library "w3m")
   (setq w3m-use-cookies t)
   (require 'w3m-load)
