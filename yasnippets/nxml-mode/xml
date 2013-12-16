@@ -1,5 +1,0 @@
-# contributor: Seong-Kook Shin <cinsky@gmail.com>
-# name: <?xml version="..." ...?>
-# key: xml
-# --
-<?xml version="${1:1.0}" encoding="${2:UTF-8}"?>
