@@ -4,6 +4,9 @@
 ;;; XML configuration
 ;;;
 
+(eval-when-compile
+  (require 'nxml-mode nil t))
+
 (when nil
   (when (and (locate-library "rng-auto")
              (locate-library "rng-auto"))

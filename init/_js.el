@@ -4,6 +4,9 @@
 ;;; javascript configuration
 ;;;
 
+(eval-when-compile
+  (require 'js-comint nil t))
+
 (when (locate-library "js-comint")
   (require 'js-comint))
 

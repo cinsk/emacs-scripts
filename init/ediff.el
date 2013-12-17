@@ -4,12 +4,16 @@
 ;;; diff & ediff customization
 ;;;
 
+(eval-when-compile
+  (require 'ediff-ptch))
+
 ;; Note that some external packages loads 'ediff by themselves, such
 ;; as magit and color-theme.  Since `ediff-make-wide-display-function'
 ;; should be set before loading `ediff, ediff customization should be
 ;; placed in the first place. -- cinsk
 (setq ediff-make-wide-display-function 'cinsk/ediff-make-wide-display)
 (require 'ediff)
+(require 'ediff-ptch)
 
 (global-set-key [(meta ?D) ?f]
                 (lambda (arg) (interactive "P")

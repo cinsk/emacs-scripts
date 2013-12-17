@@ -5,6 +5,10 @@
 ;;; Clojure configuration
 ;;;
 
+(eval-when-compile
+  (require 'inf-lisp)
+  (require 'comint))
+
 ;; inf-lisp.el
 (defun clojure-eval-defun (&optional and-go)
   (interactive "P")

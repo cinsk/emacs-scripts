@@ -3,6 +3,10 @@
 ;;;
 ;;; X window system customization
 ;;;
+
+(eval-when-compile
+  (require 'fontutil nil t))
+
 (setq x-select-enable-clipboard t)
 
 (when (display-graphic-p)

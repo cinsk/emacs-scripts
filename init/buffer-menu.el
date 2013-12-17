@@ -4,6 +4,9 @@
 ;;; Buffer Menu (buffer-menu or ibuffer) configuration
 ;;;
 
+(eval-when-compile
+  (require 'ibuf-ext))
+
 ;; Sort by the 2nd column (buffer name) in Buffer list
 (setq Buffer-menu-sort-column 2)
 

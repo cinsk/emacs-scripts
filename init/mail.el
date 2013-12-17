@@ -4,8 +4,9 @@
 ;;; Mail/News related configuration
 ;;;
 
-;;(require 'smtpmail)
-;;(require 'starttls)
+(eval-when-compile
+  (require 'smtpmail)
+  (require 'starttls))
 
 (defvar default-imap-port 993
   "Default port number for the IMAP4 protocol")

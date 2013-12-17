@@ -3,6 +3,8 @@
 ;;;
 ;;; Shell configuration
 ;;;
+(eval-when-compile
+  (require 'term))
 
 ;;
 ;; Make the inferior shell a login shell.
@@ -14,7 +16,7 @@
 ;; shell in UTF-8 coding system.
 (defun unicode-shell (&optional encoding)
   "Execute the shell buffer in UTF-8 encoding.
-Note that you'll need to set the environment variable LANG and others 
+Note that you'll need to set the environment variable LANG and others
 appropriately."
   (interactive)
   (let ((coding-system-for-read (or encoding 'utf-8))
@@ -58,13 +60,13 @@ shell."
 
   ;; Pick the name of the new buffer.
   (setq term-ansi-buffer-name
-	(if new-buffer-name
-	    new-buffer-name
-	  (if term-ansi-buffer-base-name
-	      (if (eq term-ansi-buffer-base-name t)
-		  (file-name-nondirectory program)
-		term-ansi-buffer-base-name)
-	    "shell/term")))
+        (if new-buffer-name
+            new-buffer-name
+          (if term-ansi-buffer-base-name
+              (if (eq term-ansi-buffer-base-name t)
+                  (file-name-nondirectory program)
+                term-ansi-buffer-base-name)
+            "shell/term")))
 
   (setq term-ansi-buffer-name (concat "*" term-ansi-buffer-name "*"))
 
@@ -72,7 +74,7 @@ shell."
   ;; I'd like to have the term names have the *term-ansi-term<?>* form,
   ;; for now they have the *term-ansi-term*<?> form but we'll see...
   (when current-prefix-arg
-    (setq term-ansi-buffer-name 
+    (setq term-ansi-buffer-name
           (generate-new-buffer-name term-ansi-buffer-name)))
 
   (let* ((name (file-name-nondirectory program))

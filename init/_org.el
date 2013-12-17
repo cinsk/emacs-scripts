@@ -3,6 +3,11 @@
 ;;;
 ;;; Org mode
 ;;;
+
+(eval-when-compile
+  (require 'org)
+  (require 'org-table))
+
 (eval-after-load "org"
   '(progn
      (define-key outline-mode-map [(control down)]
