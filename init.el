@@ -330,6 +330,36 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;
 ;; (setq iswitchb-buffer-ignore '("^ \\*Minibuf[^*]*\\*"))
 
+
+;; I tried helm-mode, which looks promising, but it does not seem to
+;; have enough short-cut mechanism to boost user's input.  For
+;; example, completing q-r-r is not possible for
+;; `query-replace-regexp'.  And if there are multiple choices, I need
+;; to navigate using up/down shortcut, with careful on-looking to the
+;; helm buffer.  It distract me from what I try to do.  Until helm
+;; updated, or until I found better way, I'll stick to
+;; 'icomplete-mode.
+(icomplete-mode 1)
+(when (locate-library "icomplete+")
+  (require 'icomplete+))
+
+(when (> emacs-major-version 23)
+  ;; diable completion cycling
+  (setq completion-cycle-threshold nil))
+
+(when (and nil (locate-library "helm-config"))
+  (require 'helm-config)
+  (helm-mode 1)
+  (define-key global-map [remap find-file] 'helm-find-files)
+  (define-key global-map [remap occur] 'helm-occur)
+  (define-key global-map [remap list-buffers] 'helm-buffers-list)
+  (define-key global-map [remap dabbrev-expand] 'helm-dabbrev)
+  (define-key lisp-interaction-mode-map [remap completion-at-point]
+    'helm-lisp-completion-at-point)
+  (define-key emacs-lisp-mode-map       [remap completion-at-point]
+    'helm-lisp-completion-at-point)
+  (add-hook 'kill-emacs-hook #'(lambda () (delete-file "$TMP"))))
+
 
 
 ;;;
@@ -993,36 +1023,6 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   (when (locate-library "lua-mode")
     (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
     (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode))))
-
-
-;; I tried helm-mode, which looks promising, but it does not seem to
-;; have enough short-cut mechanism to boost user's input.  For
-;; example, completing q-r-r is not possible for
-;; `query-replace-regexp'.  And if there are multiple choices, I need
-;; to navigate using up/down shortcut, with careful on-looking to the
-;; helm buffer.  It distract me from what I try to do.  Until helm
-;; updated, or until I found better way, I'll stick to
-;; 'icomplete-mode.
-(icomplete-mode 1)
-(when (locate-library "icomplete+")
-  (require 'icomplete+))
-
-(when (> emacs-major-version 23)
-  ;; completion cycling
-  (setq completion-cycle-threshold t))
-
-(when (and nil (locate-library "helm-config"))
-  (require 'helm-config)
-  (helm-mode 1)
-  (define-key global-map [remap find-file] 'helm-find-files)
-  (define-key global-map [remap occur] 'helm-occur)
-  (define-key global-map [remap list-buffers] 'helm-buffers-list)
-  (define-key global-map [remap dabbrev-expand] 'helm-dabbrev)
-  (define-key lisp-interaction-mode-map [remap completion-at-point]
-    'helm-lisp-completion-at-point)
-  (define-key emacs-lisp-mode-map       [remap completion-at-point]
-    'helm-lisp-completion-at-point)
-  (add-hook 'kill-emacs-hook #'(lambda () (delete-file "$TMP"))))
 
 
 ;;;
