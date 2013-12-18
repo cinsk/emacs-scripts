@@ -78,11 +78,14 @@
 ;;
 ;; (setq color-theme-is-cumulative nil)
 
-(defun themes/apply (theme &optional interactive?)
+(defun themes/apply (theme &optional cumulative interactive?)
   (when themes/backend
     (cond ((eq themes/backend 'color-theme)
-           (funcall theme))
+           (let ((color-theme-is-cumulative cumulative))
+             (funcall theme)))
           ((eq themes/backend 'theme)
+           (unless cumulative
+             (mapc 'disable-theme custom-enabled-themes))
            (load-theme theme)))
     (when interactive?
       (message "Theme %s installed" (symbol-name theme)))
@@ -108,7 +111,7 @@ This function returns the name of the color theme in string."
                          (custom-available-themes)
                          themes/favorite-themes))))
          (theme (nth (random (length thset)) thset)))
-    (themes/apply theme (called-interactively-p 'any))))
+    (themes/apply theme nil (called-interactively-p 'any))))
 
 
 (defun themes/next-theme-symbol (&optional global)
@@ -135,7 +138,7 @@ This function returns the name of the color theme in string."
 (defun themes/select-next (&optional favorite-only)
   (interactive "P")
   (let ((theme (themes/next-theme-symbol (not favorite-only))))
-    (themes/apply theme (called-interactively-p 'any))))
+    (themes/apply theme nil (called-interactively-p 'any))))
 
 
 ;; (defun color-themes-next-symbol (theme)
