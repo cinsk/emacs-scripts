@@ -709,13 +709,23 @@ starting number."
   (caddr (file-attributes (expand-file-name filename))))
 
 (defun smart-view-mode ()
-  (let ((file buffer-file-name))
-    (if (not (null file))                 ; if buffer has file name,
-        (let ((fuid (file-uid file)))     ;
-          (and (not (null fuid))          ; if file exists,
-               (not (eq fuid (user-uid))) ; if the user/owner differs,
-               (not (eq (user-uid) 0))    ; if not root,
-               (view-mode 1))))))         ; enable `view-mode'.
+  "Enable `view-mode' on certain condition.
+
+If the user is not the owner of the file, or if the file's truename is
+not belong to user's home directory, then enable `view-mode'.
+
+This function is best used in `find-file-hook'."
+  (let* ((file (and buffer-file-name (file-truename buffer-file-name)))
+         (fuid (and file (file-uid file)))
+         (home (getenv "HOME")))
+    (setq home (and home (file-truename home)))
+    (when (or (and (not (null fuid))          ; file exists,
+                   (not (eq fuid (user-uid))) ; uid/owner differs,
+                   (not (eq (user-uid) 0)))   ; not root,
+              (and home file
+                   ;; if the file does not belong to user's $HOME,
+                   (not (string-equal home (substring file 0 (length home))))))
+      (view-mode 1))))
 
 (add-hook 'find-file-hook 'smart-view-mode)
 
