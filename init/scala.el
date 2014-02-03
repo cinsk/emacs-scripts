@@ -2,9 +2,29 @@
 
 (if (locate-library "scala-mode2")
     (progn
+      ;; See https://github.com/hvesalai/sbt-mode for more
+      ;;
+      ;; Basic Usage
+      ;; 1. sbt-mode needs to find your project home directory.
+      ;;    See `sbt:find-root' for how.
+      ;; 2. run `sbt-start', with [C-!] in your .scala
+      ;; 3. In the *sbt* buffer, run "console"
+      ;; 4. In your .scala buffer, use [C-r] to send the current region
+      ;;    to the Scala interpreter.
+      ;;
+      ;; To compile the source
+      ;; 1. If you entered the Scala interpreter in sbt buffer,
+      ;;    Control-D to leave the interpreter
+      ;; 2. [C-x '] to compile your source.
       (setq scala-indent:indent-value-expression t
             scala-indent:align-parameters t
             scala-indent:align-forms t)
+
+      (defun sbt-compile (&optional arg)
+        (interactive "P")
+        (if prefix-arg
+            (call-interactively 'compile)
+          (sbt-command "test:compile")))
 
       (add-hook 'sbt-mode-hook
                 '(lambda ()

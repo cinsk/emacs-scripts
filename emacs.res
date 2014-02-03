@@ -18,59 +18,92 @@ emacs*cursorColor:	white
 
 Emacs*useXIM: false
 
+! symbola-16 is not the same as nanum-16.
 Emacs*Fontset-0:-*-DejaVu Sans Mono-*-*-*-*-14-*-*-*-*-*-fontset-dejavu14,\
           latin:-*-DejaVu Sans Mono-*-*-*-*-14-*-*-*-*-*-*,\
-        hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-*-*-*
+         symbol:-*-Symbola-*-*-*-*-16-*-*-*-*-*-*,\
+        hangul:-*-NanumGothicCoding-*-*-*-*-16-*-*-*-*-*-*-*
 
-Emacs*Fontset-1:-*-DejaVu Sans Mono-*-*-*-*-12-*-*-*-*-*-fontset-dejavu12,\
-          latin:-*-DejaVu Sans Mono-*-*-*-*-12-*-*-*-*-*-*,\
-        hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-*-*-*
+! correct
+Emacs*Fontset-1:-*-DejaVu Sans Mono-*-*-*-*-16-*-*-*-*-*-fontset-dejavu16,\
+          latin:-*-DejaVu Sans Mono-*-*-*-*-16-*-*-*-*-*-*,\
+         symbol:-*-Symbola-*-*-*-*-21-*-*-*-*-*-*,\
+         hangul:-*-NanumGothicCoding-*-*-*-*-20-*-*-*-*-*-*-*,\
 
-Emacs*Fontset-2:-*-DejaVu Sans Mono-*-*-*-*-15-*-*-*-70-*-fontset-dejavu15,\
-          latin:-*-DejaVu Sans Mono-*-*-*-*-15-*-*-*-70-*-*,\
-        hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-140-*-*
+! correct
+Emacs*Fontset-2:-*-DejaVu Sans Mono-*-*-*-*-15-*-*-*-*-*-fontset-dejavu15,\
+          latin:-*-DejaVu Sans Mono-*-*-*-*-15-*-*-*-*-*-*,\
+         symbol:-*-Symbola-*-*-*-*-19-*-*-*-*-*-*,\
+        hangul:-*-NanumGothicCoding-*-*-*-*-18-*-*-*-*-*-*-*
 
 !Emacs*Fontset-2:-*-*-*-*-*-*-*-*-*-*-70-*-fontset-dejavu15,\
 !          latin:-*-*-*-*-*-*-*-*-*-*-70-*-*,\
 !        hangul:-*-*-*-*-*-*-*-*-*-*-140-*-*
 
+! correct
 Emacs*Fontset-3:-*-DejaVu Sans Mono-*-*-*-*-17-*-*-*-*-*-fontset-dejavu17,\
           latin:-*-DejaVu Sans Mono-*-*-*-*-17-*-*-*-*-*-*-*,\
-         hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-*-*-*-*
+         symbol:-*-Symbola-*-*-*-*-21-*-*-*-*-*-*,\
+         hangul:-*-NanumGothicCoding-*-*-*-*-20-*-*-*-*-*-*-*
 
 
 !Emacs*Fontset-3:-etl-*-medium-r-normal-*-17-*-*-*-*-*-fontset-dejavu17,\
 !          ascii:-etl-*-medium-r-normal-*-17-*-*-*-*-*-*-1, \
 ! korean-ksc5601:-*-gulimche-*-*-*-*-17-*-*-*-*-*-ksc1001.1998-*
 
-Emacs*Fontset-4:-*-Bitstream Vera Sans Mono-*-*-*-*-14-*-*-*-*-*-fontset-vera,\
-          latin:-*-Bitstream Vera Sans Mono-*-*-*-*-14-*-*-*-*-*-*,\
-         hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-*-*-*
+! correct
+Emacs*Fontset-4:-*-Andale Mono-*-*-*-*-16-*-*-*-*-*-fontset-andale,\
+          latin:-*-Andale Mono-*-*-*-*-16-*-*-*-*-*-*,\
+         symbol:-*-Symbola-*-*-*-*-21-*-*-*-*-*-*,\
+         hangul:-*-NanumGothicCoding-*-*-*-*-20-*-*-*-*-*-*
 
-Emacs*Fontset-5:-*-Consolas-*-*-*-*-17-*-*-*-*-*-fontset-consolas,\
-          latin:-*-Consolas-*-*-*-*-17-*-*-*-*-*-*,\
-        hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-*-*-*
+! consolas(16), NGC(18)
+! consolas(14), NGC(16)
 
+Emacs*Fontset-5:-*-Consolas-*-*-*-*-16-*-*-*-*-*-fontset-consolas,\
+          latin:-*-Consolas-*-*-*-*-16-*-*-*-*-*-*,\
+         symbol:-*-Symbola-*-*-*-*-19-*-*-*-*-*-*,\
+         hangul:-*-NanumGothicCoding-*-*-*-*-18-*-*-*-*-*-*
+!          hangul:-baekmuk-gulim-*-*-*-*-*-*-*-*-*-ksc5601.1987-*
+
+! not fit
 Emacs*Fontset-6:-*-Monaco-*-*-*-*-14-*-*-*-*-*-fontset-monaco,\
           latin:-*-Monaco-*-*-*-*-14-*-*-*-*-*-*,\
-        hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-*-*-*
+         symbol:-*-Symbola-*-*-*-*-17-*-*-*-*-*-*,\
+        hangul:-*-NanumGothicCoding-*-*-*-*-16-*-*-*-*-*-*
 
-Emacs*Fontset-7:-*-Inconsolata-*-*-*-*-18-*-*-*-*-*-fontset-inconsol18,\
-          latin:-*-Inconsolata-*-*-*-*-18-*-*-*-*-*-*-*,\
-         hangul:-*-NanumGothic_Coding-*-*-*-*-16-*-*-*-*-*-*-*
+! fit
+Emacs*Fontset-7:-*-Inconsolata-*-*-*-*-17-*-*-*-*-*-fontset-inconsolata,\
+          latin:-*-Inconsolata-*-*-*-*-17-*-*-*-*-*-*-*,\
+         symbol:-*-Symbola-*-*-*-*-19-*-*-*-*-*-*,\
+         hangul:-*-NanumGothicCoding-*-*-*-*-18-*-*-*-*-*-*-*
 
-Emacs*Fontset-8:-*-Terminus-*-*-*-*-20-*-*-*-*-*-fontset-term20,\
-          latin:-*-Terminus-*-*-*-*-20-*-*-*-*-*-*-*,\
-         hangul:-*-NanumGothic_Coding-*-*-*-*-17-*-*-*-*-*-*-*
+! not fit
+Emacs*Fontset-8:-*-Terminus-*-*-*-*-16-*-*-*-*-*-fontset-term16,\
+          latin:-*-Terminus-*-*-*-*-16-*-*-*-*-*-*-*,\
+         symbol:-*-Symbola-*-*-*-*-17-*-*-*-*-*-*,\
+         hangul:-*-NanumGothicCoding-*-*-*-*-16-*-*-*-*-*-*-*
 
 !Emacs*Fontset-8:-*-Consolas-*-*-*-*-*-*-*-*-*-*-fontset-con,\
 !          latin:-*-Consolas-*-*-*-*-*-*-*-*-90-*-*,\
 !        hangul:-*-NanumGothic_Coding-*-*-*-*-*-*-*-*-180-*-*
 
-Emacs*Fontset-9:-etl-fixed-*-*-*-*-16-*-*-*-*-*-fontset-fixed,\
-          latin:-etl-fixed-*-*-*-*-16-*-*-*-*-*-*-*,\
-         hangul:-*-gulim-*-*-*-*-16-*-*-*-*-*-*-*
+! fit
+Emacs*Fontset-10:-*-Terminus-*-*-*-*-18-*-*-*-*-*-fontset-term18,\
+          latin:-*-Terminus-*-*-*-*-18-*-*-*-*-*-*-*,\
+         symbol:-*-Symbola-*-*-*-*-21-*-*-*-*-*-*,\
+         hangul:-*-NanumGothicCoding-*-*-*-*-20-*-*-*-*-*-*-*
 
+Emacs*Fontset-11:-*-fixed-*-*-*-*-16-*-*-*-*-*-fontset-uni16,\
+          latin:-*-fixed-*-*-*-*-16-*-*-*-*-*-*-*,\
+         symbol:-*-Symbola-*-*-*-*-21-*-*-*-*-*-*,\
+         hangul:-*-NanumGothicCoding-*-*-*-*-20-*-*-*-*-*-*-*
+
+! fit
+Emacs*Fontset-12:-*-SourceCodePro-*-*-*-*-15-*-*-*-*-*-fontset-spro15,\
+          latin:-*-SourceCodePro-*-*-*-*-15-*-*-*-*-*-*-*,\
+         symbol:-*-Symbola-*-*-*-*-19-*-*-*-*-*-*,\
+         hangul:-*-NanumGothicCoding-*-*-*-*-18-*-*-*-*-*-*-*
 
 ! Emacs*Fontset-0:-*-lucidatypewriter-*-*-*-*-14-*-*-*-*-*-fontset-lucida14,\
 !           ascii:-*-lucidatypewriter-*-*-*-*-14-*-*-*-*-*-*-1, \
@@ -117,7 +150,9 @@ Emacs*Fontset-9:-etl-fixed-*-*-*-*-16-*-*-*-*-*-fontset-fixed,\
 ! korean-ksc5601:-*-gulim-medium-r-normal--20-*-ks*-*
 
 !Emacs.Font: fontset-lucida14
-!Emacs.Font: fontset-dejavu
-Emacs.Font: fontset-consolas
-!Emacs.Font: fontset-dejavu17
+!Emacs.Font: fontset-andale
+!Emacs.Font: fontset-fixed
+!Emacs.Font: fontset-inconsolata
+!Emacs.Font: fontset-fixed
+!Emacs.Font: fontset-spro15
 

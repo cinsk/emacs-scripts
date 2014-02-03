@@ -16,3 +16,6 @@
 [submodule "html5-syntax"]
 	path = html5-syntax
 	url = https://github.com/appden/html5-syntax.git
+[submodule "magit"]
+	path = magit
+	url = https://github.com/cinsk/magit.git

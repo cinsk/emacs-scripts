@@ -333,3 +333,14 @@ following:
             (if require-newline-at-end "\n" "")
             "#+END_SRC\n")
     (push mode cinsk/org-sourcefy-history)))
+
+
+
+(when (fboundp 'browse-url)
+  ;; "export as HTML and open" (a.k.a `C-c C-e h o') uses
+  ;; `org-open-file' to open HTML, which uses $HOME/.mailcap, which
+  ;; usually uses lynx(1) to open HTML file, which is not what I want.
+  ;; It's better to use `browse-url' to determine the suitable
+  ;; browser.
+  (add-to-list 'org-file-apps
+               '("\\.x?html?\\'" . (browse-url file))))

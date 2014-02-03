@@ -43,6 +43,7 @@
                         (bsd . "BSD-new")
                         (freebsd . "FREEBSD")
                         (mit . "MIT")
+                        (wtfpl . "WTFPL")
                         ;(tmp . "TMP")
                         )
   "Alist of licenses.  CAR of each item is a symbol represents the license,
@@ -67,7 +68,7 @@ CDR of each item is a filename of the license template")
                                  ("@year@" . (lambda ()
                                                (substring (current-time-string)
                                                           -4)))
-                                 ("@organization@" . 
+                                 ("@organization@" .
                                   (lambda ()
                                     (getenv "ORGANIZATION"))))
   "Keywords that need to be substituted by `license-substitute-keywords'.
@@ -79,12 +80,14 @@ that keyword.")
 
 
 (defun license-substitute-keywords (&optional record)
-  "Substitute all occurences of keywords to their replacement and returns 
+  "Substitute all occurences of keywords to their replacement and returns
 the replacement positions in markers."
   (let (markers)
     (dolist (i license-keywords-alist)
       (let ((keyword (regexp-quote (car i)))
-            (what (if (functionp (cdr i)) (funcall (cdr i)) (cdr i))))
+            (what (if (functionp (cdr i))
+                      (funcall (cdr i))
+                    (symbol-value (cdr i)))))
         (if what
             (let ((case-fold-search t))
               (goto-char (point-min))
@@ -156,7 +159,7 @@ See `license-keywords-alist' for keywords and their meaning."
 
 
 (defun insert-license (&optional type)
-  "Insert a license template into the current buffer." 
+  "Insert a license template into the current buffer."
   (interactive)
   (let ((text (create-license
                (or type (intern (completing-read "Choose a license type: "

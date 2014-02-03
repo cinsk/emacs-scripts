@@ -58,6 +58,7 @@ shell."
                            (read-from-minibuffer "Run program: " default-prog)
                          default-prog))))
 
+  (require 'term)
   ;; Pick the name of the new buffer.
   (setq term-ansi-buffer-name
         (if new-buffer-name
@@ -93,7 +94,7 @@ shell."
 
   (set-buffer term-ansi-buffer-name)
   (term-mode)
-  (term-line-mode)
+  (term-char-mode)
 
   ;; I wanna have find-file on C-x C-f -mm
   ;; your mileage may definitely vary, maybe it's better to put this in your

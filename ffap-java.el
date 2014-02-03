@@ -24,16 +24,6 @@
 
 ;;; Code:
 
-(defvar ffap-java/source-directories
-  (car (remove nil (list
-                    (ffap-java/java-home-from-env)
-                    (ffap-java/java-home-redhat)
-                    (ffap-java/java-home-darwin)
-                    (ffap-java/java-home-gentoo))))
-  "List of elements separated by ':' for Java sources
-
-Each elements must be a directory name or a jar archive name")
-
 (defvar ffap-java/tmp-directory "/tmp/java-src/"
 "Extracted sources from jar archive will be stored here.")
 
@@ -99,6 +89,17 @@ If RAW is non-nil, the trailing newline and whitespaces are removed."
         (cond ((file-readable-p zip) zip)
               ((file-readable-p jar) jar)
               nil)))))
+
+
+(defvar ffap-java/source-directories
+  (car (remove nil (list
+                    (ffap-java/java-home-from-env)
+                    (ffap-java/java-home-redhat)
+                    (ffap-java/java-home-darwin)
+                    (ffap-java/java-home-gentoo))))
+  "List of elements separated by ':' for Java sources
+
+Each elements must be a directory name or a jar archive name")
 
 
 (defun ffap-java/join (root &rest dirs)
