@@ -35,7 +35,7 @@ instead of the current word."
           (setq collect latex-command-name-history)
           (setq default (car latex-command-name-history))))
     (if range
-        (let ((cmdname (completing-read 
+        (let ((cmdname (completing-read
                         (if default
                             (format "Command name[%s]: " default)
                           "Command name: ")

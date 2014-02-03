@@ -104,4 +104,12 @@
 (unless (member "/usr/local/bin" exec-path)
   (add-to-list 'exec-path "/usr/local/bin"))
 
+(eval-after-load "tex"
+  '(progn
+     (TeX-global-PDF-mode)
+     (add-to-list 'TeX-command-list
+                  '("View" "open -a Preview %o"
+                    TeX-run-discard-or-function t t :help "Run Viewer"))))
+
+
 ;; (desktop-save-mode 1)

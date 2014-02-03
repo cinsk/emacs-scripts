@@ -43,6 +43,8 @@
     (require 'package)
     (add-to-list 'package-archives
                  '("marmalade" . "http://marmalade-repo.org/packages/"))
+    (add-to-list 'package-archives
+                 '("melpa" . "http://melpa.milkbox.net/packages/") t)
     ;; According to the package.el, if `package-enable-at-startup' is
     ;; t, it will load all the packages on start up.  But it didn't.
     ;; Perhaps it's a problem related to the version (currently Emacs
@@ -660,7 +662,7 @@ starting number."
   (locate-library "clojure-mode"))
 
 
-(uinit/load "latex"
+(uinit/load "_latex"
   'latex-mode)
 
 
@@ -946,7 +948,8 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 (let ((w3mdir (concat (expand-file-name user-emacs-directory)
                     "w3m")))
   (when (file-directory-p w3mdir)
-    (add-to-list 'load-path w3mdir)))
+    (add-to-list 'load-path w3mdir)
+    (add-to-list 'Info-directory-list w3mdir)))
 
 (when (locate-library "w3m")
   (setq w3m-use-cookies t)
