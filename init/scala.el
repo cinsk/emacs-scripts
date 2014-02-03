@@ -45,12 +45,6 @@
                    ;; history cleaner.
                    (local-set-key (kbd "M-RET") 'comint-accumulate)))
 
-      (defun compile-scala (&optional arg)
-        (interactive "P")
-        (if arg
-            (call-interactively 'compile)
-          (sbt-command "test:compile")))
-
       (add-hook 'scala-mode-hook
                 '(lambda ()
                    ;; sbt-find-definitions is a command that tries to
@@ -62,7 +56,7 @@
                    ;; code after changes
                    (local-set-key (kbd "C-x '") 'sbt-run-previous-command)
                    (local-set-key [(control ?c) ?!] 'run-scala)
-                   (local-set-key [(control ?c) ?c] 'compile-scala)
+                   (local-set-key [(control ?c) ?c] 'sbt-compile)
                    (local-set-key [(control ?c) (control ?r)]
                                   'sbt-paste-region))))
 
