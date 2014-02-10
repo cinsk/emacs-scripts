@@ -1061,10 +1061,11 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   (yas-global-mode 1)
 
   (setq yas/prompt-functions '(yas-ido-prompt
-                               yas-x-prompt
                                yas-dropdown-prompt
                                yas-completing-prompt
                                yas-no-prompt))
+  (unless (eq system-type 'darwin)
+    (add-to-list 'yas/prompt-functions 'yas-x-prompt))
 
   (when nil
     ;; While old version (e.g. 0.6.1b) uses `yas/root-directory', and
@@ -1092,6 +1093,10 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 (uinit/load "_ess"
   (locate-library "ess-site"))
+
+
+(uinit/load "_sunrise"
+  (locate-library "sunrise-commander"))
 
 
 ;;; To save & load Emacs session, following lines should be the last
