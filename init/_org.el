@@ -1,3 +1,4 @@
+
 ;; -*-emacs-lisp-*-
 
 ;;;
@@ -7,6 +8,62 @@
 (eval-when-compile
   (require 'org)
   (require 'org-table))
+
+
+(defun different-command-p (command name)
+  "Return t iff COMMAND is a command and has different from NAME"
+  (and (commandp command)
+       (not (eq name command))
+       ;string-match name (symbol-name command)))
+       command))
+
+(defun call-next-command (keys not-this-command)
+  "Interactively call the command that has a binding of KEYS, but
+not NOT-THIS-COMMAND"
+  (let ((command (catch 'found
+                   (mapc (lambda (map)
+                           (let ((cmd (different-command-p
+                                       (lookup-key map keys)
+                                       not-this-command)))
+                             (when cmd
+                               (throw 'found cmd))))
+                          (current-minor-mode-maps))
+                   (or (different-command-p (lookup-key (current-local-map)
+                                                        keys)
+                                            not-this-command)
+                       (different-command-p (lookup-key (current-global-map)
+                                                        keys)
+                                            not-this-command)))))
+  (when (commandp command)
+    (call-interactively command))))
+
+(defun org-insert-word-joiner-or-space ()
+  (interactive)
+  (save-match-data
+    (when (looking-back "\\([=/]\\)\\(.*\\)\\1\\([^[:space:]\u2060]+\\)"
+                      (line-beginning-position) 'greedy)
+        ;; 2nd match => emphasised phrase (e.g. =code=)
+        ;; 3rd match => partial word appended
+      (save-excursion
+        (goto-char (match-beginning 3))
+        (insert-char #x2060)))
+    (call-next-command (this-command-keys-vector)
+                       'org-insert-word-joiner-or-space)))
+
+(defvar org-wordjoin-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map [?\ ] 'org-insert-word-joiner-or-space)
+    (define-key map [(control ?j)] 'org-insert-word-joiner-or-space)
+    (define-key map [(control ?m)] 'org-insert-word-joiner-or-space)
+    (define-key map [(tab)] 'org-insert-word-joiner-or-space)
+    map)
+  "Keymap for `org-wordjoin-mode'")
+
+(define-minor-mode org-wordjoin-mode
+  "Enable automatic insertion of word joiner"
+  nil
+  " WordJoin"
+  :keymap org-wordjoin-mode-map)
 
 (eval-after-load "org"
   '(progn
@@ -54,6 +111,9 @@
        '(lambda ()
           (interactive)
           (ucs-insert #x200B)))
+
+     (add-to-list 'org-mode-hook (lambda ()
+                                   (org-wordjoin-mode 1)))
 
      ;; When opening a link with `org-open-at-point' (C-c C-o), These
      ;; settings allow to use acroread for pdf files and to use ggv

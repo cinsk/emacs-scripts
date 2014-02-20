@@ -1,0 +1,5 @@
+# contributor: Seong-Kook Shin <cinsky@gmail.com>
+# name: hyperlink to man page
+# key: man
+# --
+[[man:$1][$1]$0
