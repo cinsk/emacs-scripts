@@ -334,7 +334,20 @@ following:
             "#+END_SRC\n")
     (push mode cinsk/org-sourcefy-history)))
 
+(defun org-man-link (spec)
+  "Return an URL for man pages. SPEC is in the form of NAME(SECTION).
 
+This function is used for the `org-mode' file to provide an link abbreviation.
+For example, add following line in your org file:
+
+#+LINK: man %(org-man-link)"
+  (if (string-match "\\`[[:blank:]]*\\(.*?\\)(\\([^)]*\\))[[:blank:]]*\\'"
+                    spec)
+      (let ((name (match-string 1 spec))
+            (sect (match-string 2 spec)))
+        (format "http://man7.org/linux/man-pages/man%s/%s.%s.html"
+                sect name sect))
+    (format "http://www.google.com/search?q=%s&sitesearch=man7.org%%2Flinux%%2Fman-pages" (org-link-escape spec))))
 
 (when (fboundp 'browse-url)
   ;; "export as HTML and open" (a.k.a `C-c C-e h o') uses

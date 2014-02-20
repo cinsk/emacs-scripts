@@ -44,6 +44,8 @@
     (add-to-list 'package-archives
                  '("marmalade" . "http://marmalade-repo.org/packages/"))
     (add-to-list 'package-archives
+                 '("sc" . "http://joseito.republika.pl/sunrise-commander/") t)
+    (add-to-list 'package-archives
                  '("melpa" . "http://melpa.milkbox.net/packages/") t)
     ;; According to the package.el, if `package-enable-at-startup' is
     ;; t, it will load all the packages on start up.  But it didn't.
@@ -1068,6 +1070,24 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
                                yas-no-prompt))
   (unless (eq system-type 'darwin)
     (add-to-list 'yas/prompt-functions 'yas-x-prompt))
+
+  (defun apply-snippet-mode ()
+    "Change major-mode to `snippet-mode' if the current file is
+in any of directory in `yas-snippet-dirs'."
+    (when (buffer-file-name)
+      (let ((fullname (expand-file-name (buffer-file-name)))
+            (filename (file-name-nondirectory (buffer-file-name))))
+        (when (and (not (string-prefix-p "." filename))
+                   (< 0 (apply '+
+                               (mapcar (lambda (dir)
+                                         (let ((absdir (expand-file-name dir)))
+                                           (if (string-prefix-p absdir fullname)
+                                               1
+                                             0)))
+                                       yas-snippet-dirs))))
+          (snippet-mode)))))
+
+  (add-to-list 'find-file-hook 'apply-snippet-mode)
 
   (when nil
     ;; While old version (e.g. 0.6.1b) uses `yas/root-directory', and
