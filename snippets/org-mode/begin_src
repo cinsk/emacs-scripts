@@ -1,0 +1,7 @@
+# contributor: Seong-Kook Shin <cinsky@gmail.com>
+# name: #+BEGIN_SRC ... #+END_SRC
+# key: #src
+# expand-env: ((yas-indent-lin 'fixed))
+# --
+#+BEGIN_SRC $1
+`yas-selected-text`$0`(unless yas-selected-text "\n")`#+END_SRC

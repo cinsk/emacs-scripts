@@ -1060,6 +1060,8 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
   (yas-global-mode 1)
 
+  (global-set-key [(control ?x) (control ?/)] 'yas-insert-snippet)
+
   (setq yas/prompt-functions '(yas-ido-prompt
                                yas-dropdown-prompt
                                yas-completing-prompt

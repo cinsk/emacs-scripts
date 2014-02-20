@@ -1,0 +1,7 @@
+# contributor: Seong-Kook Shin <cinsky@gmail.com>
+# name: #+BEGIN_CENTER ... #+END_CENTER
+# key: #center
+# expand-env: ((yas-indent-lin 'fixed) (yas-wrap-around-region t))
+# --
+#+BEGIN_CENTER
+`yas-selected-text`$0`(unless yas-selected-text "\n")`#+END_CENTER

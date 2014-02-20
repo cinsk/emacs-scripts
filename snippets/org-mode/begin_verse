@@ -1,0 +1,7 @@
+# contributor: Seong-Kook Shin <cinsky@gmail.com>
+# name: #+BEGIN_VERSE ... #+END_VERSE
+# key: #verse
+# expand-env: ((yas-indent-lin 'fixed) (yas-wrap-around-region t))
+# --
+#+BEGIN_VERSE
+`yas-selected-text`$0`(unless yas-selected-text "\n")`#+END_VERSE
