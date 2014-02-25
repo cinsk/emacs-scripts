@@ -51,4 +51,4 @@ frame that runs sunrise, if sunrise is running."
   (when (> dpwidth (* frwidth 2))
     (add-to-list 'sr-init-hook 'sr-frame-init))
   (when (> dpwidth (* frwidth 3))
-    (define-key sr-mode-map [(return)] 'sr-advertised-find-file-other-frame)))
+    (define-key sr-mode-map "\C-m" 'sr-advertised-find-file-other-frame)))

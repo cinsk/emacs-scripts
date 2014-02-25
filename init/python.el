@@ -51,7 +51,7 @@
              ;; The default prompt of ipython is not working properly
              ;; it contains some ^A (ASCII 1) which makes completion
              ;; not working.
-             (setq-default python-python-command-args '("-i" "--classic"))
+             (setq-default py-python-command-args '("-i" "--classic"))
 
              (define-key map [(control ?c) (control ?b)]
                'py-execute-buffer-ipython)
@@ -71,6 +71,11 @@
 
        (define-key map [(control ?c) (control ?c)] 'py-comment-region)
        (define-key map [(control ?c) ?i] 'py-indent-region)
+
+       (when (and (boundp 'py-shell-map)
+                  (null (lookup-key py-shell-map [(tab)]))
+                  (fboundp 'py-shell-complete))
+         (define-key py-shell-map [(tab)] 'py-shell-complete))
 
        (when (locate-file "pychecker" exec-path)
          (define-key map [(control ?c) ?c] 'py-pychecker-run))

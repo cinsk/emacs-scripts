@@ -87,7 +87,7 @@
   ;; You may add :size POINT in below font-spec if you want to use
   ;; specific size of Hangul font regardless of default font size
 
-    (fontutil/set-font "inconsolata-15")))
+    (fontutil/set-font "inconsolata-16")))
 
 (setq default-frame-alist (append default-frame-alist
                                   '((width . 80) (height . 45)

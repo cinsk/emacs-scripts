@@ -26,6 +26,13 @@
 
 (setq load-path (cons (expand-file-name user-emacs-directory) load-path))
 
+(defvar user-custom-package-directory
+  (let ((dir (concat (file-name-as-directory user-emacs-directory)
+                     "packages")))
+    (when (file-directory-p dir)
+      dir))
+  "Manually installed packages are in this directory")
+
 
 ;;;
 ;;; package
@@ -919,7 +926,11 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   (locate-library "ruby-mode"))
 
 (uinit/load "python"
-  (locate-library "python-mode"))
+  (let ((dir (concat (file-name-as-directory user-custom-package-directory)
+                     "python-mode")))
+    (when (file-directory-p dir)
+      (add-to-list 'load-path dir))
+    (locate-library "python-mode")))
 
 
 (uinit/load "_js"
