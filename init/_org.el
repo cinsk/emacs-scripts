@@ -56,20 +56,73 @@ not NOT-THIS-COMMAND"
         (call-next-command (this-command-keys-vector)
                            'org-insert-word-joiner-or-space))))
 
-(defvar org-wordjoin-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map [?\ ] 'org-insert-word-joiner-or-space)
-    (define-key map [(control ?j)] 'org-insert-word-joiner-or-space)
-    (define-key map [(control ?m)] 'org-insert-word-joiner-or-space)
-    (define-key map [(tab)] 'org-insert-word-joiner-or-space)
-    map)
-  "Keymap for `org-wordjoin-mode'")
+(when nil
+  (defvar org-wordjoin-mode-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map [?\ ] 'org-insert-word-joiner-or-space)
+      (define-key map [(control ?j)] 'org-insert-word-joiner-or-space)
+      (define-key map [(control ?m)] 'org-insert-word-joiner-or-space)
+      (define-key map [(tab)] 'org-insert-word-joiner-or-space)
+      map)
+    "Keymap for `org-wordjoin-mode'"))
 
 (define-minor-mode org-wordjoin-mode
   "Enable automatic insertion of word joiner"
   nil
   " WordJoin"
-  :keymap org-wordjoin-mode-map)
+  ;; :keymap org-wordjoin-mode-map
+  :keymap nil
+  (make-local-variable 'org-wordjoin-genuine-map)
+  (if org-wordjoin-mode
+      (progn
+        (setq org-wordjoin-genuine-map (org-wordjoin/genuine-command-keymap))
+        (org-wordjoin/install-wordjoin-commands))
+    (org-wordjoin/restore-command-keymap org-wordjoin-genuine-map)))
+
+(defun org-wordjoin/install-wordjoin-commands ()
+  "Install keybindings of `org-wordjoin-mode'."
+  (dolist (key org-wordjoin/override-keys)
+    (let ((cmd (lookup-key org-mode-map key)))
+      (if cmd
+          (define-key org-mode-map key `(lambda ()
+                                          (interactive)
+                                          (org-wordjoin/insert-command
+                                           (quote ,cmd))))
+        (define-key org-mode-map key (lambda ()
+                                       (interactive)
+                                       (org-wordjoin/insert-command
+                                        'self-insert-command)))))))
+
+(defun org-wordjoin/restore-command-keymap (map)
+  "Restore the genuine bindings from `org-wordjoin-mode'."
+  (map-keymap (lambda (ev cmd)
+                (define-key org-mode-map (vector ev) cmd)) map))
+
+(defun org-wordjoin/genuine-command-keymap ()
+  "Return a keymap with genuine bindings before `org-wordjoin-mode'."
+  (let ((map (make-sparse-keymap)))
+    (dolist (key org-wordjoin/override-keys)
+      (let ((cmd (lookup-key org-mode-map key)))
+        (define-key map key cmd)))
+    map))
+
+(defun org-wordjoin/insert-command (&optional command)
+  "Insert word joiner, and call COMMAND interactively if any."
+  (save-match-data
+    (when (looking-back "\\([=/]\\)\\(.*\\)\\1\\([^[:space:]\u2060]+\\)"
+                        (line-beginning-position) 'greedy)
+      ;; 2nd match => emphasised phrase (e.g. =code=)
+      ;; 3rd match => partial word appended
+      (save-excursion
+        (goto-char (match-beginning 3))
+        (insert-char #x2060))))
+  (and command
+       (call-interactively command)))
+
+(defvar org-wordjoin/override-keys
+  '([?\ ] [(control ?j)] [(control ?m)] [(tab)])
+  "List of key sequences for `org-wordjoin-mode'.")
+
 
 (eval-after-load "org"
   '(progn
