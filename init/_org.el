@@ -39,16 +39,22 @@ not NOT-THIS-COMMAND"
 
 (defun org-insert-word-joiner-or-space ()
   (interactive)
-  (save-match-data
-    (when (looking-back "\\([=/]\\)\\(.*\\)\\1\\([^[:space:]\u2060]+\\)"
-                      (line-beginning-position) 'greedy)
-        ;; 2nd match => emphasised phrase (e.g. =code=)
-        ;; 3rd match => partial word appended
-      (save-excursion
-        (goto-char (match-beginning 3))
-        (insert-char #x2060)))
-    (call-next-command (this-command-keys-vector)
-                       'org-insert-word-joiner-or-space)))
+  (if (bolp)
+      ;; If this trick used with yas-snippet, and if TAB is pressed
+      ;; where the point is in the begining of the line, then the following
+      ;; error occurs: lisp nesting exceeds `max-lisp-eval-depth'.
+      (call-interactively
+       (lookup-key org-mode-map (this-command-keys-vector)))
+      (save-match-data
+        (when (looking-back "\\([=/]\\)\\(.*\\)\\1\\([^[:space:]\u2060]+\\)"
+                            (line-beginning-position) 'greedy)
+          ;; 2nd match => emphasised phrase (e.g. =code=)
+          ;; 3rd match => partial word appended
+          (save-excursion
+            (goto-char (match-beginning 3))
+            (insert-char #x2060)))
+        (call-next-command (this-command-keys-vector)
+                           'org-insert-word-joiner-or-space))))
 
 (defvar org-wordjoin-mode-map
   (let ((map (make-sparse-keymap)))
