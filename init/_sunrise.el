@@ -1,5 +1,7 @@
 
-(require 'sunrise-commander)
+(eval-when-compile
+  (when (locate-library "sunrise-commander")
+    (require 'sunrise-commander)))
 
 (defun sunrise-cd-frame ()
   "Similar to `sunrise-cd`, except that it switch to the
