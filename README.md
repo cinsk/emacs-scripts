@@ -66,10 +66,10 @@ Installation
 Make sure that you have recent GNU Emacs at least 23 or above. (I
 highly recommend to use 24.3 or above)
 
-    $ cd
-    $ # Make sure that you back up the old .emacs.d/
-    $ rm -rf .emacs.d
-    $ git clone https://github.com/cinsk/emacs-scripts.git .emacs.d
+        $ cd
+        $ # Make sure that you back up the old .emacs.d/
+        $ rm -rf .emacs.d
+        $ git clone https://github.com/cinsk/emacs-scripts.git .emacs.d
 
 That's all.  Note that at the first time you launch Emacs after you
 installed my scripts, Emacs will take some times for byte compilation
@@ -130,21 +130,21 @@ If you want to sync your agenda files with
 1. Assume that your Dropbox folder is `$HOME/Dropbox/`, create a
    directory for the agenda directory (say, `$HOME/Dropbox/agenda`).
 
-    $ mkdir $HOME/Dropbox/agenda
+        $ mkdir $HOME/Dropbox/agenda
     
 2. Remove `$HOME/.emacs.d/agenda` directory, and create a symbolic
    link, agenda to `$HOME/Dropbox/agenda`:
 
-    $ cd $HOME/.emacs.d/
-    $ rmdir agenda
-    $ ln -s $HOME/Dropbox/agenda .
+        $ cd $HOME/.emacs.d/
+        $ rmdir agenda
+        $ ln -s $HOME/Dropbox/agenda .
 
 OUTDATED
 --------
 
 I no longer uses X resources for Emacs font.  However you could use it
 if you want.  Assuming that you use bash(1), add following sentence in
-your `$HOME/.bashrc`
+your `$HOME/.bashrc`:
 
-    [[ -n "$DISPLAY" ]] && xrdb -merge ~/.emacs.d/emacs.res
+        [[ -n "$DISPLAY" ]] && xrdb -merge ~/.emacs.d/emacs.res
 
