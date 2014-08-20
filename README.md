@@ -82,28 +82,28 @@ Emacs, run `M-x list-packages`, then:
 2. select following packages using `i` key.  If you accidentally select
    an unintended package, press `u` to deselect it.
 
-    dired+
-    htmlize
-    org
-    sunrise-commander
-    yasnippet
-    icomplete+
-    markdown-mode
+        dired+
+        htmlize
+        org
+        sunrise-commander
+        yasnippet
+        icomplete+
+        markdown-mode
 
 3. For the rich environment, I recommend to select following packages too:
 
-    auctex
-    clojure-mode
-    ess
-    inf-ruby
-    js-comint
-    lua-mode
-    python-mode
-    ruby-mode
-    sbt-mode
-    scala-mode2
-    slime
-    yaml-mode
+        auctex
+        clojure-mode
+        ess
+        inf-ruby
+        js-comint
+        lua-mode
+        python-mode
+        ruby-mode
+        sbt-mode
+        scala-mode2
+        slime
+        yaml-mode
     
 4. Once you selected all packages you need, press `x` to install them.
 
