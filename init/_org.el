@@ -66,6 +66,12 @@ not NOT-THIS-COMMAND"
       map)
     "Keymap for `org-wordjoin-mode'"))
 
+(defvar org-wordjoin-genuine-map)
+(defvar org-wordjoin/override-keys
+  '([?\ ] [(control ?j)] [(control ?m)] [(tab)])
+  "List of key sequences for `org-wordjoin-mode'.")
+
+
 (define-minor-mode org-wordjoin-mode
   "Enable automatic insertion of word joiner"
   nil
@@ -118,11 +124,6 @@ not NOT-THIS-COMMAND"
         (insert-char #x2060))))
   (and command
        (call-interactively command)))
-
-(defvar org-wordjoin/override-keys
-  '([?\ ] [(control ?j)] [(control ?m)] [(tab)])
-  "List of key sequences for `org-wordjoin-mode'.")
-
 
 (eval-after-load "org"
   '(progn
@@ -216,7 +217,7 @@ not NOT-THIS-COMMAND"
 ;; org-hide-leading-stars should be set before loading org-mode.
 (setq org-hide-leading-stars t)
 (setq org-odd-levels-only t)
-(setq org-agenda-include-diary t)
+;; (setq org-agenda-include-diary t)
 
 ;; If org file loaded with folding, comparing files with ediff
 ;; is very unhandy, thus starting with everything is shown
@@ -260,10 +261,8 @@ Filenames that matches Dropbox conflict will not be included."
                                     user-emacs-directory)
                                    "agenda"))))
   ;; All of my org agena files are located in `my-org-directory'.
-  (if (not (file-accessible-directory-p my-org-directory))
-      (if (yes-or-no-p
-           (format "create org directory(%s)? " my-org-directory))
-          (make-directory my-org-directory t)))
+  (and (not (file-accessible-directory-p my-org-directory))
+       (make-directory my-org-directory t))
 
   (if (file-accessible-directory-p my-org-directory)
       (let ((notefile (concat (file-name-as-directory my-org-directory)

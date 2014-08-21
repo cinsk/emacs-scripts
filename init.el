@@ -24,13 +24,13 @@
          (format "create user directory(%s)? " user-emacs-directory))
         (make-directory user-emacs-directory t)))
 
-(setq load-path (cons (expand-file-name user-emacs-directory) load-path))
+(add-to-list 'load-path (concat (file-name-as-directory
+                                 (expand-file-name user-emacs-directory))
+                                "src"))
 
 (defvar user-custom-package-directory
-  (let ((dir (concat (file-name-as-directory user-emacs-directory)
-                     "packages")))
-    (when (file-directory-p dir)
-      dir))
+  (concat (file-name-as-directory user-emacs-directory)
+          "packages")
   "Manually installed packages are in this directory")
 
 
@@ -444,13 +444,14 @@ and to remove trailing whitespaces")
 ;;  http://stackoverflow.com/questions/935723/find-tab-characters-in-emacs,
 ;;
 ;; Following sexp visualize tab character.
-(add-hook 'font-lock-mode-hook
-          '(lambda ()
-             (when (memq major-mode
-                         untabify-remove-trailing-spaces-on-write-modes)
-               (font-lock-add-keywords nil
-                                       '(("\t" 0
-                                          'trailing-whitespace prepend))))))
+(when nil
+  (add-hook 'font-lock-mode-hook
+            '(lambda ()
+               (when (memq major-mode
+                           untabify-remove-trailing-spaces-on-write-modes)
+                 (font-lock-add-keywords nil
+                                         '(("\t" 0
+                                            'trailing-whitespace prepend)))))))
 
 
 (when nil
