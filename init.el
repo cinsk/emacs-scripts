@@ -1169,6 +1169,10 @@ in any of directory in `yas-snippet-dirs'."
 
 
 
+(let ((dir (concat (expand-file-name user-emacs-directory) "backups")))
+  (when (file-directory-p dir)
+    (add-to-list 'tramp-backup-directory-alist (cons "." dir))))
+
 
 
 ;;(global-set-key [f2] 'ff-find-other-file)

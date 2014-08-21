@@ -8,7 +8,7 @@
   "Switch to other frame or call `tmm-menubar`."
   (interactive "P")
   (if (display-graphic-p)
-      (other-frame arg)
+      (other-frame (or arg 1))
     (tmm-menubar arg)))
 
 (defun set-exec-path-from-shell-path ()
