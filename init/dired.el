@@ -6,8 +6,9 @@
 
 (require 'dired-x)
 
-(when (locate-library "dired+")
-  (require 'dired+))
+;; Unstable Emacs 24.3.92.1 is not working with dired+
+;;(when (locate-library "dired+")
+;;  (require 'dired+))
 
 
 (defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
