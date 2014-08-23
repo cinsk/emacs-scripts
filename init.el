@@ -89,6 +89,12 @@ by package.el")
 (add-site-lisp-packages user-site-lisp-directory)
 
 
+;;
+;; No bell (beep)
+;;
+(setq ring-bell-function 'ignore)
+
+
 
 (setq uinit/init-directory "~/.emacs.d/init")
 
@@ -1167,6 +1173,10 @@ in any of directory in `yas-snippet-dirs'."
 (autoload 'calc "calc" "The Emacs Calculator" t)
 (global-set-key [f10] 'calc)
 (global-set-key [(control f10)] 'quick-calc)
+
+
+(when (locate-library "eimp")
+  (add-hook 'image-mode-hook 'eimp-mode))
 
 
 
