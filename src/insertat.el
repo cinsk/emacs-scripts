@@ -23,7 +23,11 @@ from SOURCE buffer."
   " INSat"
   ;; minor mode binding
   '(([(control ?c) (control ?\ )] . insertat-set-anchor)
-    ([(control ?c) (control ?y)] . insertat-region)))
+    ([(control ?c) (control ?y)] . insertat-region))
+  (unless insertat-mode
+    (setq overlay-arrow-variable-list
+          (remq 'insertat-overlay-arrow-position
+                overlay-arrow-variable-list))))
 
 (defun insertat-set-anchor (&optional arg)
   (interactive "*P")

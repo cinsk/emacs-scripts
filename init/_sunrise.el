@@ -6,7 +6,8 @@
   "Similar to `sunrise-cd`, except that it switch to the
 frame that runs sunrise, if sunrise is running."
   (interactive)
-  (if (and sr-running
+  (if (and (boundp 'sr-running)
+           sr-running
            (not (eq (window-frame sr-left-window)
                     (selected-frame))))
       (let ((dir (or (buffer-file-name) (sr-choose-cd-target))))
@@ -54,3 +55,11 @@ frame that runs sunrise, if sunrise is running."
     (add-to-list 'sr-init-hook 'sr-frame-init))
   (when (or (eq system-type 'darwin) (> dpwidth (* frwidth 3)))
     (define-key sr-mode-map "\C-m" 'sr-advertised-find-file-other-frame)))
+(eval-after-load "sunrise-commander"
+  '(let* ((frwidth (frame-parameter nil 'width))
+          (chwidth (/ (frame-pixel-width) frwidth))
+          (dpwidth (/ (display-pixel-width) chwidth)))
+     (when (> dpwidth (* frwidth 2))
+       (add-to-list 'sr-init-hook 'sr-frame-init))
+     (when (> dpwidth (* frwidth 3))
+       (define-key sr-mode-map "\C-m" 'sr-advertised-find-file-other-frame))))
