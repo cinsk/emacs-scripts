@@ -257,12 +257,24 @@ Filenames that matches Dropbox conflict will not be included."
 (let* ((org-path (getenv "ORG_PATH"))
        (my-org-directory (if org-path
                              org-path
-                           (concat (file-name-as-directory
-                                    user-emacs-directory)
-                                   "agenda"))))
+                           (expand-file-name "~/agenda"))))
   ;; All of my org agena files are located in `my-org-directory'.
   (and (not (file-accessible-directory-p my-org-directory))
        (make-directory my-org-directory t))
+
+  (when (string-prefix-p (file-truename "~/Dropbox")
+                         (file-truename my-org-directory))
+    ;; If `my-org-directory' is linked to a subdirectory of Dropbox
+    ;; directory, then make the auto-save directory to be placed in
+    ;; /tmp/.
+    (add-to-list 'auto-save-file-name-transforms
+                 (list
+                  (concat "\\`"
+                          (file-name-as-directory my-org-directory)
+                          "\\([^/]*/\\)*\\([^/]*\\)\\'")
+                  (concat (file-name-as-directory temporary-file-directory)
+                          "\\2")
+                  t)))
 
   (if (file-accessible-directory-p my-org-directory)
       (let ((notefile (concat (file-name-as-directory my-org-directory)
