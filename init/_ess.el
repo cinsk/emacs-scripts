@@ -7,6 +7,18 @@
 (when (locate-library "ess-site")
   (require 'ess-site))
 
+(defun ess-shell (eob-p)
+  "Switch to the current inferior ESS process buffer.
+
+If there is no ESS buffer, create one.  See `ess-switch-to-ESS' for EOB-P."
+  (interactive "P")
+  (ess-force-buffer-current "Process to load into: ")
+  (ess-switch-to-ESS eob-p))
+
+(eval-after-load "ess-mode"
+  '(when (boundp 'ess-mode-map)
+    (define-key ess-mode-map [(control ?c) ?\!] 'ess-shell)))
+
 (defun R-table-region (beg end)
   (interactive "r")
   (let ((buf (current-buffer))
