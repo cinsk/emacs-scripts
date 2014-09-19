@@ -487,3 +487,60 @@ For example, add following line in your org file:
   ;; browser.
   (add-to-list 'org-file-apps
                '("\\.x?html?\\'" . (browse-url file))))
+
+(add-to-list 'org-drawers "COMMENT")
+
+;;
+;; See http://docs.mathjax.org/en/latest/configuration.html for more
+;;
+(setq org-html-mathjax-template
+        "<script type=\"text/javascript\" src=\"%PATH\"></script>
+<script type=\"text/javascript\">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        :MMLYES: config: [\"MMLorHTML.js\"], jax: [\"input/TeX\"],
+        :MMLNO: jax: [\"input/TeX\", \"output/HTML-CSS\"],
+        extensions: [\"tex2jax.js\",\"TeX/AMSmath.js\",\"TeX/AMSsymbols.js\",
+                     \"TeX/noUndefined.js\"],
+        tex2jax: {
+            inlineMath: [ [\"\\\\(\",\"\\\\)\"] ],
+            displayMath: [
+                ['$$','$$'], [\"\\\\[\",\"\\\\]\"],
+                [\"\\\\begin{displaymath}\",\"\\\\end{displaymath}\"],
+            ],
+            skipTags: [\"script\",\"noscript\",\"style\",\"textarea\",\"pre\",\"code\"],
+            ignoreClass: \"tex2jax_ignore\",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: \"TeX\"
+        },
+        showProcessingMessages: true,
+        displayAlign: \"%ALIGN\",
+        displayIndent: \"%INDENT\",
+
+        \"HTML-CSS\": {
+             scale: %SCALE,
+             availableFonts: [\"STIX\",\"TeX\"],
+             preferredFont: \"TeX\",
+             webFont: \"TeX\",
+             imageFont: \"TeX\",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    \"MML\",
+                 Firefox: \"MML\",
+                 Opera:   \"HTML\",
+                 other:   \"HTML\"
+             }
+        },
+        TeX: {
+             equationNumbers: {
+                 autoNumber: \"AMS\"
+             }
+        }
+    });
+/*]]>*///-->
+</script>")
