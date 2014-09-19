@@ -16,8 +16,16 @@ If there is no ESS buffer, create one.  See `ess-switch-to-ESS' for EOB-P."
   (ess-switch-to-ESS eob-p))
 
 (eval-after-load "ess-mode"
-  '(when (boundp 'ess-mode-map)
-    (define-key ess-mode-map [(control ?c) ?\!] 'ess-shell)))
+  '(progn
+     (when (boundp 'ess-mode-map)
+       (define-key ess-mode-map [(control ?c) ?\!] 'ess-shell)
+       (define-key ess-mode-map [(control ?c) (control ?q)] 'ess-dev-off)
+       (define-key ess-mode-map [(control ?c) ?q] 'ess-quit))
+     (when (boundp 'inferior-ess-mode-map)
+       (define-key ess-mode-map [(control ?c) (control ?q)] 'ess-dev-off)
+       (define-key ess-mode-map [(control ?c) ?q] 'ess-quit))))
+
+
 
 (defun R-table-region (beg end)
   (interactive "r")
@@ -55,3 +63,48 @@ If there is no ESS buffer, create one.  See `ess-switch-to-ESS' for EOB-P."
   ;;(ignore-errors (delete-file fifo))
   ;;(ignore-errors (delete-file tmpfile))
   )
+
+
+(defvar ess-number-regexp
+  "\\`[+-]?\\(0?[0-9.]+\\|0x[0-9.a-fA-F]+\\)\\([eE][+-][0-9]+\\)?\\'"
+  "The regular expression that matches a R(ESS) numerical constant")
+
+(defun ess-eval-string (str)
+  (with-temp-buffer
+    (insert str)
+    (ess-eval-buffer nil)))
+
+(defun ess-dev-off ()
+  (interactive)
+  (ess-eval-string "dev.off()"))
+
+(defun ess-parse-as-vector (start end)
+  "Parse the region and evaluate it as a vector in the inferior R(ESS) process"
+  (interactive "r")
+  (let ((srcbuf (current-buffer))
+        (tmpbuf (generate-new-buffer " *TMP.R*")))
+    (unwind-protect
+        (save-excursion
+          (save-restriction
+            (narrow-to-region start end)
+            (with-current-buffer tmpbuf
+              (erase-buffer)
+              (insert "c("))
+            (goto-char (point-min))
+            (when (re-search-forward "[^[:space:],\n\r|]+" nil t)
+              (let ((matched (match-string-no-properties 0)))
+                (with-current-buffer tmpbuf
+                  (if (string-match ess-number-regexp matched)
+                      (insert matched)
+                    (insert (concat "\"" matched "\""))))))
+            (while (re-search-forward "[^[:space:],\n\r|]+" nil t)
+              (let ((matched (match-string-no-properties 0)))
+                (with-current-buffer tmpbuf
+                  (if (string-match ess-number-regexp matched)
+                      (insert (concat ", " matched))
+                    (insert (concat ", \"" matched "\""))))))
+            (with-current-buffer tmpbuf
+              (insert ")")))
+          (with-current-buffer tmpbuf
+            (ess-eval-line nil)))
+      (kill-buffer tmpbuf))))
