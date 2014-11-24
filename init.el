@@ -53,7 +53,7 @@
     (add-to-list 'package-archives
                  '("sc" . "http://joseito.republika.pl/sunrise-commander/") t)
     (add-to-list 'package-archives
-                 '("melpa" . "http://melpa.milkbox.net/packages/") t)
+                 '("melpa" . "http://melpa.org/packages/") t)
     ;; According to the package.el, if `package-enable-at-startup' is
     ;; t, it will load all the packages on start up.  But it didn't.
     ;; Perhaps it's a problem related to the version (currently Emacs
