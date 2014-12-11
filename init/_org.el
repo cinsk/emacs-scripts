@@ -9,6 +9,22 @@
   (require 'org)
   (require 'org-table))
 
+;;
+;; Enable evaluation code block of certain languages
+;;
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (R . t)
+   (python . t)
+   (ruby . t)
+   (dot . t)
+   (sh . t)))
+
+;;
+;; Disable the prompt for evaluation of code block
+;;
+(setq org-confirm-babel-evaluate nil)
 
 (defun different-command-p (command name)
   "Return t iff COMMAND is a command and has different from NAME"
@@ -174,6 +190,12 @@ not NOT-THIS-COMMAND"
 
      (add-to-list 'org-mode-hook (lambda ()
                                    (org-wordjoin-mode 1)))
+
+
+     (when (fboundp 'graphviz-dot-mode)
+       (let ((dotpair (assoc "dot" org-src-lang-modes)))
+         (and dotpair
+              (setcdr dotpair 'graphviz-dot-mode))))
 
      ;; When opening a link with `org-open-at-point' (C-c C-o), These
      ;; settings allow to use acroread for pdf files and to use ggv
