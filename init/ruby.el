@@ -16,6 +16,12 @@
   ;; Above configuration works on even ruby-mode 1.0, which is
   ;; distributed with Emacs 24 build-in.
 
+  (when (locate-library "rvm")
+    (require 'rvm)
+    (rvm-use-default)
+    (when (executable-find "pry")
+      (setq inf-ruby-default-implementation "pry")))
+
   (when (locate-library "inf-ruby")
     (require 'inf-ruby))
 
