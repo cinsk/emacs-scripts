@@ -1,4 +1,6 @@
 # name: namespace ...
 # key: ns
 # --
-namespace 
+BEGIN_NS($1)
+$0
+END_NS

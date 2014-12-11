@@ -135,6 +135,9 @@ created file buffer."
   "#+LINK: rfc http://www.rfc-editor.org/rfc/rfc%s.txt\n"
   "#+TODO: TODO(t) | DONE(d) CANCELED(c) POSTPONED\n"
   "#+DRAWERS: PROPERTIES CLOCK LOGBOOK COMMENT\n"
+  "#+LATEX_CLASS: article\n"
+  "#+LATEX_CLASS_OPTIONS: [a4paper]\n"
+  "#+LATEX_HEADER: \\usepackage{kotex}\n"
   "#+TITLE: " (skeleton-read "Agenda Title: " (file-name-base)) \n
   "#+AUTHOR: " (skeleton-read "Author: " (user-full-name)) \n
   "#+EMAIL: " (skeleton-read "email: " user-mail-address) \n

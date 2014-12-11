@@ -188,8 +188,14 @@ not NOT-THIS-COMMAND"
           (interactive)
           (ucs-insert #x200B)))
 
-     (add-to-list 'org-mode-hook (lambda ()
-                                   (org-wordjoin-mode 1)))
+     ;;(add-to-list 'org-mode-hook (lambda ()
+     ;; (org-wordjoin-mode 1)))
+
+
+     (when (fboundp 'graphviz-dot-mode)
+       (let ((dotpair (assoc "dot" org-src-lang-modes)))
+         (and dotpair
+              (setcdr dotpair 'graphviz-dot))))
 
 
      (when (fboundp 'graphviz-dot-mode)
