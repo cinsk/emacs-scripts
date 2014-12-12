@@ -1040,12 +1040,17 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 ;;; go lang
 ;;;
-(let* ((godir "/usr/local/go")
-       (gldir (concat (file-name-as-directory godir) "misc/emacs")))
-  (when (file-accessible-directory-p gldir)
-    (add-to-list 'load-path gldir 'append)
-    (when (locate-library "go-mode-load")
-      (require 'go-mode-load))))
+
+(uinit/load "_go"
+  (locate-library "go-mode"))
+
+(unless (locate-library "go-mode")
+  (let* ((godir "/usr/local/go")
+         (gldir (concat (file-name-as-directory godir) "misc/emacs")))
+    (when (file-accessible-directory-p gldir)
+      (add-to-list 'load-path gldir 'append)
+      (when (locate-library "go-mode-load")
+        (require 'go-mode-load)))))
 
 
 
