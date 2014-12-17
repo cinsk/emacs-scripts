@@ -129,9 +129,6 @@ capitalized, and all-uppercases."
                 (up-p (downcase-word 1))
                 (t (upcase-word 1))))))))
 
-          (if (string= (upcase fchar) fchar)
-              (capitalize-word 1)))))
-
 (global-set-key [(meta ?C)] 'capitalize-word)
 (global-set-key [(meta ?c)] 'toggle-case-word)
 
