@@ -21,6 +21,9 @@
    (dot . t)
    (sh . t)))
 
+(when (locate-library "ob-go")
+  (require 'ob-go))
+
 ;;
 ;; Disable the prompt for evaluation of code block
 ;;
