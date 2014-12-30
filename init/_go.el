@@ -12,5 +12,5 @@
 
 (when (locate-library "subword")
   (add-hook 'go-mode-hook
-            (labmda ()
+            (lambda ()
                     (subword-mode 1))))
