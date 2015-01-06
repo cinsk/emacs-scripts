@@ -25,8 +25,8 @@
     (set-frame-parameter frame 'top '(- 5000))))
 
 
-(setq mac-option-modifier nil)
-(setq mac-command-modifier 'meta)
+(setq mac-option-modifier 'super
+      mac-command-modifier 'meta)
 ;; sets fn-delete to be right-delete
 (global-set-key [kp-delete] 'delete-char)
 
@@ -94,8 +94,9 @@
                                     ;;(line-spacing . 2)
                                     (alpha . (100 . 85)))))
 
-(when (display-graphic-p)
-  (global-set-key [(meta ?c)] 'ns-copy-including-secondary))
+;; (when (display-graphic-p)
+;;   (global-set-key [(meta ?c)] 'ns-copy-including-secondary))
+
 (global-set-key [(meta ?`)] 'darwin-smart-other-frame)
 
 ;; If Emacs is not launched in Terminal, .bashrc is not executed, so

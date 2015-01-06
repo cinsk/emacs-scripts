@@ -1061,9 +1061,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 ;;; go lang
 ;;;
-
-(uinit/load "_go"
-  (locate-library "go-mode"))
+(uinit/load "_go" (locate-library "go-mode"))
 
 (unless (locate-library "go-mode")
   (let* ((godir "/usr/local/go")
