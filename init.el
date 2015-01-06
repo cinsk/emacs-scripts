@@ -112,25 +112,8 @@ Each elements in DIRS will be expanded using `expand-file-name'."
                       dirs)))
 
 
-(defun toggle-case-word ()
-  "Toggle case of the current word among all-lowercases,
-capitalized, and all-uppercases."
-  (interactive)
-  (save-excursion
-    (let ((bounds (bounds-of-thing-at-point 'word)))
-      (when bounds
-        (let* ((word (buffer-substring-no-properties
-                      (car bounds) (cdr bounds)))
-               (down-p (string= (downcase word) word))
-               (up-p (string= (upcase word) word))
-               (fchar (substring-no-properties word 0 1)))
-          (goto-char (car bounds))
-          (cond (down-p (capitalize-word 1))
-                (up-p (downcase-word 1))
-                (t (upcase-word 1))))))))
-
-(global-set-key [(meta ?C)] 'capitalize-word)
-(global-set-key [(meta ?c)] 'toggle-case-word)
+(when (locate-library "capitalize+")
+  (require 'capitalize+))
 
 
 (uinit/load "darwin"
