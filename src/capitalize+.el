@@ -87,7 +87,7 @@ capitalized, and all-uppercases."
                       (progn (setq pos (% (1+ pos) (length cand)))
                              (setcar (cdr capitalize+--state) pos)
                              (nth pos cand))
-                    (progn
+                    (let ((cand (capitalize--candidates word)))
                       (setq pos (or (position word cand :test 'equal) -1))
                       (setq pos (% (1+ pos) (length cand)))
                       (setq capitalize+--state (list (point-marker) pos cand))
