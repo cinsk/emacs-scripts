@@ -25,8 +25,12 @@
 
 ;;; Code:
 
-(require 'dabbrev)
+;; It seems that (require ...) loads only autoloaded functions, not
+;; all functions.  Thus, (funcall 'dabbrev-select-buffers-function)
+;; might fail unless loaded by (load ...)
+(load "dabbrev")
 
+(defvar 'capitalize+--state)
 (make-variable-buffer-local 'capitalize+--state)
 
 (when nil
@@ -115,7 +119,7 @@ capitalized, and all-uppercases."
                                 (- (point) (length s)) (point))))
                         (unless (string-equal c s)
                           (throw 'found c))))))))
-            (cons (current-buffer) (dabbrev--select-buffers)))
+            (cons (current-buffer) (funcall dabbrev-select-buffers-function)))
       nil))
 
   (defun capitalize-word+ ()
