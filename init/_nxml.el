@@ -78,6 +78,7 @@
 ;; All .html files that I(cinsk) generate are XHTML files.
 ;; Thus, I choose `nxml-mode' over other major modes.
 (add-to-list 'auto-mode-alist '("/public_html/.*\\.s?html?\\'" . nxml-mode))
+(add-to-list 'auto-mode-alist '(".*\\.scala\\.s?html?\\'" . nxml-mode))
 
 
 (defvar cinsk/nxml-initialized nil

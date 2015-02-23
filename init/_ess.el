@@ -80,6 +80,7 @@ If there is no ESS buffer, create one.  See `ess-switch-to-ESS' for EOB-P."
 
 (defun ess-parse-as-vector (start end)
   "Parse the region and evaluate it as a vector in the inferior R(ESS) process"
+  ;; TODO: perhaps it's better to use scan() function in R
   (interactive "r")
   (let ((srcbuf (current-buffer))
         (tmpbuf (generate-new-buffer " *TMP.R*")))
