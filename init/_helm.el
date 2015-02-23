@@ -4,8 +4,9 @@
 ;;; Helm configuration
 ;;;
 
-(require 'helm)
-(require 'helm-config)
+(when (locate-library "helm")
+  (require 'helm)
+  (require 'helm-config))
 
 (global-set-key [(control ?x) (control ?a)] 'helm-command-prefix)
 ;; (global-unset-key [(control ?x) ?c])
