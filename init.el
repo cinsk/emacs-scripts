@@ -381,6 +381,8 @@ Each elements in DIRS will be expanded using `expand-file-name'."
     'helm-lisp-completion-at-point)
   (add-hook 'kill-emacs-hook #'(lambda () (delete-file "$TMP"))))
 
+(uinit/load "_helm" (locate-library "helm"))
+
 
 
 ;;;
