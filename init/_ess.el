@@ -5,7 +5,9 @@
 ;;;
 
 (when (locate-library "ess-site")
+  (eval-when-compile (require 'ess-mode))
   (require 'ess-site))
+
 
 (defun ess-shell (eob-p)
   "Switch to the current inferior ESS process buffer.

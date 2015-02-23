@@ -19,6 +19,7 @@
    (python . t)
    (ruby . t)
    (dot . t)
+   (go . t)
    (sh . t)))
 
 (when (locate-library "ob-go")

@@ -24,9 +24,12 @@
          (format "create user directory(%s)? " user-emacs-directory))
         (make-directory user-emacs-directory t)))
 
-(add-to-list 'load-path (concat (file-name-as-directory
+(let ((srcpath (concat (file-name-as-directory
                                  (expand-file-name user-emacs-directory))
-                                "src"))
+                                "src")))
+  (add-to-list 'load-path srcpath)
+  (when (and (boundp 'uinit/use-byte-compile) uinit/use-byte-compile)
+    (byte-recompile-directory srcpath 0)))
 
 (defvar user-custom-package-directory
   (concat (file-name-as-directory user-emacs-directory)
