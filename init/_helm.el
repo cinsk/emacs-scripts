@@ -41,6 +41,18 @@
   (setq helm-google-suggest-use-curl-p t))
 
 
+(define-key helm-command-map [?\`] 'helm-resume)
+(define-key helm-command-map [?R] 'helm-regexp)
+
+(defun helm-recursive-grep ()
+  "Call `helm-do-grep' with a prefix argument given."
+  (interactive)
+  (let ((current-prefix-arg '(4)))
+    (call-interactively 'helm-do-grep)))
+
+(define-key helm-command-map [?r] 'helm-recursive-grep)
+(define-key helm-command-map [?g] 'helm-occur)
+
 (setq
  ;; open helm buffer inside current window, not occupying whole other
  ;; window
