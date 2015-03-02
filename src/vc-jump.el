@@ -127,7 +127,9 @@
                                              (list dname)))
                     (t (message "vc-jump: can't handle %S type"
                                 (type-of func))))
-            (message "vc-jump: No known VCS for %s" (buffer-name)))))))
+            (message "vc-jump: No known VCS for %s" (buffer-name)))))
+    ;; Returning nil gives clean result esp. used in `eshell'.
+    nil))
 
 
 (provide 'vc-jump)
