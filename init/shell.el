@@ -105,3 +105,14 @@ shell."
   (switch-to-buffer term-ansi-buffer-name))
 
 (global-set-key "\C-cd" 'shell)
+
+
+
+;;(require 'eshell)
+(require 'em-term)
+(add-to-list 'eshell-visual-commands "vim")
+
+;; (require 'em-smart)
+;; (setq eshell-where-to-jump 'begin)
+;; (setq eshell-review-quick-commands nil)
+;; (setq eshell-smart-space-goes-to-end t)
