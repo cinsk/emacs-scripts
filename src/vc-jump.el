@@ -128,7 +128,8 @@
                     (t (message "vc-jump: can't handle %S type"
                                 (type-of func))))
             (message "vc-jump: No known VCS for %s" (buffer-name)))))
-    ;; Returning nil gives clean result esp. used in `eshell'.
+    ;; Make sure that this function returns nil so that
+    ;; invocation of this function in eshell do not garble the screen.
     nil))
 
 

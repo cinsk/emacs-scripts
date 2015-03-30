@@ -136,3 +136,12 @@ This function is stealed from `helm-ff-switch-to-eshell'."
       (funcall cd-eshell))))
 
 (global-set-key [(control meta ?\!)] 'eshell-cd)
+
+;;(require 'eshell)
+(require 'em-term)
+(add-to-list 'eshell-visual-commands "vim")
+
+;; (require 'em-smart)
+;; (setq eshell-where-to-jump 'begin)
+;; (setq eshell-review-quick-commands nil)
+;; (setq eshell-smart-space-goes-to-end t)
