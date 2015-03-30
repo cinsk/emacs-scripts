@@ -5,7 +5,7 @@
 ;;;
 
 (when (locate-library "ess-site")
-  (eval-when-compile (require 'ess-mode))
+  (eval-when-compile '(require ess-mode))
   (require 'ess-site))
 
 

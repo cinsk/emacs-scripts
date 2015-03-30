@@ -6,9 +6,9 @@
 
 (require 'dired-x)
 
-;; Unstable Emacs 24.3.92.1 is not working with dired+
-;;(when (locate-library "dired+")
-;;  (require 'dired+))
+(when (locate-library "dired+")
+  (setq diredp-hide-details-initially-flag nil)
+  (require 'dired+))
 
 
 (defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
@@ -112,7 +112,7 @@ supplied one, a warning message is generated."
 (global-set-key [(control x) ?f ?j] 'dired-jump-other-frame)
 
 (defun dired-find-file-other-frame (&optional arg)
-  (interactive "p")
+  (interactive "P")
   (let ((buffer (get-file-buffer (dired-get-file-for-visit)))
         (frame (next-frame (selected-frame) 'visible)))
     (and (not buffer)
@@ -122,7 +122,7 @@ supplied one, a warning message is generated."
              (eq frame (selected-frame)))
          (setq frame (make-frame)))
     (set-window-buffer (get-lru-window frame) buffer)
-    (and (< arg 0)
+    (when arg
          (select-frame-set-input-focus frame))))
 
 (eval-after-load "dired"

@@ -5,10 +5,10 @@
 ;;;
 
 
-(add-hook 'go-mode-hook
-          (lambda ()
-            (add-hook 'before-save-hook 'gofmt-before-save)
-            (setq indent-tabs-mode 1)))
+;; (add-hook 'go-mode-hook
+;;           (lambda ()
+;;             (add-hook 'before-save-hook 'gofmt-before-save)
+;;             (setq indent-tabs-mode 1)))
 
 (when (locate-library "subword")
   (add-hook 'go-mode-hook

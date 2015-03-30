@@ -105,3 +105,34 @@ shell."
   (switch-to-buffer term-ansi-buffer-name))
 
 (global-set-key "\C-cd" 'shell)
+
+;; TODO: implement generic function to send arbitrary command to eshell.
+(require 'eshell)
+
+(defun eshell-cd (&optional dir)
+  "Switch to eshell and cd to DIR.
+
+If DIR is nil or called interactively, `default-directory' will
+be used.  If a prefix argument given, it will prompt for the
+directory it will use.
+
+This function is stealed from `helm-ff-switch-to-eshell'."
+  (interactive (list (if current-prefix-arg
+                         (read-directory-name "dir: ")
+                       nil)))
+  (or dir (setq dir default-directory))
+  (let ((cd-eshell #'(lambda ()
+                       (eshell-kill-input)
+                       (goto-char (point-max))
+                       (insert
+                        (format "cd '%s'" dir))
+                       (eshell-send-input))))
+    (if (get-buffer "*eshell*")
+        ;; pop-to-buffer?
+        ;; (switch-to-buffer "*eshell*")
+        (pop-to-buffer "*eshell*")
+      (call-interactively 'eshell))
+    (unless (get-buffer-process (current-buffer))
+      (funcall cd-eshell))))
+
+(global-set-key [(control meta ?\!)] 'eshell-cd)
