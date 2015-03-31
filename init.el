@@ -771,7 +771,12 @@ This function is best used in `find-file-hook'."
 ;;;
 ;;; Version Control
 ;;;
-(global-set-key [(control x) (control q)] 'vc-toggle-read-only)
+
+;; vc-toggle-read-only is an obsolete command (as of 24.1)
+(global-set-key [(control x) (control q)]
+                (if (fboundp 'read-only-mode)
+                    'read-only-mode
+                  'vc-toggle-read-only))
 
 
 ;;(split-window-horizontally)
