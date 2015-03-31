@@ -4,6 +4,13 @@
 ;;; Helm configuration
 ;;;
 
+(global-set-key [(meta ?X)]
+                (lookup-key (current-global-map) [(meta ?x)]))
+(global-set-key [(control ?x) (control ?B)]
+                (lookup-key (current-global-map) [(control ?x) (control ?b)]))
+(global-set-key [(control ?x) (control ?F)]
+                (lookup-key (current-global-map) [(control ?x) (control ?f)]))
+
 (when (locate-library "helm")
   (require 'helm)
   (require 'helm-config))
@@ -11,19 +18,20 @@
 (global-set-key [(control ?x) (control ?a)] 'helm-command-prefix)
 ;; (global-unset-key [(control ?x) ?c])
 
-(substitute-key-definition [(meta ?x)]
-                           [(meta ?X)]
-                           (current-global-map))
+;; (substitute-key-definition [(meta ?x)]
+;;                            [(meta ?X)]
+;;                            (current-global-map))
+
 (global-set-key [(meta ?x)] 'helm-M-x)
 
-(substitute-key-definition [(control ?x) (control ?b)]
-                           [(control ?x) (control ?B)]
-                           (current-global-map))
+;; (substitute-key-definition [(control ?x) (control ?b)]
+;;                            [(control ?x) (control ?B)]
+;;                            (current-global-map))
 (global-set-key [(control ?x) (control ?b)] 'helm-buffers-list)
 
-(substitute-key-definition [(control ?x) (control ?f)]
-                           [(control ?x) (control ?F)]
-                           (current-global-map))
+;; (substitute-key-definition [(control ?x) (control ?f)]
+;;                            [(control ?x) (control ?F)]
+;;                            (current-global-map))
 (global-set-key [(control ?x) (control ?f)] 'helm-find-files)
 
 
