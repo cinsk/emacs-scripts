@@ -16,9 +16,8 @@
                            (current-global-map))
 (global-set-key [(meta ?x)] 'helm-M-x)
 
-(substitute-key-definition [(control ?x) (control ?b)]
-                           [(control ?x) (control ?B)]
-                           (current-global-map))
+(global-set-key [(control ?x) (control ?B)]
+                (lookup-key (current-global-map) [(control ?x) (control ?b)]))
 (global-set-key [(control ?x) (control ?b)] 'helm-buffers-list)
 
 (substitute-key-definition [(control ?x) (control ?f)]

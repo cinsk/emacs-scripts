@@ -51,7 +51,7 @@
              ;; The default prompt of ipython is not working properly
              ;; it contains some ^A (ASCII 1) which makes completion
              ;; not working.
-             (setq-default py-python-command-args '("-i" "--classic")
+             (setq-default ;; py-python-command-args '("-i" "--classic")
                            py-ipython-command-args '("-i" "--classic"))
 
              (define-key map [(control ?c) (control ?b)]

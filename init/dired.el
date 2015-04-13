@@ -6,6 +6,8 @@
 
 (require 'dired-x)
 
+(eval-when-compile (require 'cl))
+
 (when (locate-library "dired+")
   (setq diredp-hide-details-initially-flag nil)
   (require 'dired+))
@@ -127,3 +129,42 @@ supplied one, a warning message is generated."
 
 (eval-after-load "dired"
   '(define-key dired-mode-map [(control return)] 'dired-find-file-other-frame))
+
+
+(defun cinsk/buffer-directory (&optional buffer)
+  "Return the expanded directory string of the BUFFER."
+  (with-current-buffer (or buffer (current-buffer))
+    (expand-file-name
+     (if buffer-file-name
+         (file-name-directory buffer-file-name)
+       default-directory))))
+
+(defun cinsk/dired-buffers (&optional buffer)
+  "Return a list of dired buffers that contains the directory of BUFFER."
+  (let ((dir (cinsk/buffer-directory (or buffer (current-buffer)))))
+    (remove nil
+            (mapcar (lambda (buf)
+                      (let ((d (cinsk/buffer-directory buf)))
+                        (with-current-buffer buf
+                          (when (and (buffer-live-p buf)
+                                     (memq major-mode '(dired-mode sr-mode))
+                                     (not (eq ?\
+                                              (elt (buffer-name buf) 0))))
+                            (and (or (when (string-equal dir d)
+                                       (message "dir: %S" d))
+                                     (with-current-buffer buf
+                                       (member-if (lambda (d)
+                                                    (string-equal dir (car d)))
+                                                  dired-subdir-alist)))
+                                 buf)))))
+                    (buffer-list)))))
+
+(defun cinsk/dired-jump (orig-fun &rest args)
+  "Advice for dired-jump to reuse the existing `dired' buffer."
+  (let ((dir (cinsk/buffer-directory))
+        (buf (car (cinsk/dired-buffers))))
+    (if (null buf)
+        (apply orig-fun args)
+      (switch-to-buffer buf)
+      (dired-goto-file dir))))
+(advice-add 'dired-jump :around #'cinsk/dired-jump)
