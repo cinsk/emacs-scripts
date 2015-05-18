@@ -47,7 +47,9 @@
        (if (and (executable-find "ipython")
                 (fboundp 'py-execute-region-ipython))
            (progn
+             (setq py-start-run-ipython-shell t)
              (setq-default py-shell-name "ipython")
+
              ;; The default prompt of ipython is not working properly
              ;; it contains some ^A (ASCII 1) which makes completion
              ;; not working.
