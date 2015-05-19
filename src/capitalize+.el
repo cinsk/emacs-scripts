@@ -30,7 +30,7 @@
 ;; might fail unless loaded by (load ...)
 (load "dabbrev")
 
-(defvar 'capitalize+--state)
+(defvar capitalize+--state)
 (make-variable-buffer-local 'capitalize+--state)
 
 (when nil

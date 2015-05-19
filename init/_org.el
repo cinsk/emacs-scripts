@@ -173,6 +173,9 @@ not NOT-THIS-COMMAND"
 
      (define-key org-mode-map [(control c) ?s] 'cinsk/org-sourcefy)
 
+     ;; Shift + TAB in rdesktop, xmanager, emacs
+     (define-key org-mode-map [(shift kp-tab)] 'org-shifttab)
+
      ;; unicode: word joiner
      ;;
      ;; To mark-up certain text (e.g. /"hello"/ga), place 'word joiner'
