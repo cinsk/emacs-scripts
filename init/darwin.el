@@ -4,6 +4,9 @@
 ;;; Mac OS customization
 ;;;
 
+;; (require 'ucs-normalize)
+;; (set-file-name-coding-system 'utf-8-hfs)
+
 (defun darwin-smart-other-frame (&optional arg)
   "Switch to other frame or call `tmm-menubar`."
   (interactive "P")

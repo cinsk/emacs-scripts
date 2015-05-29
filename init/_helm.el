@@ -10,6 +10,8 @@
                 (lookup-key (current-global-map) [(control ?x) (control ?b)]))
 (global-set-key [(control ?x) (control ?F)]
                 (lookup-key (current-global-map) [(control ?x) (control ?f)]))
+(global-set-key [(meta ?Y)]
+                (lookup-key (current-global-map) [(meta ?y)]))
 
 (when (locate-library "helm")
   (require 'helm)
@@ -31,6 +33,7 @@
 ;;                            (current-global-map))
 (global-set-key [(control ?x) (control ?f)] 'helm-find-files)
 
+(global-set-key [(meta ?y)] 'helm-show-kill-ring)
 
 ;; See http://tuhdo.github.io/helm-intro.html
 
