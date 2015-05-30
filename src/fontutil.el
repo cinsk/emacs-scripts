@@ -128,6 +128,7 @@ See `fontutil/fontconfig' for the definition of SPECS."
                            (hangul :family "NanumGothicCoding" :size 20)
                            (symbol :family "Symbola" :size 22))
                           ((line-spacing . 3))))
+
      ("monaco-14" . (((:family "Monaco" :size 14)
                       (hangul :family "NanumGothicCoding" :size 16)
                       (symbol :family "Symbola" :size 17))))
@@ -136,7 +137,28 @@ See `fontutil/fontconfig' for the definition of SPECS."
                       (symbol :family "Symbola" :size 20))))
      ("monaco-16" . (((:family "Monaco" :size 16)
                       (hangul :family "NanumGothicCoding" :size 20)
-                      (symbol :family "Symbola" :size 22))))))
+                      (symbol :family "Symbola" :size 22))))
+
+     ("menlo-14" . (((:family "Menlo" :size 14)
+                      (hangul :family "NanumGothicCoding" :size 16)
+                      (symbol :family "Symbola" :size 20))))
+     ("menlo-16" . (((:family "Menlo" :size 16)
+                      (hangul :family "NanumGothicCoding" :size 20)
+                      (symbol :family "Symbola" :size 20))))
+     ("menlo-18" . (((:family "Menlo" :size 18)
+                      (hangul :family "NanumGothicCoding" :size 22)
+                      (symbol :family "Symbola" :size 20))))
+
+     ("pt-14" . (((:family "PT Mono" :size 14)
+                      (hangul :family "NanumGothicCoding" :size 16)
+                      (symbol :family "Symbola" :size 20))))
+     ("pt-16" . (((:family "PT Mono" :size 16)
+                      (hangul :family "NanumGothicCoding" :size 20)
+                      (symbol :family "Symbola" :size 20))))
+     ("pt-18" . (((:family "PT Mono" :size 18)
+                      (hangul :family "NanumGothicCoding" :size 22)
+                      (symbol :family "Symbola" :size 20))))
+     ))
   "Font and Frame configuration list
 
 Each element has a form of (FONT-SPEC FRAME-SPEC), where

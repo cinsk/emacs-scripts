@@ -59,7 +59,12 @@
                                  manoj-dark
                                  tsdh-dark
                                  wheatgrass
-                                 wombat)
+                                 wombat
+
+                                 leuven
+                                 light-blue
+                                 misterioso
+                                 tsdh-light)
   "My favorite themes")
 
 (defvar themes/last-theme nil
