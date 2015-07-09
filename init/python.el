@@ -54,12 +54,14 @@
              ;; it contains some ^A (ASCII 1) which makes completion
              ;; not working.
              (setq-default ;; py-python-command-args '("-i" "--classic")
-                           py-ipython-command-args '("-i" "--classic"))
+                           py-ipython-command-args "-i --classic")
 
              (define-key map [(control ?c) (control ?b)]
                'py-execute-buffer-ipython)
              (define-key map [(control ?c) (control ?r)]
                'py-execute-region-ipython)
+             (define-key map [(control ?c) ?f]
+               'py-execute-def-ipython)
              ;; py-execute-string-ipython is not provided yet
              ;; (python-mode 6.0.10)
              (define-key map [(control ?c) (control ?e)]
@@ -69,6 +71,8 @@
              'py-execute-buffer)
            (define-key map [(control ?c) (control ?r)]
              'py-execute-region)
+             (define-key map [(control ?c) ?f]
+               'py-execute-def)
            (define-key map [(control ?c) (control ?e)]
              'py-execute-string)))
 
