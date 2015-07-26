@@ -52,7 +52,9 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
         ((locate-library "magit")
          (require 'magit))))
 
-(when (locate-library "markdown-mode")
+(when nil ; (locate-library "markdown-mode")
+  ;; Not working on magit 2.1.x
+
   ;; See https://github.com/magit/magit/issues/424
 
   ;; If we don't force to load the module magit here,

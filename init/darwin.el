@@ -95,7 +95,7 @@
 (setq default-frame-alist (append default-frame-alist
                                   '((width . 80) (height . 45)
                                     ;;(line-spacing . 2)
-                                    (alpha . (100 . 85)))))
+                                    (alpha . (100 . 90)))))
 
 ;; (when (display-graphic-p)
 ;;   (global-set-key [(meta ?c)] 'ns-copy-including-secondary))

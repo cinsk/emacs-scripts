@@ -82,7 +82,7 @@
 
 (defvar vc-status-assoc
       '((Git . (lambda (dir)
-                 (cond ((fboundp 'magit-status) 'magit-status)
+                 (cond ((fboundp 'magit-status) 'magit-helper)
                        ((fboundp 'egg-status) 'egg-status)
                        (t 'git-status))))
         (SVN . svn-status)
@@ -92,6 +92,11 @@
                                               "cvs status flags")))))
       "association list for (VC-SYSTEM . STATUS-FUNCTION)")
 
+
+(defun magit-helper (dir)
+  ;; If magit-status receives DIR, it ask the confirmation to create a
+  ;; directory, which is not what I want.
+  (magit-status))
 
 (defun vc-responsible-backend-noerror (file)
   (catch 'found
@@ -123,6 +128,10 @@
         (let ((func (vc-status-function (or fname dname))))
           (if func
               (cond ((symbolp func) (apply func (list dname)))
+                    ;; There is a reason that I didn't use
+                    ;; `call-interactively' here.  But I don't
+                    ;; remember now.  `cvs-update', for example, need
+                    ;; to get some parameter. <-- Is this the reason?
                     ((functionp func) (apply (apply func (list dname))
                                              (list dname)))
                     (t (message "vc-jump: can't handle %S type"
