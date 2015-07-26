@@ -13,6 +13,8 @@
   (require 'dired+))
 
 
+(global-set-key [(meta ?F)] 'find-dired)
+
 (defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
   "setq-if-equal set SYMBOL to NEW-VALUE iff it has OLD-VALUE.
 It compare the old value with OLD-VALUE using `equal' then
@@ -80,7 +82,8 @@ supplied one, a warning message is generated."
   ;; If the operating system is gnu or gnu/linux,
   ;; we'll use GNU ls(1) --time-style option
   (setq dired-listing-switches
-        (concat dired-listing-switches " --time-style=long-iso")))
+        (concat dired-listing-switches
+                "--group-directories-first --time-style=long-iso")))
 
 (setq-if-equal dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$"
                (concat dired-omit-files
