@@ -161,7 +161,100 @@ This function returns the name of the color theme in string."
 ;;         (setq next (car (caddr color-themes)))
 ;;       next)))
 
+(defun color-rgb-256 (color &optional frame)
+  (and (stringp color)
+       (setq color (color-values color frame)))
+  (let ((maxval (car (color-values "#ffffff"))))
+    (mapcar (lambda (x) (/ (* (float x) 255) maxval)) color)))
 
+(defun color-rgb-system (color256 &optional frame)
+  (let ((maxval (car (color-values "#ffffff"))))
+    (if (stringp color256)
+        (color-values color256 frame)
+      (mapcar (lambda (x) (/ (* (float x) maxval) 255)) color256))))
+
+(defun color-string (color &optional frame)
+  (if (stringp color)
+      color
+      (let* ((maxval (car (color-values "#ffffff")))
+             (norm (mapcar (lambda (x) (/ (* x 255) maxval)) color)))
+        (format "#%02x%02x%02x" (car norm) (cadr norm) (caddr norm)))))
+
+(defun color-brightness (color)
+  "Return the brightness (in YIQ color space) of COLOR, range [0, 256].
+
+COLOR should be a list of three integers, returned from `color-values'."
+  ;; http://www.w3.org/WAI/ER/WD-AERT/#color-contrast
+  (let* ((maxval (car (color-values "#ffffff")))
+         (cvs (mapcar (lambda (x) (/ (* x 255) (float maxval))) color))
+         (red (car cvs))
+         (green (cadr cvs))
+         (blue (caddr cvs)))
+    (round (/ (+ (* red 299) (* green 587) (* blue 114)) 1000.0))))
+
+(defun dark-theme-p (&optional frame)
+  "Return t if the background of the FRAME is dark color"
+  (< (color-brightness (face-background 'default nil 'default)) 125))
+
+
+;; I modified `list-colors-print' so that it will use black/white foreground
+;; depending on the brightness of the background color.  The origin was from
+;; Emacs 24.4.1, facemenu.el
+(defun list-colors-print (list &optional callback)
+  (let ((callback-fn
+         (if callback
+             `(lambda (button)
+                (funcall ,callback (button-get button 'color-name))))))
+    (dolist (color list)
+      (if (consp color)
+          (if (cdr color)
+              (setq color (sort color (lambda (a b)
+                                        (string< (downcase a)
+                                                 (downcase b))))))
+        (setq color (list color)))
+      (let* ((opoint (point))
+             (color-values (color-values (car color)))
+             (light-p (> (color-brightness color-values) 125))
+             ;; (light-p (>= (apply 'max color-values)
+             ;;           (* (car (color-values "white")) .5)))
+             )
+
+
+        (insert (car color))
+        (indent-to 22)
+        (put-text-property opoint (point) 'face `(:background ,(car color)
+                                                  :foreground ,(if light-p "black" "white")))
+        (put-text-property
+         (prog1 (point)
+           (insert " ")
+           ;; Insert all color names.
+           (insert (mapconcat 'identity color ",")))
+         (point)
+         'face (list :foreground (car color)))
+        (insert (propertize " " 'display '(space :align-to (- right 9))))
+        (insert " ")
+        (insert (propertize
+                 (apply 'format "#%02x%02x%02x"
+                        (mapcar (lambda (c) (lsh c -8))
+                                color-values))
+                 'mouse-face 'highlight
+                 'help-echo
+                 (let ((hsv (apply 'color-rgb-to-hsv
+                                   (color-name-to-rgb (car color)))))
+                   (format "H:%.2f S:%.2f V:%.2f"
+                           (nth 0 hsv) (nth 1 hsv) (nth 2 hsv)))))
+        (when callback
+          (make-text-button
+           opoint (point)
+           'follow-link t
+           'mouse-face (list :background (car color)
+                             :foreground (if light-p "black" "white"))
+           'color-name (car color)
+           'action callback-fn)))
+      (insert "\n"))
+    (goto-char (point-min))))
+
+
 (defun color-theme-apply (&optional arg)
   "Apply the color theme.
 
@@ -222,4 +315,5 @@ the color-theme function, it applies that color theme."
   (random t)
 
   ;; Select random color theme from my favorite list
-  (themes/select-random))
+  ;;(themes/select-random)
+  )
