@@ -13,7 +13,7 @@
   (require 'dired+))
 
 
-(global-set-key [(meta ?F)] 'find-dired)
+;; (global-set-key [(meta ?F)] 'find-dired)
 
 (defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
   "setq-if-equal set SYMBOL to NEW-VALUE iff it has OLD-VALUE.

@@ -6,7 +6,7 @@
 
 ;;
 ;; hungray Delete
-;; 
+;;
 (defun zap-to-nonspace ()
   "Delete all whitespace up to the next non-whitespace char."
   (interactive)
@@ -16,6 +16,10 @@
       (if (re-search-forward "[^ \n\t\v]" nil t)
           (setq end (min (1- (point)) end)))
       (kill-region start end))))
+
+;; If you just want to delete whitespaces, it may be better to call
+;; `just-once-space', which is normally bound to `M-<SPC>'.  This does
+;; not work with multiple lines, though.
 
 (defun delete-chars-forward-with-syntax ()
   "Delete forward all characters that have the same syntax element."

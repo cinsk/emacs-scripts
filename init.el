@@ -728,6 +728,11 @@ starting number."
 (uinit/load "dired"
   'dired)
 
+(global-set-key [(meta ?F) ?d return] 'find-dired)
+(global-set-key [(meta ?F) ?g ?d] 'find-grep-dired)
+(global-set-key [(meta ?F) ?g return] 'find-grep)
+(global-set-key [(meta ?F) ?r] 'rgrep)
+
 
 ;;;
 ;;; Launch view-mode when visiting other's file.
