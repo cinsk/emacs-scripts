@@ -158,6 +158,17 @@ See `fontutil/fontconfig' for the definition of SPECS."
      ("pt-18" . (((:family "PT Mono" :size 18)
                       (hangul :family "NanumGothicCoding" :size 22)
                       (symbol :family "Symbola" :size 20))))
+
+     ("hack-14" . (((:family "Hack" :size 14)
+                      (hangul :family "NanumGothicCoding" :size 16)
+                      (symbol :family "Symbola" :size 20))))
+     ("hack-16" . (((:family "Hack" :size 16)
+                      (hangul :family "NanumGothicCoding" :size 20)
+                      (symbol :family "Symbola" :size 20))))
+     ("hack-18" . (((:family "Hack" :size 18)
+                      (hangul :family "NanumGothicCoding" :size 22)
+                      (symbol :family "Symbola" :size 20))))
+
      ))
   "Font and Frame configuration list
 
