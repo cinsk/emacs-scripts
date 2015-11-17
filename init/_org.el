@@ -523,7 +523,8 @@ For example, add following line in your org file:
   (add-to-list 'org-file-apps
                '("\\.x?html?\\'" . (browse-url file))))
 
-(add-to-list 'org-drawers "COMMENT")
+(and (boundp 'org-drawers)
+     (add-to-list 'org-drawers "COMMENT"))
 
 ;;
 ;; See http://docs.mathjax.org/en/latest/configuration.html for more

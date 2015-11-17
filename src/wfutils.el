@@ -160,7 +160,7 @@ except it will select a frame rather than a window in general."
              (= (length (frame-list)) 1))
         (call-interactively switchfunc)
       (if (null arg)
-          (if (eq 1 (length (frame-list)))
+          (if (eq 1 (length (visible-frame-list)))
               (other-window 1)
             (other-frame 1))
         (let ((index (prefix-numeric-value arg)))

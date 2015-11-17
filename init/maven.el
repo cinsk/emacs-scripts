@@ -16,7 +16,7 @@
 
   (add-to-list 'compilation-error-regexp-alist-alist
                '(maven3 "^\\[ERROR\\] +\\(.+?\\):\\[\\([0-9]+\\),\\([0-9]+\\)\\].*"
-                       1 2 2)
+                       1 2 2))
   (add-to-list 'compilation-error-regexp-alist 'maven3)
   ;// "[ERROR] /Users/.../KafkaBridge.java:[71,52] ';' expected"
-))
+  )

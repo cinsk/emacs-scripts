@@ -165,9 +165,11 @@ supplied one, a warning message is generated."
 (defun cinsk/dired-jump (orig-fun &rest args)
   "Advice for dired-jump to reuse the existing `dired' buffer."
   (let ((dir (cinsk/buffer-directory))
-        (buf (car (cinsk/dired-buffers))))
+        (buf (car (cinsk/dired-buffers)))
+        (file buffer-file-name))
     (if (null buf)
         (apply orig-fun args)
       (switch-to-buffer buf)
-      (dired-goto-file dir))))
+      (dired-revert)
+      (dired-goto-file (or file dir)))))
 (advice-add 'dired-jump :around #'cinsk/dired-jump)
