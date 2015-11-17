@@ -1,0 +1,677 @@
+default namespace = "http://www.springframework.org/schema/context"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace beans = "http://www.springframework.org/schema/beans"
+namespace rng = "http://relaxng.org/ns/structure/1.0"
+namespace tool = "http://www.springframework.org/schema/tool"
+namespace xsd = "http://www.w3.org/2001/XMLSchema"
+
+org.springframework.www.schema.context.filterType &= empty
+org.springframework.www.schema.context.filterType &= empty
+org.springframework.www.schema.context.propertyLoading &= empty
+org.springframework.www.schema.context.propertyLoading &= empty
+org.springframework.www.schema.beans.identifiedType &= empty
+include "3.rnc" inherit = beans
+include "4.rnc" inherit = tool
+a:documentation [
+  "\x{a}" ~
+  "                \x{a}" ~
+  "        Defines the configuration elements for the Spring Framework's application\x{a}" ~
+  "        context support. Effects the activation of various configuration styles\x{a}" ~
+  "        for the containing Spring ApplicationContext.\x{a}" ~
+  "                \x{a}" ~
+  "        "
+]
+org.springframework.www.schema.context.propertyLoading &=
+  attribute location {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The location of the properties file to resolve placeholders against, as a Spring\x{a}" ~
+         '        resource location: a URL, a "classpath:" pseudo URL, or a relative file path.\x{a}' ~
+         "        Multiple locations may be specified, separated by commas. If neither location nor\x{a}" ~
+         "        properties-ref is specified, placeholders will be resolved against system properties.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute properties-ref {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The bean name of a Properties object that will be used for property substitution.\x{a}" ~
+         "        If neither location nor properties-ref is specified, placeholders will be resolved\x{a}" ~
+         "        against system properties.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute file-encoding {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Specifies the encoding to use for parsing properties files. Default is none,\x{a}" ~
+         "        using the java.util.Properties default encoding. Only applies to classic\x{a}" ~
+         "        properties files, not to XML files.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute order {
+    xsd:token
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Specifies the order for this placeholder configurer. If more than one is present\x{a}" ~
+         "        in a context, the order can be important since the first one to be match a\x{a}" ~
+         "        placeholder will win.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  [ a:defaultValue = "false" ]
+  attribute ignore-resource-not-found {
+    xsd:boolean
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Specifies if failure to find the property resource location should be ignored.\x{a}" ~
+         '        Default is "false", meaning that if there is no file in the location specified\x{a}' ~
+         "        an exception will be raised at runtime.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  [ a:defaultValue = "false" ]
+  attribute ignore-unresolvable {
+    xsd:boolean
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Specifies if failure to find the property value to replace a key should be ignored.\x{a}" ~
+         '        Default is "false", meaning that this placeholder configurer will raise an exception\x{a}' ~
+         '        if it cannot resolve a key. Set to "true" to allow the configurer to pass on the key\x{a}' ~
+         "        to any others in the context that have not yet visited the key in question.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  [ a:defaultValue = "false" ]
+  attribute local-override {
+    xsd:boolean
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Specifies whether local properties override properties from files.\x{a}" ~
+         '        Default is "false": Properties from files override local defaults.\x{a}' ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+start |= org.springframework.www.schema.context.property-placeholder
+org.springframework.www.schema.context.property-placeholder &=
+  [
+    a:documentation [
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "        Activates replacement of ${...} placeholders by registering a\x{a}" ~
+      "        PropertySourcesPlaceholderConfigurer within the application context. Properties will\x{a}" ~
+      "        be resolved against the specified properties file or Properties object -- so called\x{a}" ~
+      """        "local properties", if any, and against the Spring Environment's current set of\x{a}""" ~
+      "        PropertySources.\x{a}" ~
+      "\x{a}" ~
+      "        Note that as of Spring 3.1 the system-properties-mode attribute has been removed in\x{a}" ~
+      "        favor of the more flexible PropertySources mechanism. However, applications may\x{a}" ~
+      "        continue to use the 3.0 (and older) versions of the spring-context schema in order\x{a}" ~
+      "        to preserve system-properties-mode behavior. In this case, the traditional\x{a}" ~
+      "        PropertyPlaceholderConfigurer component will be registered instead of the newer\x{a}" ~
+      "        PropertySourcesPlaceholderConfigurer.\x{a}" ~
+      "\x{a}" ~
+      "        See ConfigurableEnvironment javadoc for more information on usage.\x{a}" ~
+      "                        \x{a}" ~
+      "                        \x{a}" ~
+      "                                "
+      tool:annotation [
+        "\x{a}" ~
+        "                                        "
+        tool:exports [
+          type =
+            "org.springframework.context.support.PropertySourcesPlaceholderConfigurer"
+        ]
+        "\x{a}" ~
+        "                                "
+      ]
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "                "
+    ]
+  ]
+  element property-placeholder {
+    org.springframework.www.schema.context.propertyLoading
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : ENVIRONMENT"
+       ],
+    
+    ## 
+    ##                                                         
+    ##         Controls how to resolve placeholders against system properties. As of Spring 3.1, this
+    ##         attribute value defaults to "ENVIRONMENT", indicating that resolution of placeholders
+    ##         against system properties is handled via PropertySourcesPlaceholderConfigurer and its
+    ##         delegation to the current Spring Environment object.
+    ## 
+    ##         For maximum backward compatibility, this attribute is preserved going forward with the
+    ##         3.1 version of the context schema, and any values other than the default "ENVIRONMENT"
+    ##         will cause a traditional PropertyPlaceholderConfigurer to be registered instead of the
+    ##         newer PropertySourcesPlaceholderConfigurer variant. In this case, the Spring Environment
+    ##         and its property sources are not interrogated when resolving placeholders. Users are
+    ##         encouraged to consider this attribute deprecated, and to take advantage of the
+    ##         Environment and PropertySource mechanisms. See ConfigurableEnvironment javadoc for examples.
+    ## 
+    ##         "ENVIRONMENT" indicates placeholders should be resolved against the current Environment and against any local properties;
+    ##         "NEVER" indicates placeholders should be resolved only against local properties and never against system properties;
+    ##         "FALLBACK" indicates placeholders should be resolved against any local properties and then against system properties;
+    ##         "OVERRIDE" indicates placeholders should be resolved first against system properties and then against any local properties;
+    ##                                                         
+    ##                                                 
+    [ a:defaultValue = "ENVIRONMENT" ]
+    attribute system-properties-mode {
+      "ENVIRONMENT" | "NEVER" | "FALLBACK" | "OVERRIDE"
+    }
+    >> a:documentation [ "\x{a}" ~ "            default value is : :" ],
+    
+    ## 
+    ##                                                         
+    ##         The separating character between the placeholder variable and the associated
+    ##         default value: by default, a ':' symbol.
+    ##                                 
+    ##                                                 
+    [ a:defaultValue = ":" ] attribute value-separator { text },
+    
+    ## 
+    ##                                                         
+    ##         A value that should be treated as 'null' when resolved as a placeholder value:
+    ##         e.g. "" (empty String) or "null". By default, no such null value is defined.
+    ##                                 
+    ##                                                 
+    attribute null-value { text }
+  }
+start |= org.springframework.www.schema.context.property-override
+org.springframework.www.schema.context.property-override &=
+  [
+    a:documentation [
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "        Activates pushing of override values into bean properties, based on configuration\x{a}" ~
+      "        lines of the following format: beanName.property=value\x{a}" ~
+      "                        \x{a}" ~
+      "                        \x{a}" ~
+      "                                "
+      tool:annotation [
+        "\x{a}" ~
+        "                                        "
+        tool:exports [
+          type =
+            "org.springframework.beans.factory.config.PropertyOverrideConfigurer"
+        ]
+        "\x{a}" ~
+        "                                "
+      ]
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "                "
+    ]
+  ]
+  element property-override {
+    org.springframework.www.schema.context.propertyLoading
+  }
+start |= org.springframework.www.schema.context.annotation-config
+org.springframework.www.schema.context.annotation-config &=
+  element annotation-config {
+    empty
+    >> a:documentation [
+         "\x{a}" ~
+         "                        \x{a}" ~
+         "        Activates various annotations to be detected in bean classes: Spring's @Required and\x{a}" ~
+         "        @Autowired, as well as JSR 250's @PostConstruct, @PreDestroy and @Resource (if available),\x{a}" ~
+         "        JAX-WS's @WebServiceRef (if available), EJB 3's @EJB (if available), and JPA's\x{a}" ~
+         "        @PersistenceContext and @PersistenceUnit (if available). Alternatively, you may\x{a}" ~
+         "        choose to activate the individual BeanPostProcessors for those annotations.\x{a}" ~
+         "\x{a}" ~
+         "        Note: This tag does not activate processing of Spring's @Transactional or EJB 3's\x{a}" ~
+         "        @TransactionAttribute annotation. Consider the use of the <tx:annotation-driven>\x{a}" ~
+         "        tag for that purpose.\x{a}" ~
+         "\x{a}" ~
+         "        See javadoc for org.springframework.context.annotation.AnnotationConfigApplicationContext\x{a}" ~
+         "        for information on code-based alternatives to bootstrapping annotation-driven support.\x{a}" ~
+         "                        \x{a}" ~
+         "                "
+       ]
+  }
+start |= org.springframework.www.schema.context.component-scan
+org.springframework.www.schema.context.component-scan &=
+  
+  ## 
+  ##                         
+  ##         Scans the classpath for annotated components that will be auto-registered as
+  ##         Spring beans. By default, the Spring-provided @Component, @Repository, @Service,
+  ##         @Controller, @RestController, @ControllerAdvice, and @Configuration stereotypes
+  ##         will be detected.
+  ## 
+  ##         Note: This tag implies the effects of the 'annotation-config' tag, activating @Required,
+  ##         @Autowired, @PostConstruct, @PreDestroy, @Resource, @PersistenceContext and @PersistenceUnit
+  ##         annotations in the component classes, which is usually desired for autodetected components
+  ##         (without external configuration). Turn off the 'annotation-config' attribute to deactivate
+  ##         this default behavior, for example in order to use custom BeanPostProcessor definitions
+  ##         for handling those annotations.
+  ## 
+  ##         Note: You may use placeholders in package paths, but only resolved against system
+  ##         properties (analogous to resource paths). A component scan results in new bean definitions
+  ##         being registered; Spring's PropertySourcesPlaceholderConfigurer will apply to those bean
+  ##         definitions just like to regular bean definitions, but it won't apply to the component
+  ##         scan settings themselves.
+  ## 
+  ##         See javadoc for org.springframework.context.annotation.ComponentScan for information
+  ##         on code-based alternatives to bootstrapping component-scanning.
+  ##                         
+  ##                 
+  element component-scan {
+    element include-filter {
+      org.springframework.www.schema.context.filterType
+      >> a:documentation [
+           "\x{a}" ~
+           "                                                \x{a}" ~
+           "        Controls which eligible types to include for component scanning.\x{a}" ~
+           "                                                        \x{a}" ~
+           "                                        "
+         ]
+    }*,
+    element exclude-filter {
+      org.springframework.www.schema.context.filterType
+      >> a:documentation [
+           "\x{a}" ~
+           "                                                \x{a}" ~
+           "        Controls which eligible types to exclude for component scanning.\x{a}" ~
+           "                                                \x{a}" ~
+           "                                        "
+         ]
+    }*,
+    attribute base-package {
+      xsd:string
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        The comma/semicolon/space/tab/linefeed-separated list of packages to scan for annotated components.\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    },
+    attribute resource-pattern {
+      xsd:string
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           '        Controls the class files eligible for component detection. Defaults to "**/*.class", the recommended value.\x{a}' ~
+           "        Consider use of the include-filter and exclude-filter elements for a more fine-grained approach.\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    }
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : true"
+       ],
+    [ a:defaultValue = "true" ]
+    attribute use-default-filters {
+      xsd:boolean
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        Indicates whether automatic detection of classes annotated with @Component, @Repository, @Service,\x{a}" ~
+           '        or @Controller should be enabled. Default is "true".\x{a}' ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    }
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : true"
+       ],
+    [ a:defaultValue = "true" ]
+    attribute annotation-config {
+      xsd:boolean
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           '        Indicates whether the implicit annotation post-processors should be enabled. Default is "true".\x{a}' ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    },
+    attribute name-generator {
+      xsd:string
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        The fully-qualified class name of the BeanNameGenerator to be used for naming detected components.\x{a}" ~
+           "                                        \x{a}" ~
+           "                                        \x{a}" ~
+           "                                                "
+           tool:annotation [
+             "\x{a}" ~
+             "                                                        "
+             tool:expected-type [ type = "java.lang.Class" ]
+             "\x{a}" ~
+             "                                                        "
+             tool:assignable-to [
+               type =
+                 "org.springframework.beans.factory.support.BeanNameGenerator"
+             ]
+             "\x{a}" ~
+             "                                                "
+           ]
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    },
+    attribute scope-resolver {
+      xsd:string
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        The fully-qualified class name of the ScopeMetadataResolver to be used for resolving the scope of\x{a}" ~
+           "        detected components.\x{a}" ~
+           "                                        \x{a}" ~
+           "                                        \x{a}" ~
+           "                                                "
+           tool:annotation [
+             "\x{a}" ~
+             "                                                        "
+             tool:expected-type [ type = "java.lang.Class" ]
+             "\x{a}" ~
+             "                                                        "
+             tool:assignable-to [
+               type =
+                 "org.springframework.context.annotation.ScopeMetadataResolver"
+             ]
+             "\x{a}" ~
+             "                                                "
+           ]
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    },
+    
+    ## 
+    ##                                         
+    ##         Indicates whether proxies should be generated for detected components, which may be necessary
+    ##         when using scopes in a proxy-style fashion. Default is to generate no such proxies.
+    ##                                         
+    ##                                 
+    attribute scoped-proxy { "no" | "interfaces" | "targetClass" }
+  }
+start |= org.springframework.www.schema.context.load-time-weaver
+org.springframework.www.schema.context.load-time-weaver &=
+  [
+    a:documentation [
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "        Activates a Spring LoadTimeWeaver for this application context, available as\x{a}" ~
+      '        a bean with the name "loadTimeWeaver". Any bean that implements the\x{a}' ~
+      "        LoadTimeWeaverAware interface will then receive the LoadTimeWeaver reference\x{a}" ~
+      "        automatically; for example, Spring's JPA bootstrap support.\x{a}" ~
+      "\x{a}" ~
+      "        The default weaver is determined automatically: see DefaultContextLoadTimeWeaver's\x{a}" ~
+      "        javadoc for details.\x{a}" ~
+      "\x{a}" ~
+      "        The activation of AspectJ load-time weaving is specified via a simple flag\x{a}" ~
+      "        (the 'aspectj-weaving' attribute), with the AspectJ class transformer\x{a}" ~
+      "        registered through Spring's LoadTimeWeaver. AspectJ weaving will be activated\x{a}" ~
+      '        by default if a "META-INF/aop.xml" resource is present in the classpath.\x{a}' ~
+      "\x{a}" ~
+      "        This also activates the current application context for applying dependency\x{a}" ~
+      "        injection to non-managed classes that are instantiated outside of the Spring\x{a}" ~
+      "        bean factory (typically classes annotated with the @Configurable annotation).\x{a}" ~
+      "        This will only happen if the AnnotationBeanConfigurerAspect is on the classpath\x{a}" ~
+      '        (i.e. spring-aspects.jar), effectively activating "spring-configured" by default.\x{a}' ~
+      "\x{a}" ~
+      "        See javadoc for org.springframework.context.annotation.EnableLoadTimeWeaving\x{a}" ~
+      "        for information on code-based alternatives to bootstrapping load-time weaving support.\x{a}" ~
+      "                        \x{a}" ~
+      "                        \x{a}" ~
+      "                                "
+      tool:annotation [
+        "\x{a}" ~
+        "                                        "
+        tool:exports [
+          type =
+            "org.springframework.instrument.classloading.LoadTimeWeaver"
+        ]
+        "\x{a}" ~
+        "                                "
+      ]
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "                "
+    ]
+  ]
+  element load-time-weaver {
+    attribute weaver-class {
+      xsd:string
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        The fully-qualified classname of the LoadTimeWeaver that is to be activated.\x{a}" ~
+           "                                        \x{a}" ~
+           "                                        \x{a}" ~
+           "                                                "
+           tool:annotation [
+             "\x{a}" ~
+             "                                                        "
+             tool:expected-type [ type = "java.lang.Class" ]
+             "\x{a}" ~
+             "                                                        "
+             tool:assignable-to [
+               type =
+                 "org.springframework.instrument.classloading.LoadTimeWeaver"
+             ]
+             "\x{a}" ~
+             "                                                "
+           ]
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    }
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : autodetect"
+       ],
+    [ a:defaultValue = "autodetect" ]
+    attribute aspectj-weaving {
+      
+      ## 
+      ##                                                                 
+      ##         Switches Spring-based AspectJ load-time weaving on.
+      ##                                                                 
+      ##                                                         
+      "on"
+      | 
+        ## 
+        ##                                                                 
+        ##         Switches Spring-based AspectJ load-time weaving off.
+        ##                                                                 
+        ##                                                         
+        "off"
+      | 
+        ## 
+        ##                                                                 
+        ##         Switches AspectJ load-time weaving on if a "META-INF/aop.xml" resource
+        ##         is present in the classpath. If there is no such resource, then AspectJ
+        ##         load-time weaving will be switched off.
+        ##                                                                 
+        ##                                                         
+        "autodetect"
+    }
+  }
+start |= org.springframework.www.schema.context.spring-configured
+org.springframework.www.schema.context.spring-configured &=
+  
+  ## 
+  ##                         
+  ##         Signals the current application context to apply dependency injection
+  ##         to non-managed classes that are instantiated outside of the Spring bean
+  ##         factory (typically classes annotated with the @Configurable annotation).
+  ##                         
+  ##                 
+  element spring-configured { xsd:string }
+start |= org.springframework.www.schema.context.mbean-export
+org.springframework.www.schema.context.mbean-export &=
+  [
+    a:documentation [
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "        Activates default exporting of MBeans by detecting standard MBeans in the Spring\x{a}" ~
+      "        context as well as @ManagedResource annotations on Spring-defined beans.\x{a}" ~
+      "\x{a}" ~
+      '        The resulting MBeanExporter bean is defined under the name "mbeanExporter".\x{a}' ~
+      "        Alternatively, consider defining a custom AnnotationMBeanExporter bean explicitly.\x{a}" ~
+      "                        \x{a}" ~
+      "                        \x{a}" ~
+      "                                "
+      tool:annotation [
+        "\x{a}" ~
+        "                                        "
+        tool:exports [
+          type =
+            "org.springframework.jmx.export.annotation.AnnotationMBeanExporter"
+        ]
+        "\x{a}" ~
+        "                                "
+      ]
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "                "
+    ]
+  ]
+  element mbean-export {
+    attribute default-domain {
+      xsd:string
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        The default domain to use when generating JMX ObjectNames.\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    },
+    attribute server {
+      xsd:string
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        The bean name of the MBeanServer to which MBeans should be exported.\x{a}" ~
+           "        Default is to use the platform's default MBeanServer (autodetecting\x{a}" ~
+           "        WebLogic, WebSphere and the JVM's platform MBeanServer).\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    },
+    
+    ## 
+    ##                                         
+    ##         The registration behavior, indicating how to deal with existing MBeans
+    ##         of the same name: fail with an exception, ignore and keep the existing
+    ##         MBean, or replace the existing one with the new MBean.
+    ## 
+    ##         Default is to fail with an exception.
+    ##                                         
+    ##                                 
+    attribute registration {
+      "failOnExisting" | "ignoreExisting" | "replaceExisting"
+    }
+  }
+start |= org.springframework.www.schema.context.mbean-server
+org.springframework.www.schema.context.mbean-server &=
+  [
+    a:documentation [
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "        Exposes a default MBeanServer for the current platform.\x{a}" ~
+      "        Autodetects WebLogic, WebSphere and the JVM's platform MBeanServer.\x{a}" ~
+      "\x{a}" ~
+      '        The default bean name for the exposed MBeanServer is "mbeanServer".\x{a}' ~
+      '        This may be customized through specifying the "id" attribute.\x{a}' ~
+      "                        \x{a}" ~
+      "                        \x{a}" ~
+      "                                "
+      tool:annotation [
+        "\x{a}" ~
+        "                                        "
+        tool:exports [ type = "javax.management.MBeanServer" ]
+        "\x{a}" ~
+        "                                "
+      ]
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "                "
+    ]
+  ]
+  element mbean-server {
+    org.springframework.www.schema.beans.identifiedType,
+    attribute agent-id {
+      xsd:string
+      >> a:documentation [
+           "\x{a}" ~
+           "                                                        \x{a}" ~
+           "        The agent id of the target MBeanServer, if any.\x{a}" ~
+           "                                                        \x{a}" ~
+           "                                                "
+         ]
+    }
+  }
+org.springframework.www.schema.context.filterType &=
+  
+  ## 
+  ##                                 
+  ##     Controls the type of filtering to apply to the expression.
+  ## 
+  ##     "annotation" indicates an annotation to be present at the type level in target components;
+  ##     "assignable" indicates a class (or interface) that the target components are assignable to (extend/implement);
+  ##     "aspectj" indicates an AspectJ type pattern expression to be matched by the target components;
+  ##     "regex" indicates a regex pattern to be matched by the target components' class names;
+  ##     "custom" indicates a custom implementation of the org.springframework.core.type.TypeFilter interface.
+  ## 
+  ##     Note: This attribute will not be inherited by child bean definitions.
+  ##     Hence, it needs to be specified per concrete bean definition.
+  ##                 
+  ##                         
+  attribute type {
+    "annotation" | "assignable" | "aspectj" | "regex" | "custom"
+  },
+  attribute expression {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         '    Indicates the filter expression, the type of which is indicated by "type".\x{a}' ~
+         "                \x{a}" ~
+         "                        "
+       ]
+  }

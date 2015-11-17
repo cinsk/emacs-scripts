@@ -1,0 +1,352 @@
+default namespace =
+  "http://www.springframework.org/schema/data/repository"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace context = "http://www.springframework.org/schema/context"
+namespace rng = "http://relaxng.org/ns/structure/1.0"
+namespace tool = "http://www.springframework.org/schema/tool"
+namespace xsd = "http://www.w3.org/2001/XMLSchema"
+
+org.springframework.www.schema.context.filterType &= empty
+org.springframework.www.schema.context.filterType &= empty
+org.springframework.www.schema.data.repository.unmarshallerRefType &=
+  empty
+org.springframework.www.schema.data.repository.objectMapper2Type &=
+  empty
+org.springframework.www.schema.data.repository.query-strategy &= empty
+org.springframework.www.schema.data.repository.classType &= empty
+org.springframework.www.schema.data.repository.classType &= empty
+org.springframework.www.schema.data.repository.transactionManagerRef &=
+  empty
+org.springframework.www.schema.data.repository.repository-attributes &=
+  empty
+org.springframework.www.schema.data.repository.populator &= empty
+org.springframework.www.schema.data.repository.populator &= empty
+include "8.rnc" inherit = tool
+include "7.rnc" inherit = context
+org.springframework.www.schema.data.repository.repositories &=
+  element include-filter {
+    org.springframework.www.schema.context.filterType
+    >> a:documentation [
+         "\x{a}" ~
+         "                                        \x{a}" ~
+         "   Controls which eligible types to include for component scanning.\x{a}" ~
+         "                           \x{a}" ~
+         "                                "
+       ]
+  }*,
+  element exclude-filter {
+    org.springframework.www.schema.context.filterType
+    >> a:documentation [
+         "\x{a}" ~
+         "                                        \x{a}" ~
+         "   Controls which eligible types to exclude for component scanning.\x{a}" ~
+         "                       \x{a}" ~
+         "                                "
+       ]
+  }*,
+  attribute base-package {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "                                Defines the base package where the DAO interface will be tried to be detected.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute named-queries-location {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "                                Defines the location to look for a Properties file containing externally defined queries.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  [ a:defaultValue = "false" ]
+  attribute consider-nested-repositories {
+    xsd:boolean
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "                                Controls whether nested repository interface definitions should be considered.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+org.springframework.www.schema.data.repository.populator &=
+  attribute locations {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "                                        Where to find the files to read the objects from the repository shall be populated with.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute id { xsd:string }
+# XML (Unmarshaller) initializer
+start |=
+  org.springframework.www.schema.data.repository.unmarshaller-populator
+org.springframework.www.schema.data.repository.unmarshaller-populator &=
+  element unmarshaller-populator {
+    org.springframework.www.schema.data.repository.populator,
+    attribute unmarshaller-ref {
+      org.springframework.www.schema.data.repository.unmarshallerRefType
+    }
+  }
+[
+  a:documentation [
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                                "
+    tool:expected-type [ type = "org.springframework.oxm.Unmarshaller" ]
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                "
+  ]
+]
+org.springframework.www.schema.data.repository.unmarshallerRefType &=
+  xsd:string
+# JSON (Jackson2) initializer
+start |=
+  org.springframework.www.schema.data.repository.jackson2-populator
+org.springframework.www.schema.data.repository.jackson2-populator &=
+  element jackson2-populator {
+    org.springframework.www.schema.data.repository.populator,
+    attribute object-mapper-ref {
+      org.springframework.www.schema.data.repository.objectMapper2Type
+    }
+  }
+[
+  a:documentation [
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                                "
+    tool:expected-type [
+      type = "com.fasterxml.jackson.databind.ObjectMapper"
+    ]
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                "
+  ]
+]
+org.springframework.www.schema.data.repository.objectMapper2Type &=
+  xsd:string
+org.springframework.www.schema.data.repository.repository-attributes &=
+  attribute repository-impl-postfix { xsd:string },
+  attribute query-lookup-strategy {
+    org.springframework.www.schema.data.repository.query-strategy
+  },
+  attribute factory-class {
+    org.springframework.www.schema.data.repository.classType
+    >> a:documentation [
+         "\x{a}" ~
+         "                                Deprecated as of version 1.11. Configure a dedicated base-class instead.\x{a}" ~
+         "                        "
+       ]
+  },
+  attribute base-class {
+    org.springframework.www.schema.data.repository.classType
+  }
+org.springframework.www.schema.data.repository.transactional-repository-attributes &=
+  org.springframework.www.schema.data.repository.repository-attributes,
+  attribute transaction-manager-ref {
+    org.springframework.www.schema.data.repository.transactionManagerRef
+  }
+org.springframework.www.schema.data.repository.auditing-attributes &=
+  [
+    a:documentation [
+      "\x{a}" ~
+      "                                \x{a}" ~
+      "                                References a bean of type AuditorAware to represent the current principal.\x{a}" ~
+      "                                \x{a}" ~
+      "                                \x{a}" ~
+      "                                        "
+      tool:annotation [
+        kind = "ref"
+        "\x{a}" ~
+        "                                                "
+        tool:assignable-to [
+          type = "org.springframework.data.domain.AuditorAware"
+        ]
+        "\x{a}" ~
+        "                                        "
+      ]
+      "\x{a}" ~
+      "                                \x{a}" ~
+      "                        "
+    ]
+  ]
+  attribute auditor-aware-ref { text }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : true"
+     ],
+  [ a:defaultValue = "true" ]
+  attribute set-dates {
+    xsd:boolean
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "                                Configures whether the creation and modification dates are set.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  [
+    a:documentation [
+      "\x{a}" ~
+      "                                \x{a}" ~
+      "                                Configures a DateTimeProvider that allows customizing which DateTime shall be used for setting\x{a}" ~
+      "                                creation and modification dates.\x{a}" ~
+      "                                \x{a}" ~
+      "                                \x{a}" ~
+      "                                        "
+      tool:annotation [
+        kind = "ref"
+        "\x{a}" ~
+        "                                                "
+        tool:assignable-to [
+          type =
+            "org.springframework.data.jpa.domain.support.DateTimeProvider"
+        ]
+        "\x{a}" ~
+        "                                        "
+      ]
+      "\x{a}" ~
+      "                                \x{a}" ~
+      "                        "
+    ]
+  ]
+  attribute date-time-provider-ref { text }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : true"
+     ],
+  [ a:defaultValue = "true" ]
+  attribute modify-on-creation {
+    xsd:boolean
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "                                Configures whether the entity shall be marked as modified on creation.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+
+## 
+##                         
+##                         Determines the way query methods are being executed.
+##                         
+##                 
+org.springframework.www.schema.data.repository.query-strategy &=
+  
+  ## 
+  ##                                         
+  ##                                         Tries to find a named query but creates a custom query if
+  ##                                         none can be found. (Default)
+  ##                                         
+  ##                                 
+  "create-if-not-found"
+  | 
+    ## 
+    ##                                         
+    ##                                         Creates a query from the query method's name.
+    ##                                         
+    ##                                 
+    "create"
+  | 
+    ## 
+    ##                                         
+    ##                                         Uses a declared query to execute. Fails if no
+    ##                                         declared query (either through named query or through @Query)
+    ##                                         is defined.
+    ##                                         
+    ##                                 
+    "use-declared-query"
+[
+  a:documentation [
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                                "
+    tool:annotation [ kind = "ref" ]
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                "
+  ]
+]
+org.springframework.www.schema.data.repository.customImplementationReference &=
+  xsd:string
+[
+  a:documentation [
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                                "
+    tool:annotation [
+      kind = "ref"
+      "\x{a}" ~
+      "                                        "
+      tool:assignable-to [
+        type =
+          "org.springframework.orm.jpa.AbstractEntityManagerFactoryBean"
+      ]
+      "\x{a}" ~
+      "                                "
+    ]
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                "
+  ]
+]
+org.springframework.www.schema.data.repository.entityManagerFactoryRef &=
+  xsd:string
+[
+  a:documentation [
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                                "
+    tool:annotation [
+      kind = "ref"
+      "\x{a}" ~
+      "                                        "
+      tool:assignable-to [
+        type =
+          "org.springframework.transaction.PlatformTransactionManager"
+      ]
+      "\x{a}" ~
+      "                                "
+    ]
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                "
+  ]
+]
+org.springframework.www.schema.data.repository.transactionManagerRef &=
+  xsd:string
+[
+  a:documentation [
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                                "
+    tool:annotation [
+      kind = "direct"
+      "\x{a}" ~
+      "                                        "
+      tool:expected-type [ type = "java.lang.Class" ]
+      "\x{a}" ~
+      "                                "
+    ]
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                "
+  ]
+]
+org.springframework.www.schema.data.repository.classType &= xsd:string

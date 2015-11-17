@@ -4,4 +4,56 @@
   <uri resource="pom.xml" typeId="Maven"/>
   <namespace ns="http://maven.apache.org/POM/4.0.0" typeId="Maven"/>
 
+  <uri pattern="" typeId="[genrnc-1]"/>
+  <namespace ns="http://www.springframework.org/schema/beans" typeId="[genrnc-1]"/>
+  <documentElement prefix="ns1" localName="genrnc-1" typeId="[genrnc-1]"/>
+  <typeId id="[genrnc-1]" uri="1.rnc"/>
+  <uri pattern="" typeId="spring-beans"/>
+  <namespace ns="http://www.springframework.org/schema/beans" typeId="spring-beans"/>
+  <documentElement prefix="ns1" localName="spring-beans" typeId="spring-beans"/>
+  <typeId id="spring-beans" uri="1.rnc"/>
+  <uri pattern="" typeId="[genrnc-2]"/>
+  <namespace ns="http://www.springframework.org/schema/aop" typeId="[genrnc-2]"/>
+  <documentElement prefix="" localName="genrnc-2" typeId="[genrnc-2]"/>
+  <typeId id="[genrnc-2]" uri="2.rnc"/>
+  <uri pattern="" typeId="spring-aop"/>
+  <namespace ns="http://www.springframework.org/schema/aop" typeId="spring-aop"/>
+  <documentElement prefix="" localName="spring-aop" typeId="spring-aop"/>
+  <typeId id="spring-aop" uri="2.rnc"/>
+  <uri pattern="" typeId="[genrnc-5]"/>
+  <namespace ns="http://www.springframework.org/schema/jdbc" typeId="[genrnc-5]"/>
+  <documentElement prefix="" localName="genrnc-5" typeId="[genrnc-5]"/>
+  <typeId id="[genrnc-5]" uri="5.rnc"/>
+  <uri pattern="" typeId="spring-jdbc"/>
+  <namespace ns="http://www.springframework.org/schema/jdbc" typeId="spring-jdbc"/>
+  <documentElement prefix="" localName="spring-jdbc" typeId="spring-jdbc"/>
+  <typeId id="spring-jdbc" uri="5.rnc"/>
+  <uri pattern="" typeId="[genrnc-3]"/>
+  <namespace ns="http://www.springframework.org/schema/beans" typeId="[genrnc-3]"/>
+  <documentElement prefix="" localName="genrnc-3" typeId="[genrnc-3]"/>
+  <typeId id="[genrnc-3]" uri="3.rnc"/>
+  <uri pattern="" typeId="[genrnc-4]"/>
+  <namespace ns="http://www.springframework.org/schema/tool" typeId="[genrnc-4]"/>
+  <documentElement prefix="tool" localName="genrnc-4" typeId="[genrnc-4]"/>
+  <typeId id="[genrnc-4]" uri="4.rnc"/>
+  <uri pattern="" typeId="[genrnc-7]"/>
+  <namespace ns="http://www.springframework.org/schema/context" typeId="[genrnc-7]"/>
+  <documentElement prefix="context" localName="genrnc-7" typeId="[genrnc-7]"/>
+  <typeId id="[genrnc-7]" uri="7.rnc"/>
+  <uri pattern="" typeId="[genrnc-8]"/>
+  <namespace ns="http://www.springframework.org/schema/tool" typeId="[genrnc-8]"/>
+  <documentElement prefix="tool" localName="genrnc-8" typeId="[genrnc-8]"/>
+  <typeId id="[genrnc-8]" uri="8.rnc"/>
+  <uri pattern="" typeId="spring-tool"/>
+  <namespace ns="http://www.springframework.org/schema/tool" typeId="spring-tool"/>
+  <documentElement prefix="tool" localName="spring-tool" typeId="spring-tool"/>
+  <typeId id="spring-tool" uri="8.rnc"/>
+  <uri pattern="" typeId="[genrnc-6]"/>
+  <namespace ns="http://www.springframework.org/schema/data/repository" typeId="[genrnc-6]"/>
+  <documentElement prefix="" localName="genrnc-6" typeId="[genrnc-6]"/>
+  <typeId id="[genrnc-6]" uri="6.rnc"/>
+  <uri pattern="" typeId="spring-repository"/>
+  <namespace ns="http://www.springframework.org/schema/data/repository" typeId="spring-repository"/>
+  <documentElement prefix="" localName="spring-repository" typeId="spring-repository"/>
+  <typeId id="spring-repository" uri="6.rnc"/>
 </locatingRules>

@@ -1,0 +1,128 @@
+default namespace = "http://www.springframework.org/schema/tool"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace rng = "http://relaxng.org/ns/structure/1.0"
+namespace xsd = "http://www.w3.org/2001/XMLSchema"
+
+org.springframework.www.schema.tool.typedParameterType &= empty
+org.springframework.www.schema.tool.assignableToType &= empty
+org.springframework.www.schema.tool.exportsType &= empty
+org.springframework.www.schema.tool.registersScopeType &= empty
+org.springframework.www.schema.tool.expectedMethodType &= empty
+a:documentation [
+  "\x{a}" ~
+  "                \x{a}" ~
+  "        Defines the tool support annotations for Spring's configuration namespaces.\x{a}" ~
+  "        Used in other namespace XSD files; not intended for direct use in config files.\x{a}" ~
+  "                \x{a}" ~
+  "        "
+]
+start |= org.springframework.www.schema.tool.annotation
+org.springframework.www.schema.tool.annotation &=
+  element annotation {
+    element expected-type {
+      org.springframework.www.schema.tool.typedParameterType
+    }?,
+    element assignable-to {
+      org.springframework.www.schema.tool.assignableToType
+    }?,
+    element exports {
+      org.springframework.www.schema.tool.exportsType
+    }*,
+    element registers-scope {
+      org.springframework.www.schema.tool.registersScopeType
+    }*,
+    (element expected-method {
+       org.springframework.www.schema.tool.expectedMethodType
+     }*)
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : direct"
+       ],
+    [ a:defaultValue = "direct" ] attribute kind { "ref" | "direct" }
+  }
+org.springframework.www.schema.tool.typedParameterType &=
+  attribute type { xsd:string }
+org.springframework.www.schema.tool.assignableToType &=
+  attribute type { xsd:string }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : both"
+     ],
+  [ a:defaultValue = "both" ]
+  attribute restriction { "both" | "interface-only" | "class-only" }
+org.springframework.www.schema.tool.expectedMethodType &=
+  attribute type {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Defines an XPath query that can be executed against the node annotated with this\x{a}" ~
+         "        type to determine the class for which the this method is valid\x{a}" ~
+         "                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute type-ref {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Defines an XPath query that can be executed against the node annotated with this\x{a}" ~
+         "        type to determine a referenced bean (by id or alias) for which the given method is valid\x{a}" ~
+         "                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute expression {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Defines an AspectJ method execution pointcut expressions that matches valid methods\x{a}" ~
+         "                \x{a}" ~
+         "                        "
+       ]
+  }
+
+## 
+##                         
+##         Indicates that an annotated type exports an application visible component.
+##                 
+##                 
+org.springframework.www.schema.tool.exportsType &=
+  attribute type {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The type of the exported component. May be null if the type is not known until runtime.\x{a}" ~
+         "                \x{a}" ~
+         "                        "
+       ]
+  }
+  >> a:documentation [ "\x{a}" ~ "            default value is : @id" ],
+  [ a:defaultValue = "@id" ]
+  attribute identifier {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Defines an XPath query that can be executed against the node annotated with this\x{a}" ~
+         "        type to determine the identifier of any exported component.\x{a}" ~
+         "                \x{a}" ~
+         "                        "
+       ]
+  }
+org.springframework.www.schema.tool.registersScopeType &=
+  attribute name {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         '        Defines the name of a custom bean scope that the annotated type registers, e.g. "conversation".\x{a}' ~
+         '        Such a scope will be available in addition to the standard "singleton" and "prototype" scopes\x{a}' ~
+         '        (plus "request", "session" and "globalSession" in a web application environment).\x{a}' ~
+         "                \x{a}" ~
+         "                        "
+       ]
+  }

@@ -1,0 +1,571 @@
+default namespace = "http://www.springframework.org/schema/aop"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace ns1 = "http://www.springframework.org/schema/beans"
+namespace rng = "http://relaxng.org/ns/structure/1.0"
+namespace tool = "http://www.springframework.org/schema/tool"
+namespace xsd = "http://www.w3.org/2001/XMLSchema"
+
+org.springframework.www.schema.aop.pointcutType &= empty
+org.springframework.www.schema.aop.advisorType &= empty
+org.springframework.www.schema.aop.aspectType &= empty
+org.springframework.www.schema.aop.includeType &= empty
+org.springframework.www.schema.aop.pointcutType &= empty
+org.springframework.www.schema.aop.declareParentsType &= empty
+org.springframework.www.schema.aop.basicAdviceType &= empty
+org.springframework.www.schema.aop.basicAdviceType &= empty
+org.springframework.www.schema.aop.afterReturningAdviceType &= empty
+org.springframework.www.schema.aop.afterThrowingAdviceType &= empty
+org.springframework.www.schema.aop.basicAdviceType &= empty
+org.springframework.www.schema.aop.pointcutRefType &= empty
+org.springframework.www.schema.aop.pointcutRefType &= empty
+org.springframework.www.schema.aop.basicAdviceType &= empty
+org.springframework.www.schema.aop.basicAdviceType &= empty
+include "3.rnc" inherit = ns1
+include "4.rnc" inherit = tool
+a:documentation [
+  "\x{a}" ~
+  "                \x{a}" ~
+  "        Defines the configuration elements for the Spring Framework's AOP support.\x{a}" ~
+  "                \x{a}" ~
+  "        "
+]
+start |= org.springframework.www.schema.aop.config
+org.springframework.www.schema.aop.config &=
+  
+  ## 
+  ##                         
+  ##         A section (compartmentalization) of AOP-specific configuration (including
+  ##         aspects, pointcuts, etc).
+  ##                         
+  ##                 
+  element config {
+    element pointcut {
+      org.springframework.www.schema.aop.pointcutType
+      >> a:documentation [
+           "\x{a}" ~
+           "                                                \x{a}" ~
+           "        A named pointcut definition.\x{a}" ~
+           "                                                \x{a}" ~
+           "                                        "
+         ]
+    }*,
+    element advisor {
+      org.springframework.www.schema.aop.advisorType
+      >> a:documentation [
+           "\x{a}" ~
+           "                                                \x{a}" ~
+           "        A named advisor definition.\x{a}" ~
+           "                                                \x{a}" ~
+           "                                        "
+         ]
+    }*,
+    (element aspect {
+       org.springframework.www.schema.aop.aspectType
+       >> a:documentation [
+            "\x{a}" ~
+            "                                                \x{a}" ~
+            "        A named aspect definition.\x{a}" ~
+            "                                                \x{a}" ~
+            "                                        "
+          ]
+     }*)
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : false"
+       ],
+    [ a:defaultValue = "false" ]
+    attribute proxy-target-class {
+      xsd:boolean
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        Are class-based (CGLIB) proxies to be created? By default, standard\x{a}" ~
+           "        Java interface-based proxies are created.\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    }
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : false"
+       ],
+    [ a:defaultValue = "false" ]
+    attribute expose-proxy {
+      xsd:boolean
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        Indicate that the proxy should be exposed by the AOP framework as a\x{a}" ~
+           "        ThreadLocal for retrieval via the AopContext class. Off by default,\x{a}" ~
+           "        i.e. no guarantees that AopContext access will work.\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    }
+  }
+start |= org.springframework.www.schema.aop.aspectj-autoproxy
+org.springframework.www.schema.aop.aspectj-autoproxy &=
+  
+  ## 
+  ##                         
+  ##         Enables the use of the @AspectJ style of Spring AOP.
+  ## 
+  ##         See org.springframework.context.annotation.EnableAspectJAutoProxy Javadoc
+  ##         for information on code-based alternatives to this XML element.
+  ##                         
+  ##                 
+  element aspectj-autoproxy {
+    (element include {
+       org.springframework.www.schema.aop.includeType
+       >> a:documentation [
+            "\x{a}" ~
+            "                                                \x{a}" ~
+            "        Indicates that only @AspectJ beans with names matched by the (regex)\x{a}" ~
+            "        pattern will be considered as defining aspects to use for Spring autoproxying.\x{a}" ~
+            "                                                \x{a}" ~
+            "                                        "
+          ]
+     }*)
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : false"
+       ],
+    [ a:defaultValue = "false" ]
+    attribute proxy-target-class {
+      xsd:boolean
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        Are class-based (CGLIB) proxies to be created? By default, standard\x{a}" ~
+           "        Java interface-based proxies are created.\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    }
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : false"
+       ],
+    [ a:defaultValue = "false" ]
+    attribute expose-proxy {
+      xsd:boolean
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        Indicate that the proxy should be exposed by the AOP framework as a\x{a}" ~
+           "        ThreadLocal for retrieval via the AopContext class. Off by default,\x{a}" ~
+           "        i.e. no guarantees that AopContext access will work.\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    }
+  }
+start |= org.springframework.www.schema.aop.scoped-proxy
+org.springframework.www.schema.aop.scoped-proxy &=
+  
+  ## 
+  ##                                 
+  ##         Marks a bean definition as being a scoped proxy.
+  ## 
+  ##         A bean marked as such will be exposed via a proxy, with the 'real'
+  ##         bean instance being retrieved from some other source (such as a
+  ##         HttpSession) as and when required.
+  ##                                 
+  ##                         
+  
+  ## 
+  ##             default value is : true
+  element scoped-proxy {
+    [ a:defaultValue = "true" ]
+    attribute proxy-target-class {
+      xsd:boolean
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "        Are class-based (CGLIB) proxies to be created? This is the default; in order to\x{a}" ~
+           '        switch to standard Java interface-based proxies, turn this flag to "false".\x{a}' ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    }
+  }
+org.springframework.www.schema.aop.aspectType &=
+  (element pointcut {
+     org.springframework.www.schema.aop.pointcutType
+     >> a:documentation [
+          "\x{a}" ~
+          "                                        \x{a}" ~
+          "        A named pointcut definition.\x{a}" ~
+          "                                        \x{a}" ~
+          "                                "
+        ]
+   }
+   | element declare-parents {
+       org.springframework.www.schema.aop.declareParentsType
+       >> a:documentation [
+            "\x{a}" ~
+            "                                        \x{a}" ~
+            "        Allows this aspect to introduce additional interfaces that the advised\x{a}" ~
+            "        object will transparently implement.\x{a}" ~
+            "                                        \x{a}" ~
+            "                                "
+          ]
+     }
+   | element before {
+       org.springframework.www.schema.aop.basicAdviceType
+       >> a:documentation [
+            "\x{a}" ~
+            "                                        \x{a}" ~
+            "        A before advice definition.\x{a}" ~
+            "                                        \x{a}" ~
+            "                                "
+          ]
+     }
+   | element after {
+       org.springframework.www.schema.aop.basicAdviceType
+       >> a:documentation [
+            "\x{a}" ~
+            "                                        \x{a}" ~
+            "        An after advice definition.\x{a}" ~
+            "                                        \x{a}" ~
+            "                                "
+          ]
+     }
+   | element after-returning {
+       org.springframework.www.schema.aop.afterReturningAdviceType
+       >> a:documentation [
+            "\x{a}" ~
+            "                                        \x{a}" ~
+            "        An after-returning advice definition.\x{a}" ~
+            "                                        \x{a}" ~
+            "                                "
+          ]
+     }
+   | element after-throwing {
+       org.springframework.www.schema.aop.afterThrowingAdviceType
+       >> a:documentation [
+            "\x{a}" ~
+            "                                        \x{a}" ~
+            "        An after-throwing advice definition.\x{a}" ~
+            "                                        \x{a}" ~
+            "                                "
+          ]
+     }
+   | element around {
+       org.springframework.www.schema.aop.basicAdviceType
+       >> a:documentation [
+            "\x{a}" ~
+            "                                        \x{a}" ~
+            "        An around advice definition.\x{a}" ~
+            "                                        \x{a}" ~
+            "                                "
+          ]
+     })*,
+  attribute id {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The unique identifier for an aspect.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute ref {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The name of the (backing) bean that encapsulates the aspect.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute order {
+    xsd:token
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Controls the ordering of the execution of this aspect when multiple\x{a}" ~
+         "        advice executes at a specific joinpoint.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+org.springframework.www.schema.aop.includeType &=
+  attribute name {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The regular expression defining which beans are to be included in the\x{a}" ~
+         "        list of @AspectJ beans; beans with names matched by the pattern will\x{a}" ~
+         "        be included.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+[
+  a:documentation [
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                                "
+    tool:annotation [
+      "\x{a}" ~
+      "                                        "
+      tool:exports [ type = "org.springframework.aop.Pointcut" ]
+      "\x{a}" ~
+      "                                "
+    ]
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                "
+  ]
+]
+org.springframework.www.schema.aop.pointcutType &=
+  attribute id {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The unique identifier for a pointcut.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute expression {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The pointcut expression.\x{a}" ~
+         "\x{a}" ~
+         "        For example : 'execution(* com.xyz.myapp.service.*.*(..))'\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+org.springframework.www.schema.aop.declareParentsType &=
+  attribute types-matching {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The AspectJ type expression that defines what types (classes) the\x{a}" ~
+         "        introduction is restricted to.\x{a}" ~
+         "\x{a}" ~
+         "        An example would be 'org.springframework.beans.ITestBean+'.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute implement-interface {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The fully qualified name of the interface that will be introduced.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute default-impl {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The fully qualified name of the class that will be instantiated to serve\x{a}" ~
+         "        as the default implementation of the introduced interface.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute delegate-ref {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        A reference to the bean that will serve\x{a}" ~
+         "        as the default implementation of the introduced interface.\x{a}" ~
+         "                                \x{a}" ~
+         "                                \x{a}" ~
+         "                                        "
+         tool:annotation [ kind = "ref" ]
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+org.springframework.www.schema.aop.basicAdviceType &=
+  attribute pointcut {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The associated pointcut expression.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute pointcut-ref {
+    org.springframework.www.schema.aop.pointcutRefType
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The name of an associated pointcut definition.\x{a}" ~
+         "                                \x{a}" ~
+         "                                \x{a}" ~
+         "                                        "
+         tool:annotation [
+           kind = "ref"
+           "\x{a}" ~
+           "                                                "
+           tool:expected-type [
+             type = "org.springframework.aop.Pointcut"
+           ]
+           "\x{a}" ~
+           "                                        "
+         ]
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute method {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The name of the method that defines the logic of the advice.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute arg-names {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The comma-delimited list of advice method argument (parameter) names\x{a}" ~
+         "        that will be matched from pointcut parameters.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+org.springframework.www.schema.aop.afterReturningAdviceType &=
+  org.springframework.www.schema.aop.basicAdviceType,
+  attribute returning {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                                \x{a}" ~
+         "        The name of the method parameter to which the return value must\x{a}" ~
+         "        be passed.\x{a}" ~
+         "                                                \x{a}" ~
+         "                                        "
+       ]
+  }
+org.springframework.www.schema.aop.afterThrowingAdviceType &=
+  org.springframework.www.schema.aop.basicAdviceType,
+  attribute throwing {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                                \x{a}" ~
+         "        The name of the method parameter to which the thrown exception must\x{a}" ~
+         "        be passed.\x{a}" ~
+         "                                                \x{a}" ~
+         "                                        "
+       ]
+  }
+[
+  a:documentation [
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                                "
+    tool:annotation [
+      "\x{a}" ~
+      "                                        "
+      tool:exports [ type = "org.springframework.aop.Advisor" ]
+      "\x{a}" ~
+      "                                "
+    ]
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                "
+  ]
+]
+org.springframework.www.schema.aop.advisorType &=
+  attribute id { xsd:string },
+  attribute advice-ref {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        A reference to an advice bean.\x{a}" ~
+         "                                \x{a}" ~
+         "                                \x{a}" ~
+         "                                        "
+         tool:annotation [
+           kind = "ref"
+           "\x{a}" ~
+           "                                                "
+           tool:expected-type [ type = "org.aopalliance.aop.Advice" ]
+           "\x{a}" ~
+           "                                        "
+         ]
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute pointcut {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        A pointcut expression.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute pointcut-ref {
+    org.springframework.www.schema.aop.pointcutRefType
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        A reference to a pointcut definition.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute order {
+    xsd:token
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        Controls the ordering of the execution of this advice when multiple\x{a}" ~
+         "        advice executes at a specific joinpoint.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  }
+[
+  a:documentation [
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                                "
+    tool:annotation [
+      kind = "ref"
+      "\x{a}" ~
+      "                                        "
+      tool:expected-type [ type = "org.springframework.aop.Pointcut" ]
+      "\x{a}" ~
+      "                                "
+    ]
+    "\x{a}" ~
+    "                        \x{a}" ~
+    "                "
+  ]
+]
+org.springframework.www.schema.aop.pointcutRefType &= xsd:string

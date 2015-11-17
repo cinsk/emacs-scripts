@@ -1,0 +1,254 @@
+default namespace = "http://www.springframework.org/schema/jdbc"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace beans = "http://www.springframework.org/schema/beans"
+namespace rng = "http://relaxng.org/ns/structure/1.0"
+namespace tool = "http://www.springframework.org/schema/tool"
+namespace xsd = "http://www.w3.org/2001/XMLSchema"
+
+org.springframework.www.schema.jdbc.scriptType &= empty
+org.springframework.www.schema.jdbc.databaseType &= empty
+org.springframework.www.schema.jdbc.scriptType &= empty
+org.springframework.www.schema.beans.identifiedType &= empty
+include "3.rnc" inherit = beans
+include "4.rnc" inherit = tool
+start |= org.springframework.www.schema.jdbc.embedded-database
+org.springframework.www.schema.jdbc.embedded-database &=
+  [
+    a:documentation [
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "        Creates an embedded database instance and makes it available to other beans as a javax.sql.DataSource.\x{a}" ~
+      "                        \x{a}" ~
+      "                        \x{a}" ~
+      "                                "
+      tool:annotation [
+        "\x{a}" ~
+        "                                        "
+        tool:exports [ type = "javax.sql.DataSource" ]
+        "\x{a}" ~
+        "                                "
+      ]
+      "\x{a}" ~
+      "                        \x{a}" ~
+      "                "
+    ]
+  ]
+  element embedded-database {
+    org.springframework.www.schema.beans.identifiedType,
+    (element script {
+       org.springframework.www.schema.jdbc.scriptType
+       >> a:documentation [
+            "\x{a}" ~
+            "                                                                \x{a}" ~
+            "                        An SQL script to execute to populate, initialize, or clean up an embedded database.\x{a}" ~
+            "                                                                \x{a}" ~
+            "                                                        "
+          ]
+     }*)
+    >> a:documentation [ "\x{a}" ~ "            default value is : " ],
+    [ a:defaultValue = "" ]
+    attribute database-name {
+      xsd:string
+      >> a:documentation [
+           "\x{a}" ~
+           "                                                        \x{a}" ~
+           "                        The name to assign to the embedded database. Note that this is not the\x{a}" ~
+           "                        bean name but rather the name of the embedded database as used in the JDBC\x{a}" ~
+           '                        connection URL for the database. Defaults to "testdb" if an explicit bean\x{a}' ~
+           "                        'id' has not been provided.\x{a}" ~
+           "                                                        \x{a}" ~
+           "                                                "
+         ]
+    }
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : false"
+       ],
+    ([ a:defaultValue = "false" ]
+     attribute generate-name {
+       xsd:string
+       >> a:documentation [
+            "\x{a}" ~
+            "                                                        \x{a}" ~
+            '                        If set to "true", a pseudo-random unique name will be generated for the embedded\x{a}' ~
+            "                        database, overriding any implicit name provided via the 'id' attribute or any\x{a}" ~
+            "                        explicit name provided via the 'database-name' attribute.\x{a}" ~
+            "                        Note that this is not the bean name but rather the name of the embedded database\x{a}" ~
+            "                        as used in the JDBC connection URL for the database.\x{a}" ~
+            "                                                        \x{a}" ~
+            "                                                "
+          ]
+     }?)
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : HSQL"
+       ],
+    [ a:defaultValue = "HSQL" ]
+    attribute type {
+      org.springframework.www.schema.jdbc.databaseType
+      >> a:documentation [
+           "\x{a}" ~
+           "                                                        \x{a}" ~
+           "                        The type of embedded database to create, such as HSQL, H2 or Derby. Defaults to HSQL.\x{a}" ~
+           "                                                        \x{a}" ~
+           "                                                "
+         ]
+    }
+  }
+start |= org.springframework.www.schema.jdbc.initialize-database
+org.springframework.www.schema.jdbc.initialize-database &=
+  
+  ## 
+  ##                         
+  ##         Initializes a database instance with SQL scripts provided in nested <script/> elements.
+  ##                         
+  ##                 
+  element initialize-database {
+    (element script {
+       org.springframework.www.schema.jdbc.scriptType
+       >> a:documentation [
+            "\x{a}" ~
+            "                                                \x{a}" ~
+            "                        An SQL script to execute to populate, initialize, or clean up a database.\x{a}" ~
+            "                                                \x{a}" ~
+            "                                        "
+          ]
+     }+)
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : dataSource"
+       ],
+    [ a:defaultValue = "dataSource" ]
+    attribute data-source {
+      xsd:string
+      >> a:documentation [
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           '                        A reference to a data source that should be initialized. Defaults to "dataSource".\x{a}' ~
+           "                                        \x{a}" ~
+           "                                        \x{a}" ~
+           "                                                "
+           tool:annotation [ kind = "ref" ]
+           "\x{a}" ~
+           "                                                "
+           tool:expected-type [ type = "javax.sql.DataSource" ]
+           "\x{a}" ~
+           "                                        \x{a}" ~
+           "                                "
+         ]
+    }
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : true"
+       ],
+    ([ a:defaultValue = "true" ]
+     attribute enabled {
+       xsd:string
+       >> a:documentation [
+            "\x{a}" ~
+            "                                        \x{a}" ~
+            '                        Is this bean "enabled", meaning the scripts will be executed?\x{a}' ~
+            "                        Defaults to true but can be used to switch on and off script execution\x{a}" ~
+            "                        depending on the environment.\x{a}" ~
+            "                                        \x{a}" ~
+            "                                "
+          ]
+     }?)
+    >> a:documentation [
+         "\x{a}" ~
+         "            default value is : NONE"
+       ],
+    
+    ## 
+    ##                                         
+    ##                                                 Should failed SQL statements be ignored during execution?
+    ##                                         
+    ##                                 
+    [ a:defaultValue = "NONE" ]
+    attribute ignore-failures {
+      
+      ## 
+      ##                                                                 
+      ##                                                 Do not ignore failures (the default)
+      ##                                                                 
+      ##                                                         
+      "NONE"
+      | 
+        ## 
+        ##                                                                 
+        ##                                                 Ignore failed DROP statements
+        ##                                                                 
+        ##                                                         
+        "DROPS"
+      | 
+        ## 
+        ##                                                                 
+        ##                                                 Ignore all failures
+        ##                                                                 
+        ##                                                         
+        "ALL"
+    }?
+  }
+org.springframework.www.schema.jdbc.scriptType &=
+  attribute location {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The resource location of an SQL script to execute. Can be a single script location\x{a}" ~
+         "        or a pattern (e.g. classpath:/com/foo/sql/*-data.sql).\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute encoding {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The encoding for SQL scripts, if different from the platform encoding.\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  attribute separator {
+    xsd:string
+    >> a:documentation [
+         "\x{a}" ~
+         "                                \x{a}" ~
+         "        The statement separator in the script (the default is to use ';' if it is present\x{a}" ~
+         "        in the script, or '\n' otherwise).\x{a}" ~
+         "                                \x{a}" ~
+         "                        "
+       ]
+  },
+  
+  ## 
+  ##                                 
+  ##         Indicate the execution phase of this script. Use INIT to execute on startup (as a
+  ##         bean initialization) or DESTROY to execute on shutdown (as a bean destruction callback).
+  ##                                 
+  ##                         
+  attribute execution { "INIT" | "DESTROY" }
+org.springframework.www.schema.jdbc.databaseType &=
+  
+  ## 
+  ##                                         
+  ##                         HyperSQL DataBase Engine
+  ##                                         
+  ##                                 
+  "HSQL"
+  | 
+    ## 
+    ##                                         
+    ##                         H2 Database Engine
+    ##                                         
+    ##                                 
+    "H2"
+  | 
+    ## 
+    ##                                         
+    ##                         Apache Derby Database Engine
+    ##                                         
+    ##                                 
+    "DERBY"

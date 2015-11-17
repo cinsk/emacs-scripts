@@ -1,7 +1,16 @@
 This directory contains XML schemas which is not part of NXML distribution.
 
-How to convert XSD into RNC
----------------------------
+How to convert XSD into RNC (new)
+---------------------------------
+
+1. Install the package, `genrnc`.
+2. Download the `.xsd` file.
+3. Run `genrnc-regist-file` to convert it.
+4. If the command asks "Including not located ns:", provide the
+   pathname of the dependent .xsd file location.
+
+How to convert XSD into RNC (old)
+---------------------------------
 
 To add XML schema in .xsd format, you need to use two tools; `rngconv`
 and `trang`.
