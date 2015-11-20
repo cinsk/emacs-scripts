@@ -252,8 +252,13 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;(global-set-key [C-?] 'backward-delete-char)
 ;;(global-set-key [C-h] 'backward-delete-char)
 
-
 (global-set-key "\C-cc" 'compile)
+(when (locate-library "dwim-compile")
+  (require 'dwim-compile)
+  (global-set-key [(control ?c) ?c] 'dwim-c/compile))
+
+
+
 (global-set-key [(control ?c) (control ?c)] 'comment-region)
 (setq comment-empty-lines t)
 
@@ -1207,6 +1212,9 @@ in any of directory in `yas-snippet-dirs'."
     (add-to-list 'tramp-backup-directory-alist (cons "." dir))))
 
 
+
+(add-to-list 'load-path "~/.emacs.d/emacs-gradle-mode")
+(require 'gradle-mode)
 
 ;;(global-set-key [f2] 'ff-find-other-file)
 ;;(global-set-key [f3] 'dired-jump)
