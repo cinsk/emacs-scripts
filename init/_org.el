@@ -30,6 +30,124 @@
 ;;
 (setq org-confirm-babel-evaluate nil)
 
+
+;;
+;; generate link description automatically
+;;
+(setq org-link-abbrev-alist
+      '(("google" . "http://www.google.com/search?q=%s")
+        ("rfc" . "http://www.rfc-editor.org/rfc/rfc%s.txt")
+        ("man" . "%(orglink/url-man)")
+        ("java" . "%(orglink/url-java)")))
+
+(defvar org-link-javadoc-root-alist
+      '(("org.springframework.boot." . "http://docs.spring.io/spring-boot/docs/current/api/")
+        ("org.springframework." . "http://docs.spring.io/spring/docs/current/javadoc-api/")
+        ("org.apache.log4j." . "http://www.slf4j.org/apidocs/")
+        ("org.slf4j." . "http://www.slf4j.org/apidocs/")
+        ("org.junit." . "http://junit.sourceforge.net/javadoc/")
+        ("lombok." . "https://projectlombok.org/api/")
+        ("java." . "http://docs.oracle.com/javase/8/docs/api/"))
+"List of java package root and their base URLs
+
+Unlike other alist type, the order of entries are important."
+      )
+
+
+(defun orglink/starts-with (s1 s2)
+  "Return non-nil if S1 starts with S2."
+  (let ((s1len (length s1))
+        (s2len (length s2)))
+    (when (>= s1len s2len)
+      (string-equal s2 (substring s1 0 s2len)))))
+
+(defun orglink/url-java (tag)
+  ;; "org.springframework.web.SpringServletContainerInitializer"
+  (save-match-data
+    (let ((name (replace-regexp-in-string "\\." "/" tag)))
+      (catch 'orglink/found
+        (dolist (ent org-link-javadoc-root-alist)
+          (let ((pkg (car ent))
+                (base (cdr ent)))
+            (if (orglink/starts-with tag pkg)
+                (throw 'orglink/found (concat base name ".html")))))))))
+
+
+(defun orglink/url-man (spec)
+  "Return an URL for man pages.
+
+SPEC is in the form of \"NAME(SECTION)\" or \"SECTION NAME\",
+where NAME is the keyword and SECTION is the manual section
+number.
+
+This function is used for the `org-mode' file to provide an link abbreviation.
+For example, add following line in your org file:
+
+#+LINK: man %(org-man-link)"
+  (save-match-data
+    (let (name sect)
+      (if (string-match
+           "\\`[[:blank:]]*\\([^[:blank:]]+\\)[[:blank:]]*(\\([^)]+\\))"
+           spec)
+          (setq name (match-string 1 spec)
+                sect (match-string 2 spec))
+        (if (string-match
+             "\\`[[:blank:]]*\\([^)]+\\)[[:blank:]]*\\([^[:blank]]+\\)" spec)
+            (setq name (match-string 2 spec)
+                  sect (match-string 1 spec))
+          (error "Invalid manual format, %s" spec)))
+      ;; We can't guarantee that SECT is consists of numbers only.
+      ;; e.g.  there can be "scanf (3p)".
+      (setq sect (s-trim sect))
+      (format "http://man7.org/linux/man-pages/man%s/%s.%s.html"
+              sect name sect))))
+
+
+
+(defvar orglink/link-desc-alist
+      '(("google" . nil)
+        ("rfc" . orglink/desc-rfc)
+        ("java" . orglink/desc-java))
+      "Alist of org linkwords and their description generating functions
+
+Each description function takes three parameters; If the user
+gives \"LINKWORD:PATH\", then the first parameter receives
+\"PATH\", the second parameter receives \"LINKWORD\", and the
+third parameter receives the DESC value.  Note that rest of
+parameters except the first one are optional.
+
+See `org-make-link-description-function' for DESC value.
+")
+
+(defun orglink/description-function (link desc)
+  (save-match-data
+    (if desc desc
+      (let* ((scheme (if (string-match "\\`\\([^:]+\\):\\(.*\\)\\'" link)
+                        (match-string 1 link)))
+             (path (match-string 2 link))
+             (entry (assoc scheme orglink/link-desc-alist))
+             (proc  (cdr entry)))
+        (if (or (not proc) (not (fboundp proc))) path
+          (or (funcall proc path scheme desc)
+              path))))))
+
+(setq org-make-link-description-function 'orglink/description-function)
+
+(defun orglink/desc-rfc (path &optional scheme desc)
+  ;; path will be something like "0434" or "23"
+  (let ((index (string-to-number path)))
+    (unless (> index 0)
+      (error "Invalid RFC number, %s" index))
+    path))
+
+(defun orglink/desc-java (path &optional scheme desc)
+  ;; path will be something like spring:web.springframwork.aop.support.AopUtils
+  (when (string-match
+         "\\`\\(?:.*?\\.\\([^.]+\\)\\|\\([^.]+\\)\\)\\'" path)
+    (or (match-string 1 path) (match-string 2 path))))
+
+
+
 (defun different-command-p (command name)
   "Return t iff COMMAND is a command and has different from NAME"
   (and (commandp command)
@@ -345,6 +463,11 @@ Filenames that matches Dropbox conflict will not be included."
                                 "personal.org")
                         "Tasks")
          "* TODO %? %T\n  %i\n  %a")
+        ("e" "Emacs Tips" entry
+         (file+headline (concat (file-name-as-directory user-emacs-directory)
+                                "emacs-tips.org")
+                        "Tips")
+         "* TODO %? %T\n  %i\n  %a")
         ("j" "Personal Journal (date based)" entry
          (file+datetree (concat (file-name-as-directory org-directory)
                                 "personal.org"))
@@ -499,21 +622,6 @@ following:
             "#+END_SRC\n")
     (push mode cinsk/org-sourcefy-history)))
 
-(defun org-man-link (spec)
-  "Return an URL for man pages. SPEC is in the form of NAME(SECTION).
-
-This function is used for the `org-mode' file to provide an link abbreviation.
-For example, add following line in your org file:
-
-#+LINK: man %(org-man-link)"
-  (if (string-match "\\`[[:blank:]]*\\(.*?\\)(\\([^)]*\\))[[:blank:]]*\\'"
-                    spec)
-      (let ((name (match-string 1 spec))
-            (sect (match-string 2 spec)))
-        (format "http://man7.org/linux/man-pages/man%s/%s.%s.html"
-                sect name sect))
-    (format "http://www.google.com/search?q=%s&sitesearch=man7.org%%2Flinux%%2Fman-pages" (org-link-escape spec))))
-
 (when (fboundp 'browse-url)
   ;; "export as HTML and open" (a.k.a `C-c C-e h o') uses
   ;; `org-open-file' to open HTML, which uses $HOME/.mailcap, which
@@ -530,21 +638,17 @@ For example, add following line in your org file:
 ;; See http://docs.mathjax.org/en/latest/configuration.html for more
 ;;
 (setq org-html-mathjax-template
-        "<script type=\"text/javascript\" src=\"%PATH\"></script>
-<script type=\"text/javascript\">
-<!--/*--><![CDATA[/*><!--*/
+      "\
+<script type=\"text/x-mathjax-config\">
     MathJax.Hub.Config({
-        // Only one of the two following lines, depending on user settings
-        // First allows browser-native MathML display, second forces HTML/CSS
-        :MMLYES: config: [\"MMLorHTML.js\"], jax: [\"input/TeX\"],
-        :MMLNO: jax: [\"input/TeX\", \"output/HTML-CSS\"],
+        jax: [\"input/TeX\", \"output/HTML-CSS\"],
         extensions: [\"tex2jax.js\",\"TeX/AMSmath.js\",\"TeX/AMSsymbols.js\",
                      \"TeX/noUndefined.js\"],
         tex2jax: {
-            inlineMath: [ [\"\\\\(\",\"\\\\)\"] ],
+            inlineMath: [ [\"\\(\",\"\\)\"] ],
             displayMath: [
-                ['$$','$$'], [\"\\\\[\",\"\\\\]\"],
-                [\"\\\\begin{displaymath}\",\"\\\\end{displaymath}\"],
+                ['$$','$$'], [\"\\[\",\"\\]\"],
+                [\"\\begin{displaymath}\",\"\\end{displaymath}\"],
             ],
             skipTags: [\"script\",\"noscript\",\"style\",\"textarea\",\"pre\",\"code\"],
             ignoreClass: \"tex2jax_ignore\",
@@ -553,11 +657,11 @@ For example, add following line in your org file:
             preview: \"TeX\"
         },
         showProcessingMessages: true,
-        displayAlign: \"%ALIGN\",
-        displayIndent: \"%INDENT\",
+        displayAlign: \"center\",
+        displayIndent: \"0em\",
 
         \"HTML-CSS\": {
-             scale: %SCALE,
+             scale: 100,
              availableFonts: [\"STIX\",\"TeX\"],
              preferredFont: \"TeX\",
              webFont: \"TeX\",
@@ -578,5 +682,4 @@ For example, add following line in your org file:
              }
         }
     });
-/*]]>*///-->
-</script>")
+</script>\n")

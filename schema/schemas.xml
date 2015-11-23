@@ -56,4 +56,12 @@
   <namespace ns="http://www.springframework.org/schema/data/repository" typeId="spring-repository"/>
   <documentElement prefix="" localName="spring-repository" typeId="spring-repository"/>
   <typeId id="spring-repository" uri="6.rnc"/>
+  <uri pattern="" typeId="[genrnc-9]"/>
+  <namespace ns="http://jakarta.apache.org/log4j/" typeId="[genrnc-9]"/>
+  <documentElement prefix="log4j" localName="genrnc-9" typeId="[genrnc-9]"/>
+  <typeId id="[genrnc-9]" uri="9.rnc"/>
+  <uri pattern="" typeId="log4j"/>
+  <namespace ns="http://jakarta.apache.org/log4j/" typeId="log4j"/>
+  <documentElement prefix="log4j" localName="log4j" typeId="log4j"/>
+  <typeId id="log4j" uri="9.rnc"/>
 </locatingRules>

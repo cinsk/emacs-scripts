@@ -41,26 +41,51 @@ frame that runs sunrise, if sunrise is running."
             (switch-to-buffer buff))))
     (error (message "%s" (cadr description)))))
 
-(defun sr-frame-init (&optional frame)
-  "Setup frame for sunrise"
-  (set-frame-parameter frame 'width 160))
-
 (global-set-key [(control ?c) (control ?j)] 'sunrise-cd-frame)
 (global-set-key [(control ?c) (control ?J)] 'sunrise-cd-frame)
 
-(let* ((frwidth (frame-parameter nil 'width))
-       (chwidth (/ (frame-pixel-width) frwidth))
-       (dpwidth (/ (display-pixel-width) chwidth)))
-  (when (> dpwidth (* frwidth 2))
-    (add-to-list 'sr-init-hook 'sr-frame-init))
-  (when (or (eq system-type 'darwin) (> dpwidth (* frwidth 3)))
-    (define-key sr-mode-map "\C-m" 'sr-advertised-find-file-other-frame)))
+(defvar sr-frame-configuration-support t
+  "If nil, do not save/restore frame configuration")
+
+(defvar sr-prior-frame-configuration nil
+  "Frame configuration before Sunrise was started.")
+
+(defun cinsk/sr-frame-init (&optional frame)
+  "Setup frame for sunrise"
+  (when sr-frame-configuration-support
+    (let ((width (frame-parameter frame 'width))
+          ;; Assuming that fill-column is 70 in most case,
+          ;; NEW-WIDTH will be about to 160.
+          (new-width (floor (* fill-column (/ 80.0 fill-column) 2))))
+      (when (< width new-width)
+        (let ((info (wfu/widen-info new-width 'center frame)))
+          (modify-frame-parameters frame `((left . ,(car info))
+                                           (width . ,(cdr info)))))))))
+
+(defun cinsk/sr-save-frame-configuration ()
+  "Save the current frame configuration for `sr-init-hook'."
+  (when sr-frame-configuration-support
+    (unless sr-prior-frame-configuration
+      (setq sr-prior-frame-configuration (current-frame-configuration)))))
+
+(defun cinsk/sr-restore-frame-configuration ()
+  "Save the current frame configuration for `sr-quit-hook'."
+  (when (and sr-frame-configuration-support sr-prior-frame-configuration)
+    (set-frame-configuration sr-prior-frame-configuration)
+    (setq sr-prior-frame-configuration nil)))
+
 (eval-after-load "sunrise-commander"
   '(let* ((frwidth (frame-parameter nil 'width))
           (chwidth (/ (frame-pixel-width) frwidth))
           (dpwidth (/ (display-pixel-width) chwidth)))
      (when (> dpwidth (* frwidth 2))
-       (add-to-list 'sr-init-hook 'sr-frame-init))
-     (when (> dpwidth (* frwidth 3))
+       (add-to-list 'sr-init-hook 'cinsk/sr-frame-init))
+
+     (when (and (boundp 'sr-mode-map) (> dpwidth (* frwidth 3)))
        (define-key sr-mode-map "\C-m" 'sr-advertised-find-file-other-frame)
-       (define-key sr-mode-map [return] 'sr-advertised-find-file-other-frame))))
+       (define-key sr-mode-map [return] 'sr-advertised-find-file-other-frame))
+
+     ;; make sure `cinsk/sr-save-frame-configuration' is called *BEFORE*
+     ;; `cinsk/sr-frame-init'
+     (add-hook 'sr-init-hook #'cinsk/sr-save-frame-configuration)
+     (add-hook 'sr-quit-hook #'cinsk/sr-restore-frame-configuration)))

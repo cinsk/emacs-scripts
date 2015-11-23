@@ -173,3 +173,8 @@ supplied one, a warning message is generated."
       (dired-revert)
       (dired-goto-file (or file dir)))))
 (advice-add 'dired-jump :around #'cinsk/dired-jump)
+
+
+;; Search filenames (e.g. C-s or C-M-s) only when the point is in the
+;; file names.
+(setq dired-isearch-filenames 'dwim)

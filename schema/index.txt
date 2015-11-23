@@ -1,0 +1,10 @@
+
+1 /Users/cinsk/.emacs.d/schema/src/spring-beans.xsd
+2 /Users/cinsk/.emacs.d/schema/src/spring-aop.xsd
+3 http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+4 http://www.springframework.org/schema/tool/spring-tool-4.2.xsd
+5 /Users/cinsk/.emacs.d/schema/src/spring-jdbc.xsd
+6 /Users/cinsk/.emacs.d/schema/src/spring-repository.xsd
+7 http://www.springframework.org/schema/context/spring-context.xsd
+8 http://www.springframework.org/schema/tool/spring-tool.xsd
+9 http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/xml/doc-files/log4j.dtd

@@ -63,6 +63,9 @@
     ;; 23).  Thus, I'll force to load it here.
     (package-initialize)))
 
+(unless (locate-library "s")
+  (error "You need to install \"s\" package using M-x package-install"))
+
 ;; I will install packages that is not managed by packages.el in
 ;; "$HOME/.emacs.d/site-lisp".
 ;;

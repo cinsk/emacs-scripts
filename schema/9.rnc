@@ -1,0 +1,227 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Authors: Chris Taylor, Ceki Gulcu.
+
+# Version: 1.2
+
+# A configuration element consists of optional renderer
+# elements,appender elements, categories and an optional root
+# element.
+
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace log4j = "http://jakarta.apache.org/log4j/"
+
+configuration =
+  element log4j:configuration {
+    attlist.configuration,
+    renderer*,
+    appender*,
+    plugin*,
+    (category | logger)*,
+    root?,
+    (categoryFactory | loggerFactory)?
+  }
+# The "threshold" attribute takes a level value below which
+
+# all logging statements are disabled.
+
+# Setting the "debug" enable the printing of internal log4j logging
+
+# statements.
+
+# By default, debug attribute is "null", meaning that we not do touch
+
+# internal log4j logging settings. The "null" value for the threshold
+
+# attribute can be misleading. The threshold field of a repository
+
+# cannot be set to null. The "null" value for the threshold attribute
+
+# simply means don't touch the threshold field, the threshold field
+
+# keeps its old value.
+attlist.configuration &=
+  [ a:defaultValue = "null" ]
+  attribute threshold {
+    "all"
+    | "trace"
+    | "debug"
+    | "info"
+    | "warn"
+    | "error"
+    | "fatal"
+    | "off"
+    | "null"
+  }?,
+  [ a:defaultValue = "null" ]
+  attribute debug { "true" | "false" | "null" }?,
+  [ a:defaultValue = "false" ] attribute reset { "true" | "false" }?
+# renderer elements allow the user to customize the conversion of
+
+# message objects to String.
+renderer = element renderer { attlist.renderer, empty }
+attlist.renderer &=
+  attribute renderedClass { text },
+  attribute renderingClass { text }
+# Appenders must have a name and a class.
+
+# Appenders may contain an error handler, a layout, optional parameters
+
+# and filters. They may also reference (or include) other appenders.
+appender =
+  element appender {
+    attlist.appender,
+    errorHandler?,
+    param*,
+    rollingPolicy?,
+    triggeringPolicy?,
+    connectionSource?,
+    layout?,
+    filter*,
+    appender-ref*
+  }
+attlist.appender &=
+  attribute name { text },
+  attribute class { text }
+layout = element layout { attlist.layout, param* }
+attlist.layout &= attribute class { text }
+filter = element filter { attlist.filter, param* }
+attlist.filter &= attribute class { text }
+# ErrorHandlers can be of any class. They can admit any number of
+
+# parameters.
+errorHandler =
+  element errorHandler {
+    attlist.errorHandler, param*, root-ref?, logger-ref*, appender-ref?
+  }
+attlist.errorHandler &= attribute class { text }
+root-ref = element root-ref { attlist.root-ref, empty }
+attlist.root-ref &= empty
+logger-ref = element logger-ref { attlist.logger-ref, empty }
+attlist.logger-ref &= attribute ref { text }
+param = element param { attlist.param, empty }
+attlist.param &=
+  attribute name { text },
+  attribute value { text }
+# The priority class is org.apache.log4j.Level by default
+priority = element priority { attlist.priority, param* }
+attlist.priority &=
+  attribute class { text }?,
+  attribute value { text }
+# The level class is org.apache.log4j.Level by default
+level = element level { attlist.level, param* }
+attlist.level &=
+  attribute class { text }?,
+  attribute value { text }
+# If no level element is specified, then the configurator MUST not
+
+# touch the level of the named category.
+category =
+  element category {
+    attlist.category, param*, (priority | level)?, appender-ref*
+  }
+attlist.category &=
+  attribute class { text }?,
+  attribute name { text },
+  [ a:defaultValue = "true" ] attribute additivity { "true" | "false" }?
+# If no level element is specified, then the configurator MUST not
+
+# touch the level of the named logger.
+logger = element logger { attlist.logger, level?, appender-ref* }
+attlist.logger &=
+  attribute name { text },
+  [ a:defaultValue = "true" ] attribute additivity { "true" | "false" }?
+categoryFactory =
+  element categoryFactory { attlist.categoryFactory, param* }
+attlist.categoryFactory &= attribute class { text }
+loggerFactory = element loggerFactory { attlist.loggerFactory, param* }
+attlist.loggerFactory &= attribute class { text }
+appender-ref = element appender-ref { attlist.appender-ref, empty }
+attlist.appender-ref &= attribute ref { text }
+# plugins must have a name and class and can have optional parameters
+plugin = element plugin { attlist.plugin, param*, connectionSource? }
+attlist.plugin &=
+  attribute name { text },
+  attribute class { text }
+connectionSource =
+  element connectionSource {
+    attlist.connectionSource, dataSource?, param*
+  }
+attlist.connectionSource &= attribute class { text }
+dataSource = element dataSource { attlist.dataSource, param* }
+attlist.dataSource &= attribute class { text }
+triggeringPolicy =
+  element triggeringPolicy {
+    attlist.triggeringPolicy, (param | filter)*
+  }
+attlist.triggeringPolicy &=
+  attribute name { text }?,
+  attribute class { text }
+rollingPolicy = element rollingPolicy { attlist.rollingPolicy, param* }
+attlist.rollingPolicy &=
+  attribute name { text }?,
+  attribute class { text }
+# If no priority element is specified, then the configurator MUST not
+
+# touch the priority of root.
+
+# The root category always exists and cannot be subclassed.
+root =
+  element root {
+    attlist.root, param*, (priority | level)?, appender-ref*
+  }
+attlist.root &= empty
+# ====================================================================
+
+# A logging event
+
+# ====================================================================
+eventSet = element log4j:eventSet { attlist.eventSet, event* }
+attlist.eventSet &=
+  [ a:defaultValue = "1.2" ] attribute version { "1.1" | "1.2" }?,
+  [ a:defaultValue = "true" ]
+  attribute includesLocationInfo { "true" | "false" }?
+event =
+  element log4j:event {
+    attlist.event, message, NDC?, throwable?, locationInfo?, properties?
+  }
+# The timestamp format is application dependent.
+attlist.event &=
+  attribute logger { text },
+  attribute level { text },
+  attribute thread { text },
+  attribute timestamp { text },
+  attribute time { text }?
+message = element log4j:message { attlist.message, text }
+attlist.message &= empty
+NDC = element log4j:NDC { attlist.NDC, text }
+attlist.NDC &= empty
+throwable = element log4j:throwable { attlist.throwable, text }
+attlist.throwable &= empty
+locationInfo =
+  element log4j:locationInfo { attlist.locationInfo, empty }
+attlist.locationInfo &=
+  attribute class { text },
+  attribute method { text },
+  attribute file { text },
+  attribute line { text }
+properties = element log4j:properties { attlist.properties, data* }
+attlist.properties &= empty
+data = element log4j:data { attlist.data, empty }
+attlist.data &=
+  attribute name { text },
+  attribute value { text }
+start = eventSet | configuration

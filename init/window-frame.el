@@ -328,9 +328,7 @@ to the display width"
 ;; (global-set-key [(meta shift left)] 'move-window-border-left)
 ;; (global-set-key [(meta shift right)] 'move-window-border-right)
 
-
 
-
 (defun load-or-save-frame-configuration (&optional arg)
   (interactive "P")
   (let* ((cmdvec (this-command-keys))

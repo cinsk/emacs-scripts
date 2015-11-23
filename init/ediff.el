@@ -156,6 +156,7 @@ Saves the old frame parameters in `ediff-wide-display-orig-parameters'.
 The frame to be resized is kept in `ediff-wide-display-frame'.
 This function modifies only the left margin and the width of the display.
 It assumes that it is called from within the control buffer."
+  ;; TODO: try to use `wfu/widen-info' instead of calculate desired coordinate.
   ;;(message "cinsk/ediff-make-wide-display")
   (if (not (fboundp 'ediff-display-pixel-width))
       (error "Can't determine display width"))

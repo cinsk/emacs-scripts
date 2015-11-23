@@ -398,6 +398,43 @@ It assumes that it is called from within the control buffer."
      frame-A `((left . ,desired-left) (width . ,desired-fw)
                (user-position . t)))))
 
+(defun wfu/widen-info (width &optional pivot frame)
+  "Calculate frame position if the frame need to be expanded to WIDTH.
+
+This function will return (LEFT . NEW-WIDTH) where LEFT is the
+left-most frame coordinate in point, and NEW-WIDTH is the desired
+width of the frame in characters.  Note that NEW-WIDTH may be
+smaller than WIDTH to ensure it will fit to the display device.
+
+WIDTH is in characters, optional PIVOT should be one of left,
+right, or center (by default), that govern the calculation of the
+LEFT.  For example, Left PIVOT tries not to change left-most
+position of the frame, where the right PIVOT tries not to change
+the right-most position of the frame.  Note that no matter what
+value the PIVOT is, the frame coordinate may fit to the display
+device."
+  (let* ((cw (frame-char-width frame))
+         (dpw (display-pixel-width))
+         (fw (frame-width frame))
+         (febw cw)
+         (fibw (- (frame-pixel-width frame) (* (frame-width frame) cw)))
+         (left (frame-parameter frame 'left)))
+    (when (> (+ (* width cw) febw fibw) (display-pixel-width))
+        (setq width (/ (- dpw fibw febw) cw)))
+    (setq left
+          (cond ((eq pivot 'right)
+                 (- left (* (- width fw) cw)))
+                ((eq pivot 'left)
+                 left)
+                (t ; center
+                 (- left (/ (* (- width fw) cw) 2)))))
+    (if (< (- left (/ febw 2)) 0)
+        (setq left (/ febw 2)))
+    (if (> (+ left (+ (* width cw) fibw (/ febw 2)))
+           dpw)
+        (setq left (- dpw
+                      (+ (* width cw) fibw (/ febw 2)))))
+    (cons left width)))
 
 (provide 'wfutils)
 ;;; wfutils.el ends here
