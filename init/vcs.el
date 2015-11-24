@@ -42,16 +42,17 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 (setq magit-last-seen-setup-instructions "1.4.0"
       magit-popup-use-prefix-argument 'default)
 
-(let ((magit-git-dir (concat (expand-file-name user-emacs-directory)
-                             "magit")))
-  (when (file-accessible-directory-p magit-git-dir)
-    (add-to-list 'load-path magit-git-dir)
-    (add-to-list 'Info-directory-list magit-git-dir))
+(when nil
+  (let ((magit-git-dir (concat (expand-file-name user-emacs-directory)
+                               "magit")))
+    (when (file-accessible-directory-p magit-git-dir)
+      (add-to-list 'load-path magit-git-dir)
+      (add-to-list 'Info-directory-list magit-git-dir))
 
-  (cond ((locate-library "50magit")
-         (require '50magit))
-        ((locate-library "magit")
-         (require 'magit))))
+    (cond ((locate-library "50magit")
+           (require '50magit))
+          ((locate-library "magit")
+           (require 'magit)))))
 
 (when nil ; (locate-library "markdown-mode")
   ;; Not working on magit 2.1.x
@@ -79,14 +80,14 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 ;;
 ;; vc-jump
 ;;
-(when (locate-library "vc-jump")
-  (require 'vc-jump)
+(when (locate-library "vc-dirx")
+  (require 'vc-dirx)
   ;; I prefer magit over egg, egg over git
   ;; (add-to-list 'vc-status-assoc
   ;;              (cons 'Git
   ;;                    (cond ((fboundp 'magit-status) #'magit-status)
   ;;                          ((fboundp 'egg-status) #'egg-status)
   ;;                          (#'git-status))))
-  (global-set-key [f12] 'vc-jump)
-  (global-set-key [(control ?x) ?j] 'vc-jump))
+  (global-set-key [f12] 'vc/dir)
+  (global-set-key [(control ?x) ?j] 'vc/dir))
 
