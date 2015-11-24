@@ -20,6 +20,13 @@
 
 ;;; Commentary:
 
+;;;
+;;; INSTALLATION: put below in your init file.
+;;;
+;;; (require 'vc-dirx)
+;;; (global-set-key [f12] 'vc/dir)
+;;;
+
 ;;
 
 ;;; Code:
