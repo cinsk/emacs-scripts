@@ -10,22 +10,6 @@
   (require 'org-table))
 
 ;;
-;; Enable evaluation code block of certain languages
-;;
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (R . t)
-   (python . t)
-   (ruby . t)
-   (dot . t)
-   ;; (go . t)
-   (sh . t)))
-
-(when (locate-library "ob-go")
-  (require 'ob-go))
-
-;;
 ;; Disable the prompt for evaluation of code block
 ;;
 (setq org-confirm-babel-evaluate nil)
@@ -138,7 +122,7 @@ See `org-make-link-description-function' for DESC value.
   (let ((index (string-to-number path)))
     (unless (> index 0)
       (error "Invalid RFC number, %s" index))
-    path))
+    (format "RFC %s" path)))
 
 (defun orglink/desc-java (path &optional scheme desc)
   ;; path will be something like spring:web.springframwork.aop.support.AopUtils
@@ -265,6 +249,19 @@ not NOT-THIS-COMMAND"
 
 (eval-after-load "org"
   '(progn
+     ;;
+     ;; Enable evaluation code block of certain languages
+     ;;
+     (org-babel-do-load-languages
+      'org-babel-load-languages
+      `((emacs-lisp . t)
+        (R . t)
+        (python . t)
+        (ruby . t)
+        (dot . t)
+        ,(when (locate-library "ob-go") '(go . t))
+        (sh . t)))
+
      (define-key outline-mode-map [(control down)]
        'outline-next-visible-heading)
      (define-key outline-mode-map [(control up)]
@@ -316,23 +313,78 @@ not NOT-THIS-COMMAND"
      ;;(add-to-list 'org-mode-hook (lambda ()
      ;; (org-wordjoin-mode 1)))
 
-
      (when (fboundp 'graphviz-dot-mode)
        (let ((dotpair (assoc "dot" org-src-lang-modes)))
          (and dotpair
               (setcdr dotpair 'graphviz-dot))))
 
+     (cond ((eq system-type 'gnu/linux)
+            (add-to-list 'org-file-apps '("pdf" . "acroread %s"))
+            (add-to-list 'org-file-apps '("ps" . "ggv %s")))
+           ((eq system-type 'darwin)
+            ;; pdf already handled by Preview
+            (add-to-list 'org-file-apps '("ps" . "open %s"))))
+     (when (fboundp 'browse-url)
+       ;; "export as HTML and open" (a.k.a `C-c C-e h o') uses
+       ;; `org-open-file' to open HTML, which uses $HOME/.mailcap,
+       ;; which usually uses lynx(1) to open HTML file, which is not
+       ;; what I want.  It's better to use `browse-url' to determine
+       ;; the suitable browser.
+       (add-to-list 'org-file-apps
+                    '("\\.x?html?\\'" . (browse-url file))))
 
-     (when (fboundp 'graphviz-dot-mode)
-       (let ((dotpair (assoc "dot" org-src-lang-modes)))
-         (and dotpair
-              (setcdr dotpair 'graphviz-dot-mode))))
+     ;; Org mode requires font-locking on every org buffer
+     ;; Since I use global-font-lock-mode, below sexp is not necessary.
+     ;;
+     ;; (add-hook 'org-mode-hook 'turn-on-font-lock)
 
-     ;; When opening a link with `org-open-at-point' (C-c C-o), These
-     ;; settings allow to use acroread for pdf files and to use ggv
-     ;; for ps files.
-     (add-to-list 'org-file-apps '("pdf" . "acroread %s"))
-     (add-to-list 'org-file-apps '("ps" . "ggv %s"))))
+     ;; According to http://orgmode.org/org.html#Conflicts,
+     ;; filladapt.el is not working well with Org, so disable it in
+     ;; org-mode.
+     (add-hook 'org-mode-hook '(lambda ()
+                                 (if (fboundp 'turn-off-filladapt-mode)
+                                     (turn-off-filladapt-mode))))
+
+     ;; org-hide-leading-stars should be set before loading org-mode.
+     (setq org-hide-leading-stars t)
+     (setq org-odd-levels-only t)
+     ;; (setq org-agenda-include-diary t)
+
+     ;; If org file loaded with folding, comparing files with ediff
+     ;; is very unhandy, thus starting with everything is shown
+     (setq org-hide-block-startup nil)
+     (setq org-startup-folded 'showeverything)
+
+     (when (and (> emacs-major-version 22)
+                (fboundp 'org-set-emph-re))
+       ;; Current org-mode mark-up algorithm does not support marking
+       ;; partial word. (e.g. =partial=word)
+       ;;
+       ;; On some languages that have postposition, which has no word
+       ;; boundary with the previous noun (e.g. Korean aka josa),
+       ;; marking-up partial word is essential.
+       ;;
+       ;; To work around current implementation, it is possible to insert
+       ;; invisible unicode character such as "word joiner" character,
+       ;; \u2060, between the noun and the postposition, to enable partial
+       ;; word.  Thus the text will be "=partial=\u2060word", and adding
+       ;; this special character to `org-emphasis-regexp-components' will
+       ;; do the trick. (Use `ucs-insert' to insert the character into the
+       ;; text)
+       ;;
+       ;; See the original idea from:
+       ;;   http://thread.gmane.org/gmane.emacs.orgmode/46197/focus=46263
+       (org-set-emph-re 'org-emphasis-regexp-components
+                        '(" \t('\"{\\\u2060"
+                          "- \t.,:!?;'\")}\\\u2060"
+                          " \t\r\n,\"'⁠"
+                          "." 1)))
+
+     (and (boundp 'org-drawers)
+          (add-to-list 'org-drawers "COMMENT"))
+
+     ))
+
 
 (when (locate-library "org-version")
   ;; From Org-Mode version 7.9.2, there is no need to load
@@ -351,31 +403,10 @@ not NOT-THIS-COMMAND"
       ;;
       ;; TODO: Move all of org specific configuration below to the
       ;;       `eval-after-load' if possible
-      (require 'org)
+      ;; (require 'org)
     ;; nil                               ; do nothing
     (require 'org-install)))
 
-
-;; According to http://orgmode.org/org.html#Conflicts, filladapt.el is
-;; not working well with Org, so disable it in org-mode.
-(add-hook 'org-mode-hook '(lambda ()
-                            (if (fboundp 'turn-off-filladapt-mode)
-                                (turn-off-filladapt-mode))))
-
-;; Org mode requires font-locking on every org buffer
-;; Since I use global-font-lock-mode, below sexp is not necessary.
-;;
-;; (add-hook 'org-mode-hook 'turn-on-font-lock)
-
-;; org-hide-leading-stars should be set before loading org-mode.
-(setq org-hide-leading-stars t)
-(setq org-odd-levels-only t)
-;; (setq org-agenda-include-diary t)
-
-;; If org file loaded with folding, comparing files with ediff
-;; is very unhandy, thus starting with everything is shown
-(setq org-hide-block-startup nil)
-(setq org-startup-folded 'showeverything)
 
 (when (string-lessp emacs-version "22.2")
   ;; From GNU Emacs version 22.2, ".org" extension use Org mode by default.
@@ -553,33 +584,6 @@ following:
 
 
 
-
-(when (and (> emacs-major-version 22)
-           (fboundp 'org-set-emph-re))
-  ;; Current org-mode mark-up algorithm does not support marking
-  ;; partial word. (e.g. =partial=word)
-  ;;
-  ;; On some languages that have postposition, which has no word
-  ;; boundary with the previous noun (e.g. Korean aka josa),
-  ;; marking-up partial word is essential.
-  ;;
-  ;; To work around current implementation, it is possible to insert
-  ;; invisible unicode character such as "word joiner" character,
-  ;; \u2060, between the noun and the postposition, to enable partial
-  ;; word.  Thus the text will be "=partial=\u2060word", and adding
-  ;; this special character to `org-emphasis-regexp-components' will
-  ;; do the trick. (Use `ucs-insert' to insert the character into the
-  ;; text)
-  ;;
-  ;; See the original idea from:
-  ;;   http://thread.gmane.org/gmane.emacs.orgmode/46197/focus=46263
-  (org-set-emph-re 'org-emphasis-regexp-components
-                   '(" \t('\"{\\\u2060"
-                     "- \t.,:!?;'\")}\\\u2060"
-                     " \t\r\n,\"'⁠"
-                     "." 1)))
-
-
 (defvar cinsk/mode-name-list
   (let (lst)
     (mapatoms (lambda (sym)
@@ -621,65 +625,3 @@ following:
             (if require-newline-at-end "\n" "")
             "#+END_SRC\n")
     (push mode cinsk/org-sourcefy-history)))
-
-(when (fboundp 'browse-url)
-  ;; "export as HTML and open" (a.k.a `C-c C-e h o') uses
-  ;; `org-open-file' to open HTML, which uses $HOME/.mailcap, which
-  ;; usually uses lynx(1) to open HTML file, which is not what I want.
-  ;; It's better to use `browse-url' to determine the suitable
-  ;; browser.
-  (add-to-list 'org-file-apps
-               '("\\.x?html?\\'" . (browse-url file))))
-
-(and (boundp 'org-drawers)
-     (add-to-list 'org-drawers "COMMENT"))
-
-;;
-;; See http://docs.mathjax.org/en/latest/configuration.html for more
-;;
-(setq org-html-mathjax-template
-      "\
-<script type=\"text/x-mathjax-config\">
-    MathJax.Hub.Config({
-        jax: [\"input/TeX\", \"output/HTML-CSS\"],
-        extensions: [\"tex2jax.js\",\"TeX/AMSmath.js\",\"TeX/AMSsymbols.js\",
-                     \"TeX/noUndefined.js\"],
-        tex2jax: {
-            inlineMath: [ [\"\\(\",\"\\)\"] ],
-            displayMath: [
-                ['$$','$$'], [\"\\[\",\"\\]\"],
-                [\"\\begin{displaymath}\",\"\\end{displaymath}\"],
-            ],
-            skipTags: [\"script\",\"noscript\",\"style\",\"textarea\",\"pre\",\"code\"],
-            ignoreClass: \"tex2jax_ignore\",
-            processEscapes: false,
-            processEnvironments: true,
-            preview: \"TeX\"
-        },
-        showProcessingMessages: true,
-        displayAlign: \"center\",
-        displayIndent: \"0em\",
-
-        \"HTML-CSS\": {
-             scale: 100,
-             availableFonts: [\"STIX\",\"TeX\"],
-             preferredFont: \"TeX\",
-             webFont: \"TeX\",
-             imageFont: \"TeX\",
-             showMathMenu: true,
-        },
-        MMLorHTML: {
-             prefer: {
-                 MSIE:    \"MML\",
-                 Firefox: \"MML\",
-                 Opera:   \"HTML\",
-                 other:   \"HTML\"
-             }
-        },
-        TeX: {
-             equationNumbers: {
-                 autoNumber: \"AMS\"
-             }
-        }
-    });
-</script>\n")

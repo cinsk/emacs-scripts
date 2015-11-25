@@ -4,23 +4,18 @@ Introduction
 
 This is Seong-Kook Shin's personal GNU Emacs (primarily for version 24.x) scripts.
 
-I use this scripts on both my Gentoo Linux, and my Macbook pro.
+I use this scripts on both my Gentoo Linux and my Macbook pro.
 
 Here's a list of notable difference between other init scripts:
 
-* Works on darwin based system (pre-selected fonts, etc.)
-* no errors even if some packages are missing
+* Unless key packages are missing, /emacs-scripts/ are tolerent to missing packages.
+* /emacs-script/ will compile most scripts and gives a profile report
+* Works on Gentoo Linux and darwin(Mac)
+* Providing pre-selected fontset (Latin and Korean)
 * Korean support (mail, input-method, etc.)
-* untabbify & remove-trailing spaces on various source code
-* vc-jump (to jump VCS buffer on cvs/svn/git)
-* mail address completion
-* consistent key-bindings on interpreting lanauges (ruby/python/etc.)
-* hungry-delete based on the syntactic context
-* `desktop open` command on dired (works on X11 and darwin)
-* scale up/down font size on mouse wheel
-* pre-defined `org-html-export` (with bootstrap)
-* better window/frame navigation
-* `*uinit*` buffer reports the load time of custom scripts (for profiling)
+* consistent key-bindings on several interpreter based languages
+
+There are so many enhancements that I provided in /emacs-scripts/.  Please read the [wiki](https://github.com/cinsk/emacs-scripts/wiki) for the explanation.
 
 Please, don't ask me of Windows configuration.  I hardly use it, so I can't help you.  However, I do accept any help or patches to support Windows.
 
@@ -88,6 +83,7 @@ Emacs, run `M-x list-packages`, then:
 2. select following packages using `i` key.  If you accidentally select
    an unintended package, press `u` to deselect it.
 
+        s
         dired+
         htmlize
         org
@@ -153,4 +149,5 @@ if you want.  Assuming that you use bash(1), add following sentence in
 your `$HOME/.bashrc`:
 
         [[ -n "$DISPLAY" ]] && xrdb -merge ~/.emacs.d/emacs.res
+
 

@@ -84,6 +84,9 @@ frame that runs sunrise, if sunrise is running."
      (when (and (boundp 'sr-mode-map)
                 ;; (> dpwidth (* frwidth 3))
                 )
+
+       ;; Comment below if you do not want to use another frame when
+       ;; visiting a file.
        (define-key sr-mode-map "\C-m" 'sr-advertised-find-file-other-frame)
        (define-key sr-mode-map [return] 'sr-advertised-find-file-other-frame))
 

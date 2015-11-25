@@ -118,8 +118,7 @@ Each elements in DIRS will be expanded using `expand-file-name'."
                       dirs)))
 
 
-(when (locate-library "capitalize+")
-  (require 'capitalize+))
+(uinit/require 'capitalize+)
 
 
 (uinit/load "darwin"
@@ -140,8 +139,10 @@ Each elements in DIRS will be expanded using `expand-file-name'."
   'ediff)
 
 
-(uinit/load "fonts"
-  'fonts)
+(when (uinit/require 'fontutil)
+  ;; For the actual fontset selection, see init/X.el or init/darwim.el
+  (font/install-mouse-wheel))
+
 
 
 ;;; Sometimes, Emacs asks for the confirmation of a command such as
@@ -242,10 +243,9 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 (setq mouse-yank-at-point t)
 
 ;; browse-kill-ring: interactive kill-ring navigation
-(when (locate-library "browse-kill-ring")
-  (unless (fboundp 'browse-kill-ring)
-    (require 'browse-kill-ring))
-  (global-set-key [(control ?c) (control ?k)] 'browse-kill-ring))
+(when (uinit/require 'browse-kill-ring)
+  (when (fboundp 'browse-kill-ring)
+    (global-set-key [(control ?c) (control ?k)] 'browse-kill-ring)))
 
 
 ;;;
@@ -256,7 +256,7 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;(global-set-key [C-h] 'backward-delete-char)
 
 (global-set-key "\C-cc" 'compile)
-(when (locate-library "dwim-compile")
+(when (uinit/require 'dwim-compile)
   (require 'dwim-compile)
   (global-set-key [(control ?c) ?c] 'dwim-c/compile))
 
@@ -294,19 +294,20 @@ Each elements in DIRS will be expanded using `expand-file-name'."
               abb_default
             abb_correct))))
 
-(require 'autoinsert)
+(when nil
+  (require 'autoinsert)
 
-(let ((aid_correct (concat (file-name-as-directory user-emacs-directory)
-                           "insert"))
-      (aid_default (if (boundp 'auto-insert-directory)
-                       auto-insert-directory
-                     "~/insert")))
-  (setq auto-insert-directory
-        (if (file-accessible-directory-p aid_correct)
-            aid_correct
-          aid_default)))
+  (let ((aid_correct (concat (file-name-as-directory user-emacs-directory)
+                             "insert"))
+        (aid_default (if (boundp 'auto-insert-directory)
+                         auto-insert-directory
+                       "~/insert")))
+    (setq auto-insert-directory
+          (if (file-accessible-directory-p aid_correct)
+              aid_correct
+            aid_default)))
 
-(add-hook 'find-file-hook 'auto-insert)
+  (add-hook 'find-file-hook 'auto-insert))
 
 ;; navigation
 
@@ -314,9 +315,8 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;;
 ;;; Use hippie expansion for dynamic abbreviation
 ;;;
-(when (locate-library "hippie-exp")
+(when (uinit/require 'hippie-exp)
   (global-set-key [(meta ?/)] 'hippie-expand)
-
   (setq hippie-expand-try-functions-list
         '(try-complete-file-name-partially
           try-complete-file-name
@@ -337,7 +337,7 @@ Each elements in DIRS will be expanded using `expand-file-name'."
   (iswitchb-mode 1)                     ; smart buffer switching mode
   (setq iswitchb-default-method 'maybe-frame)) ; ask to use another frame.
 
-(when (locate-library "ido")
+(when (uinit/require 'ido)
   (ido-mode 1)
   (setq ido-default-buffer-method 'maybe-frame)
   (setq ido-use-filename-at-point 'guess)
@@ -372,8 +372,8 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;; updated, or until I found better way, I'll stick to
 ;; 'icomplete-mode.
 (icomplete-mode 1)
-(when (locate-library "icomplete+")
-  (require 'icomplete+))
+(eval-after-load "icomplete"
+  '(uinit/require 'icomplete+ nil 'noerror))
 
 (when (> emacs-major-version 23)
   ;; diable completion cycling
@@ -1216,8 +1216,10 @@ in any of directory in `yas-snippet-dirs'."
 
 
 
-(add-to-list 'load-path "~/.emacs.d/emacs-gradle-mode")
-(require 'gradle-mode)
+(let ((dir (expand-file-name "~/.emacs.d/emacs-gradle-mode")))
+  (when (file-exists-p dir)
+    (add-to-list 'load-path dir)))
+(uinit/require 'gradle-mode)
 
 ;;(global-set-key [f2] 'ff-find-other-file)
 ;;(global-set-key [f3] 'dired-jump)

@@ -39,6 +39,30 @@
                              (format "%s: %s: %S" ,sname
                                      (car err) (cdr err)))))))))))
 
+(defmacro uinit/require (feature &optional filename noerror)
+  "If feature FEATURE is not loaded, load it from FILENAME."
+  (let ((absname (make-symbol "ABSNAME"))
+        (began (make-symbol "BEGAN"))
+        (place (make-symbol "PLACE"))
+        (result (make-symbol "RESULT")))
+    `(let* ((,absname (locate-library (symbol-name ,feature)))
+            (,began (current-time))
+            (,place (if buffer-file-name
+                        (file-name-nondirectory buffer-file-name)
+                      "dot-emacs"))
+            ,result)
+       (if (and ,absname (member ,absname uinit/loaded-init-files))
+           (setq ,result t)
+         (condition-case err
+             (progn (require ,feature ,filename)
+                    (setq ,result t))
+           (error (or ,noerror
+                      (lwarn ,place :warning
+                             (format "%S: %s: %S" ,feature
+                                     (car err) (cdr err))))))
+         (uinit/logger ,began ,result (or ,absname ,feature)))
+       ,result)))
+
 (defun uinit/previous-line (&optional arg)
   (interactive "p")
   (previous-line arg)
@@ -126,6 +150,8 @@ init script."
                                        (2 font-lock-doc-face))))
   (make-local-variable 'font-lock-keywords)
   (make-local-variable 'font-lock-defaults)
+  (make-local-variable 'line-move-visual)
+  (setq line-move-visual nil)
   (setq font-lock-keywords snippets-font-lock-keywords)
   (setq font-lock-defaults '((snippets-font-lock-keywords) t nil nil))
 
