@@ -15,7 +15,7 @@
     (tmm-menubar arg)))
 
 (defun set-exec-path-from-shell-path ()
-  (let ((newpath (shell-command-to-string "$SHELL -l -c 'echo $PATH'")))
+  (let ((newpath (shell-command-to-string "/bin/sh -l -c 'echo $PATH'")))
     (setenv "PATH" newpath)
     (setq exec-path (split-string newpath path-separator))))
 

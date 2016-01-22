@@ -549,11 +549,11 @@ following:
 
 (setq org-export-html-style "
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://www.cinsk.org/bootstrap/css/bootstrap.css\"/>
+      href=\"http://cinsk.github.io/bootstrap/css/bootstrap.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://www.cinsk.org/bootstrap/css/bootstrap-responsive.css\"/>
+      href=\"http://cinsk.github.io/bootstrap/css/bootstrap-responsive.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://www.cinsk.org/bootstrap/css/docs.css\"/>
+      href=\"http://cinsk.github.io/bootstrap/css/docs.css\"/>
 <style type=\"text/css\">
   <!--/*--><![CDATA[/*><!--*/
   body { margin: 2% 6% 2% 10%; }

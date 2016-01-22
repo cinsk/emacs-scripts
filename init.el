@@ -17,6 +17,12 @@
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 ;;;
 
+(when (string-equal (getenv "SHELL") "/bin/false")
+  ;; "$SHELL" is set to "/bin/false" in darwin under Amazon User Cert. System.
+  (let ((sh (or (executable-find "bash") "/bin/sh")))
+    (setenv "SHELL" sh)
+    (setq shell-file-name sh)))
+
 (setq user-emacs-directory "~/.emacs.d/")
 
 (if (not (file-accessible-directory-p user-emacs-directory))
@@ -52,7 +58,7 @@
              (locate-library "package"))
     (require 'package)
     (add-to-list 'package-archives
-                 '("marmalade" . "http://marmalade-repo.org/packages/"))
+                 '("marmalade" . "https://marmalade-repo.org/packages/"))
     (add-to-list 'package-archives
                  '("sc" . "http://joseito.republika.pl/sunrise-commander/") t)
     (add-to-list 'package-archives
@@ -141,7 +147,8 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 
 (when (uinit/require 'fontutil)
   ;; For the actual fontset selection, see init/X.el or init/darwim.el
-  (font/install-mouse-wheel))
+  ;; (font/install-mouse-wheel)
+  )
 
 
 
@@ -746,7 +753,7 @@ starting number."
 ;;; Launch view-mode when visiting other's file.
 ;;;
 (defun file-uid (filename)
-  (caddr (file-attributes (expand-file-name filename))))
+  (cl-caddr (file-attributes (expand-file-name filename))))
 
 (defun smart-view-mode ()
   "Enable `view-mode' on certain condition.
