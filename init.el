@@ -692,7 +692,7 @@ starting number."
   'lisp)
 
 (uinit/load "_clojure"
-  (locate-library "clojure-mode"))
+  (and (locate-library "clojure-mode") (locate-library "cider-mode")))
 
 
 (uinit/load "_latex"
