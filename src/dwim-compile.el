@@ -178,20 +178,22 @@ Note that this function may modify AS1 destructively."
 
 The cached spec was stored in `dwim-c/selected-build-tool'.  See also
 `dwim-c/call-build-tool' for the format of the cached spec."
-  (unless nocache
-    (let* ((toolfile (cadr dwim-c/selected-build-tool))
-           (basedir (file-name-directory toolfile))
-           (pattern (concat "^" (regexp-quote basedir))))
-      (when (and default-directory
-                 (file-exists-p toolfile)
-                 ;; Assume that the cached spec was set in a
-                 ;; interactive buffer (e.g. "*shell*" buffer), and
-                 ;; the user changed `default-directory' somehow
-                 ;; unrelated directory of the spec.  In this case, we
-                 ;; cannot use the cached spec, since the current
-                 ;; directory is unrelated to the cached spec.
-                 (string-match-p pattern default-directory))
-        (list dwim-c/selected-build-tool)))))
+  (condition-case e
+      (unless nocache
+        (let* ((toolfile (cadr dwim-c/selected-build-tool))
+               (basedir (file-name-directory toolfile))
+               (pattern (concat "^" (regexp-quote basedir))))
+          (when (and default-directory
+                     (file-exists-p toolfile)
+                     ;; Assume that the cached spec was set in a
+                     ;; interactive buffer (e.g. "*shell*" buffer), and
+                     ;; the user changed `default-directory' somehow
+                     ;; unrelated directory of the spec.  In this case, we
+                     ;; cannot use the cached spec, since the current
+                     ;; directory is unrelated to the cached spec.
+                     (string-match-p pattern default-directory))
+            (list dwim-c/selected-build-tool))))
+    (error nil)))
 
 
 (defun dwim-c/detect-build-tools (&optional nocache)
