@@ -50,12 +50,15 @@
 (defun vc/magit-status (dir)
   ;; If magit-status receives DIR, it ask the confirmation to create a
   ;; directory, which is not what I want.
-  (magit-status))
+  (let ((default-directory dir))
+    (magit-status)))
 
 (defun vc/directory-name (&optional buffer)
   (with-current-buffer (or buffer (current-buffer))
     (or (and buffer-file-name
              (file-name-directory buffer-file-name))
+        (and (eq major-mode 'dired-mode)
+             (dired-current-directory))
         default-directory)))
 
 (defun vc/call-dir-function (backend directory)
