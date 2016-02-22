@@ -62,7 +62,9 @@
     (add-to-list 'package-archives
                  '("sc" . "http://joseito.republika.pl/sunrise-commander/") t)
     (add-to-list 'package-archives
-                 '("melpa" . "http://melpa.org/packages/") t)
+                 '("melpa" . "https://melpa.org/packages/") t)
+    (add-to-list 'package-archives
+                 '("gnu" . "https://elpa.gnu.org/packages/") t)
     ;; According to the package.el, if `package-enable-at-startup' is
     ;; t, it will load all the packages on start up.  But it didn't.
     ;; Perhaps it's a problem related to the version (currently Emacs
@@ -786,7 +788,9 @@ This function is best used in `find-file-hook'."
 ;;; from http://cscope.sourceforge.net/
 ;;;
 (when (locate-library "xcscope")
-  (require 'xcscope))
+  (require 'xcscope)
+  (and (fboundp 'cscope-setup)
+       (cscope-setup)))
 
 ;;;
 ;;; Version Control
@@ -1227,6 +1231,17 @@ in any of directory in `yas-snippet-dirs'."
   (when (file-exists-p dir)
     (add-to-list 'load-path dir)))
 (uinit/require 'gradle-mode)
+
+
+
+;; See http://stackoverflow.com/questions/13397737/ansi-coloring-in-compilation-mode
+(ignore-errors
+  (require 'ansi-color)
+  (defun my-colorize-compilation-buffer ()
+    (when (eq major-mode 'compilation-mode)
+      (ansi-color-apply-on-region compilation-filter-start (point-max))))
+  (add-hook 'compilation-filter-hook 'my-colorize-compilation-buffer))
+
 
 ;;(global-set-key [f2] 'ff-find-other-file)
 ;;(global-set-key [f3] 'dired-jump)

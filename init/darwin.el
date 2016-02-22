@@ -116,4 +116,12 @@
                     TeX-run-discard-or-function t t :help "Run Viewer"))))
 
 
+(when (file-executable-p "/usr/local/bin/diff3")
+  (setq ediff-diff3-program "/usr/local/bin/diff3"
+        ediff-diff-program  "/usr/local/bin/diff"
+        ediff-cmp-program "/usr/local/bin/cmp"))
+
+(when (file-executable-p "/usr/local/bin/patch")
+  (setq ediff-patch-program "/usr/local/bin/patch"))
+
 ;; (desktop-save-mode 1)

@@ -193,6 +193,8 @@ created file buffer."
   "\n"
   _)
 
+(auto-insert-mode 1)
+
 (add-to-list 'auto-insert-alist
              '(("\\.h\\'" . "C header")
                . c-header-skeleton))
