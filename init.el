@@ -130,7 +130,7 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 
 
 
-(uinit/load "ediff"
+(uinit/load "_ediff"
   ;; Note that some external packages loads 'ediff by themselves, such
   ;; as magit and color-theme.  Since
   ;; `ediff-make-wide-display-function' should be set before loading
@@ -141,7 +141,7 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 
 (when (uinit/require 'fontutil)
   ;; For the actual fontset selection, see init/X.el or init/darwim.el
-  (font/install-mouse-wheel))
+  (fontutil/install-mouse-wheel))
 
 
 
@@ -533,6 +533,13 @@ and to remove trailing whitespaces")
 
 (global-set-key [(meta shift prior)] 'scroll-other-frame-down)
 (global-set-key [(meta shift next)] 'scroll-other-frame)
+
+
+
+(when (and (display-graphic-p)
+           (eq (lookup-key (current-global-map) [(control ?z)])
+               #'suspend-frame))
+  (global-unset-key [(control ?z)]))
 
 
 

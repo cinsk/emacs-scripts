@@ -336,68 +336,6 @@ rightward. (This causes the selected window grows horizontally.)"
     (global-set-key [(control ?c) ?k ?f] 'delete-frame)))
 
 
-(defun cinsk/ediff-make-wide-display ()
-  "Construct an alist of parameters for the wide display.
-Saves the old frame parameters in `ediff-wide-display-orig-parameters'.
-The frame to be resized is kept in `ediff-wide-display-frame'.
-This function modifies only the left margin and the width of the display.
-It assumes that it is called from within the control buffer."
-  ;;(message "cinsk/ediff-make-wide-display")
-  (if (not (fboundp 'ediff-display-pixel-width))
-      (error "Can't determine display width"))
-  (let* ((frame-A (window-frame ediff-window-A))
-         (frame-A-params (frame-parameters frame-A))
-         (fw (frame-width frame-A))
-         (fpw (frame-pixel-width frame-A))
-         (cw (ediff-frame-char-width frame-A))
-         (febw cw)                      ; frame external border width
-         (fibw (- fpw (* fw cw)))       ; frame internal border width
-         desired-fw desired-fpw desired-left)
-
-    (setq ediff-wide-display-orig-parameters
-          (list (cons 'left (max 0 (eval (cdr (assoc 'left frame-A-params)))))
-                (cons 'width (cdr (assoc 'width frame-A-params))))
-          ediff-wide-display-frame frame-A)
-
-    ;;(message "ediff-wide-display-orig-parameters: %S"
-    ;;         ediff-wide-display-orig-parameters)
-
-    ;;(message "wide window width: %S" cinsk/ediff-wide-window-width)
-    ;;(message "split function: %S" ediff-split-window-function)
-    (setq desired-fw (* cinsk/ediff-wide-window-width
-                        (if (and (boundp 'ediff-3way-job) ediff-3way-job)
-                            3 2)))
-
-    ;; ensure that DESIRED-FW is smaller than the screen size
-    (if (> (+ (* desired-fw cw) febw fibw) (ediff-display-pixel-width))
-        (setq desired-fw (/ (- (ediff-display-pixel-width) fibw febw) cw)))
-
-    ;;(setq desired-fpw (+ (* desired-fw cw) fbw))
-    (setq desired-fpw (* desired-fw cw))
-    (let ((left (eval (cdr (assoc 'left frame-A-params)))))
-      (cond ((eq cinsk/ediff-wide-display-policy 'left)
-             (setq desired-left (- left (* (- desired-fw fw) cw))))
-
-            ((eq cinsk/ediff-wide-display-policy 'right)
-             (setq desired-left left))
-
-            (t                          ; center
-             (setq desired-left (- left (/ (* (- desired-fw fw) cw) 2)))))
-
-      ;; ensure that the frame will be inside of the display border.
-      (if (< (- desired-left (/ febw 2)) 0)
-          (setq desired-left (/ febw 2)))
-
-      (if (> (+ desired-left (+ (* desired-fw cw) fibw (/ febw 2)))
-             (ediff-display-pixel-width))
-          (setq desired-left (- (ediff-display-pixel-width)
-                                (+ (* desired-fw cw) fibw (/ febw 2))))))
-
-    ;; (message "resizing WIDTH to %S where LEFT to %S" desired-fw desired-left)
-    (modify-frame-parameters
-     frame-A `((left . ,desired-left) (width . ,desired-fw)
-               (user-position . t)))))
-
 (defun wfu/widen-info (width &optional pivot frame)
   "Calculate frame position if the frame need to be expanded to WIDTH.
 

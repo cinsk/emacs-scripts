@@ -115,5 +115,6 @@
                   '("View" "open -a Preview %o"
                     TeX-run-discard-or-function t t :help "Run Viewer"))))
 
+(setq cinsk/ediff-wide-display-policy 'fullscreen)
 
 ;; (desktop-save-mode 1)
