@@ -62,3 +62,6 @@
 (add-hook 'java-mode-hook (lambda ()
                             (subword-mode 1)
                             (c-set-offset 'statement-cont '++)))
+
+(when (locate-library "autodisass-java-bytecode")
+  (require 'autodisass-java-bytecode))
