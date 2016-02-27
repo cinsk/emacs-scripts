@@ -536,13 +536,6 @@ and to remove trailing whitespaces")
 
 
 
-(when (and (display-graphic-p)
-           (eq (lookup-key (current-global-map) [(control ?z)])
-               #'suspend-frame))
-  (global-unset-key [(control ?z)]))
-
-
-
 (global-set-key [(control meta ?\])] #'forward-page)
 (global-set-key [(control meta ?\[)] #'backward-page)
 
