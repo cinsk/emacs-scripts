@@ -359,5 +359,19 @@ With two prefix arguments (C-u C-u), it will just call `compile' command."
                                                            )) tools)))
                  (dwim-c/call-build-tool spec))))))))
 
+(defun string/starts-with (s begins)
+  "Return non-nil if string S starts with BEGINS."
+  (cond ((>= (length s) (length begins))
+         (string-equal (substring s 0 (length begins)) begins))
+        (t nil)))
+
+(defun compilation-finished-notification (buf status)
+  (cond ((string/starts-with status "finished")
+         (shell-command "say -v Vicki done"))
+        (t
+         (shell-command "say -v Agnes oops"))))
+
+(add-hook 'compilation-finish-functions 'compilation-finished-notification)
+
 (provide 'dwim-compile)
 ;;; dwim-compile.el ends here

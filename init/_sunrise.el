@@ -74,23 +74,23 @@ frame that runs sunrise, if sunrise is running."
     (set-frame-configuration sr-prior-frame-configuration)
     (setq sr-prior-frame-configuration nil)))
 
-(eval-after-load "sunrise-commander"
-  '(let* ((frwidth (frame-parameter nil 'width))
-          (chwidth (/ (frame-pixel-width) frwidth))
-          (dpwidth (/ (display-pixel-width) chwidth)))
-     (when (> dpwidth (* frwidth 2))
-       (add-to-list 'sr-init-hook 'cinsk/sr-frame-init))
+(with-eval-after-load "sunrise-commander"
+  (let* ((frwidth (frame-parameter nil 'width))
+         (chwidth (/ (frame-pixel-width) frwidth))
+         (dpwidth (/ (display-pixel-width) chwidth)))
+    (when (> dpwidth (* frwidth 2))
+      (add-to-list 'sr-init-hook 'cinsk/sr-frame-init))
 
-     (when (and (boundp 'sr-mode-map)
-                ;; (> dpwidth (* frwidth 3))
-                )
+    (when (and (boundp 'sr-mode-map)
+               ;; (> dpwidth (* frwidth 3))
+               )
 
-       ;; Comment below if you do not want to use another frame when
-       ;; visiting a file.
-       (define-key sr-mode-map "\C-m" 'sr-advertised-find-file-other-frame)
-       (define-key sr-mode-map [return] 'sr-advertised-find-file-other-frame))
+      ;; Comment below if you do not want to use another frame when
+      ;; visiting a file.
+      (define-key sr-mode-map "\C-m" 'sr-advertised-find-file-other-frame)
+      (define-key sr-mode-map [return] 'sr-advertised-find-file-other-frame))
 
-     ;; make sure `cinsk/sr-save-frame-configuration' is called *BEFORE*
-     ;; `cinsk/sr-frame-init'
-     (add-hook 'sr-init-hook #'cinsk/sr-save-frame-configuration)
-     (add-hook 'sr-quit-hook #'cinsk/sr-restore-frame-configuration)))
+    ;; make sure `cinsk/sr-save-frame-configuration' is called *BEFORE*
+    ;; `cinsk/sr-frame-init'
+    (add-hook 'sr-init-hook #'cinsk/sr-save-frame-configuration)
+    (add-hook 'sr-quit-hook #'cinsk/sr-restore-frame-configuration)))

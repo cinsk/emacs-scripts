@@ -247,143 +247,141 @@ not NOT-THIS-COMMAND"
   (and command
        (call-interactively command)))
 
-(eval-after-load "org"
-  '(progn
-     ;;
-     ;; Enable evaluation code block of certain languages
-     ;;
-     (org-babel-do-load-languages
-      'org-babel-load-languages
-      `((emacs-lisp . t)
-        (R . t)
-        (python . t)
-        (ruby . t)
-        (dot . t)
-        ,(when (locate-library "ob-go") '(go . t))
-        (sh . t)))
+(with-eval-after-load "org"
+  ;;
+  ;; Enable evaluation code block of certain languages
+  ;;
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   `((emacs-lisp . t)
+     (R . t)
+     (python . t)
+     (ruby . t)
+     (dot . t)
+     ,(when (locate-library "ob-go") '(go . t))
+     (sh . t)))
 
-     (define-key outline-mode-map [(control down)]
-       'outline-next-visible-heading)
-     (define-key outline-mode-map [(control up)]
-       'outline-previous-visible-heading)
-     (define-key outline-mode-map [(control shift down)]
-       'outline-forward-same-level)
-     (define-key outline-mode-map [(control shift up)]
-       'outline-backward-same-level)
+  (define-key outline-mode-map [(control down)]
+    'outline-next-visible-heading)
+  (define-key outline-mode-map [(control up)]
+    'outline-previous-visible-heading)
+  (define-key outline-mode-map [(control shift down)]
+    'outline-forward-same-level)
+  (define-key outline-mode-map [(control shift up)]
+    'outline-backward-same-level)
 
-     ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
-     ;; since I use "C-<TAB>" for `smart-other-window'.
-     (move-key org-mode-map [(control tab)] [(control x) (control tab)])
+  ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
+  ;; since I use "C-<TAB>" for `smart-other-window'.
+  (move-key org-mode-map [(control tab)] [(control x) (control tab)])
 
-     ;; Move the binding of `org-deadline' from "C-c C-d" to "C-c
-     ;; C-S-d", since I'vd used the keybinding for
-     ;; `delete-chars-forward-with-syntax'.
-     (move-key org-mode-map [(control ?c) (control ?d)]
-               [(control ?c) (control shift ?d)])
+  ;; Move the binding of `org-deadline' from "C-c C-d" to "C-c
+  ;; C-S-d", since I'vd used the keybinding for
+  ;; `delete-chars-forward-with-syntax'.
+  (move-key org-mode-map [(control ?c) (control ?d)]
+            [(control ?c) (control shift ?d)])
 
-     (define-key org-mode-map [(control c) (control ?\\)]
-       'org-table-convert-from-lines)
+  (define-key org-mode-map [(control c) (control ?\\)]
+    'org-table-convert-from-lines)
 
-     (define-key org-mode-map [(control c) ?t] 'org-todo)
+  (define-key org-mode-map [(control c) ?t] 'org-todo)
 
-     (define-key org-mode-map [(control c) ?s] 'cinsk/org-sourcefy)
+  (define-key org-mode-map [(control c) ?s] 'cinsk/org-sourcefy)
 
-     ;; Shift + TAB in rdesktop, xmanager, emacs
-     (define-key org-mode-map [(shift kp-tab)] 'org-shifttab)
+  ;; Shift + TAB in rdesktop, xmanager, emacs
+  (define-key org-mode-map [(shift kp-tab)] 'org-shifttab)
 
-     ;; unicode: word joiner
-     ;;
-     ;; To mark-up certain text (e.g. /"hello"/ga), place 'word joiner'
-     ;; character in /"hello"/<!>ga, where <!> represents the position for the
-     ;; word joiner.
-     (define-key org-mode-map [(control c) (control ?\;)]
-       '(lambda ()
-          (interactive)
-          (ucs-insert #x2060)))
-     ;; unicode: zero width space
-     ;;
-     ;; To mark-up certain text (e.g. ="hello"=), place 'zero width space'
-     ;; character in =<!>"hello"<!>=, where <!> represent the two position
-     ;; for the zero width space character.
-     (define-key org-mode-map [(control c) (control ?\')]
-       '(lambda ()
-          (interactive)
-          (ucs-insert #x200B)))
+  ;; unicode: word joiner
+  ;;
+  ;; To mark-up certain text (e.g. /"hello"/ga), place 'word joiner'
+  ;; character in /"hello"/<!>ga, where <!> represents the position for the
+  ;; word joiner.
+  (define-key org-mode-map [(control c) (control ?\;)]
+    '(lambda ()
+       (interactive)
+       (ucs-insert #x2060)))
+  ;; unicode: zero width space
+  ;;
+  ;; To mark-up certain text (e.g. ="hello"=), place 'zero width space'
+  ;; character in =<!>"hello"<!>=, where <!> represent the two position
+  ;; for the zero width space character.
+  (define-key org-mode-map [(control c) (control ?\')]
+    '(lambda ()
+       (interactive)
+       (ucs-insert #x200B)))
 
-     ;;(add-to-list 'org-mode-hook (lambda ()
-     ;; (org-wordjoin-mode 1)))
+  ;;(add-to-list 'org-mode-hook (lambda ()
+  ;; (org-wordjoin-mode 1)))
 
-     (when (fboundp 'graphviz-dot-mode)
-       (let ((dotpair (assoc "dot" org-src-lang-modes)))
-         (and dotpair
-              (setcdr dotpair 'graphviz-dot))))
+  (when (fboundp 'graphviz-dot-mode)
+    (let ((dotpair (assoc "dot" org-src-lang-modes)))
+      (and dotpair
+           (setcdr dotpair 'graphviz-dot))))
 
-     (cond ((eq system-type 'gnu/linux)
-            (add-to-list 'org-file-apps '("pdf" . "acroread %s"))
-            (add-to-list 'org-file-apps '("ps" . "ggv %s")))
-           ((eq system-type 'darwin)
-            ;; pdf already handled by Preview
-            (add-to-list 'org-file-apps '("ps" . "open %s"))))
-     (when (fboundp 'browse-url)
-       ;; "export as HTML and open" (a.k.a `C-c C-e h o') uses
-       ;; `org-open-file' to open HTML, which uses $HOME/.mailcap,
-       ;; which usually uses lynx(1) to open HTML file, which is not
-       ;; what I want.  It's better to use `browse-url' to determine
-       ;; the suitable browser.
-       (add-to-list 'org-file-apps
-                    '("\\.x?html?\\'" . (browse-url file))))
+  (cond ((eq system-type 'gnu/linux)
+         (add-to-list 'org-file-apps '("pdf" . "acroread %s"))
+         (add-to-list 'org-file-apps '("ps" . "ggv %s")))
+        ((eq system-type 'darwin)
+         ;; pdf already handled by Preview
+         (add-to-list 'org-file-apps '("ps" . "open %s"))))
+  (when (fboundp 'browse-url)
+    ;; "export as HTML and open" (a.k.a `C-c C-e h o') uses
+    ;; `org-open-file' to open HTML, which uses $HOME/.mailcap,
+    ;; which usually uses lynx(1) to open HTML file, which is not
+    ;; what I want.  It's better to use `browse-url' to determine
+    ;; the suitable browser.
+    (add-to-list 'org-file-apps
+                 '("\\.x?html?\\'" . (browse-url file))))
 
-     ;; Org mode requires font-locking on every org buffer
-     ;; Since I use global-font-lock-mode, below sexp is not necessary.
-     ;;
-     ;; (add-hook 'org-mode-hook 'turn-on-font-lock)
+  ;; Org mode requires font-locking on every org buffer
+  ;; Since I use global-font-lock-mode, below sexp is not necessary.
+  ;;
+  ;; (add-hook 'org-mode-hook 'turn-on-font-lock)
 
-     ;; According to http://orgmode.org/org.html#Conflicts,
-     ;; filladapt.el is not working well with Org, so disable it in
-     ;; org-mode.
-     (add-hook 'org-mode-hook '(lambda ()
-                                 (if (fboundp 'turn-off-filladapt-mode)
-                                     (turn-off-filladapt-mode))))
+  ;; According to http://orgmode.org/org.html#Conflicts,
+  ;; filladapt.el is not working well with Org, so disable it in
+  ;; org-mode.
+  (add-hook 'org-mode-hook '(lambda ()
+                              (if (fboundp 'turn-off-filladapt-mode)
+                                  (turn-off-filladapt-mode))))
 
-     ;; org-hide-leading-stars should be set before loading org-mode.
-     (setq org-hide-leading-stars t)
-     (setq org-odd-levels-only t)
-     ;; (setq org-agenda-include-diary t)
+  ;; org-hide-leading-stars should be set before loading org-mode.
+  (setq org-hide-leading-stars t)
+  (setq org-odd-levels-only t)
+  ;; (setq org-agenda-include-diary t)
 
-     ;; If org file loaded with folding, comparing files with ediff
-     ;; is very unhandy, thus starting with everything is shown
-     (setq org-hide-block-startup nil)
-     (setq org-startup-folded 'showeverything)
+  ;; If org file loaded with folding, comparing files with ediff
+  ;; is very unhandy, thus starting with everything is shown
+  (setq org-hide-block-startup nil)
+  (setq org-startup-folded 'showeverything)
 
-     (when (and (> emacs-major-version 22)
-                (fboundp 'org-set-emph-re))
-       ;; Current org-mode mark-up algorithm does not support marking
-       ;; partial word. (e.g. =partial=word)
-       ;;
-       ;; On some languages that have postposition, which has no word
-       ;; boundary with the previous noun (e.g. Korean aka josa),
-       ;; marking-up partial word is essential.
-       ;;
-       ;; To work around current implementation, it is possible to insert
-       ;; invisible unicode character such as "word joiner" character,
-       ;; \u2060, between the noun and the postposition, to enable partial
-       ;; word.  Thus the text will be "=partial=\u2060word", and adding
-       ;; this special character to `org-emphasis-regexp-components' will
-       ;; do the trick. (Use `ucs-insert' to insert the character into the
-       ;; text)
-       ;;
-       ;; See the original idea from:
-       ;;   http://thread.gmane.org/gmane.emacs.orgmode/46197/focus=46263
-       (org-set-emph-re 'org-emphasis-regexp-components
-                        '(" \t('\"{\\\u2060"
-                          "- \t.,:!?;'\")}\\\u2060"
-                          " \t\r\n,\"'⁠"
-                          "." 1)))
+  (when (and (> emacs-major-version 22)
+             (fboundp 'org-set-emph-re))
+    ;; Current org-mode mark-up algorithm does not support marking
+    ;; partial word. (e.g. =partial=word)
+    ;;
+    ;; On some languages that have postposition, which has no word
+    ;; boundary with the previous noun (e.g. Korean aka josa),
+    ;; marking-up partial word is essential.
+    ;;
+    ;; To work around current implementation, it is possible to insert
+    ;; invisible unicode character such as "word joiner" character,
+    ;; \u2060, between the noun and the postposition, to enable partial
+    ;; word.  Thus the text will be "=partial=\u2060word", and adding
+    ;; this special character to `org-emphasis-regexp-components' will
+    ;; do the trick. (Use `ucs-insert' to insert the character into the
+    ;; text)
+    ;;
+    ;; See the original idea from:
+    ;;   http://thread.gmane.org/gmane.emacs.orgmode/46197/focus=46263
+    (org-set-emph-re 'org-emphasis-regexp-components
+                     '(" \t('\"{\\\u2060"
+                       "- \t.,:!?;'\")}\\\u2060"
+                       " \t\r\n,\"'⁠"
+                       "." 1)))
 
-     (and (boundp 'org-drawers)
-          (add-to-list 'org-drawers "COMMENT"))
-
-     ))
+  (and (boundp 'org-drawers)
+       (add-to-list 'org-drawers "COMMENT"))
+  )
 
 
 (when (locate-library "org-version")
@@ -625,3 +623,9 @@ following:
             (if require-newline-at-end "\n" "")
             "#+END_SRC\n")
     (push mode cinsk/org-sourcefy-history)))
+
+
+(setq org-todo-keywords
+      '((sequence "TODO" "|" "DONE")
+        (sequence "RESEARCH" "|" "DEVELOP" "|" "TEST" "|" "OP-DONE")
+        (sequence "IMPL" "|" "REVIEW" | "RELEASE" "|" "SP-DONE")))

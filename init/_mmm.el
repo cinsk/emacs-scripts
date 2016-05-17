@@ -11,16 +11,16 @@
     (add-to-list 'load-path mmm-dir)
     (add-to-list 'Info-directory-list mmm-dir)))
 
-(eval-after-load "mmm-mode"
+(with-eval-after-load "mmm-mode"
   ;; It seems that mmm-mode 0.4.8 will reset the mmm-related face
   ;; attributes after loading mmm-mode.el.  To prevent resetting,
   ;; set the background of the faces AFTER loading mmm-mode.el
-  '(progn
-     ;; By default, mmm-mode uses faces with bright background for
-     ;; the submodes.   I don't like the bright background for most faces.
-     (set-face-background 'mmm-code-submode-face "black")
-     (set-face-background 'mmm-declaration-submode-face "black")
-     (set-face-background 'mmm-default-submode-face "black")))
+
+  ;; By default, mmm-mode uses faces with bright background for
+  ;; the submodes.   I don't like the bright background for most faces.
+  (set-face-background 'mmm-code-submode-face "black")
+  (set-face-background 'mmm-declaration-submode-face "black")
+  (set-face-background 'mmm-default-submode-face "black"))
 
 (when (locate-library "mmm-auto")
   (require 'mmm-auto)

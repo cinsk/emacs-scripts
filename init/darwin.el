@@ -108,12 +108,11 @@
 (unless (member "/usr/local/bin" exec-path)
   (add-to-list 'exec-path "/usr/local/bin"))
 
-(eval-after-load "tex"
-  '(progn
-     (TeX-global-PDF-mode)
-     (add-to-list 'TeX-command-list
-                  '("View" "open -a Preview %o"
-                    TeX-run-discard-or-function t t :help "Run Viewer"))))
+(with-eval-after-load "tex"
+  (TeX-global-PDF-mode)
+  (add-to-list 'TeX-command-list
+               '("View" "open -a Preview %o"
+                 TeX-run-discard-or-function t t :help "Run Viewer")))
 
 (setq cinsk/ediff-wide-display-policy 'fullscreen)
 
@@ -126,3 +125,5 @@
   (setq ediff-patch-program "/usr/local/bin/patch"))
 
 ;; (desktop-save-mode 1)
+
+(add-to-list 'Info-additional-directory-list "/usr/local/share/info")

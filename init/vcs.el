@@ -26,12 +26,11 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 ;;
 ;; Git
 ;;
-(eval-after-load "git"
-  '(progn
-     (setq git-show-uptodate t
-           git-show-ignored t
-           git-show-unknown t)
-     (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status)))
+(with-eval-after-load "git"
+  (setq git-show-uptodate t
+        git-show-ignored t
+        git-show-unknown t)
+  (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status))
 
 (when nil
   ;; Currently, I'm using magit, not git package.
@@ -42,13 +41,12 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 (setq magit-last-seen-setup-instructions "1.4.0"
       magit-popup-use-prefix-argument 'default)
 
-(eval-after-load "magit"
-  '(progn
-     (and (boundp 'magit-mode-map)
-          ;; Initially, magit uses C-tab for magit-section-cycle, but
-          ;; since I use the key binding for
-          ;; `wfu/other-window-or-frame' so remove the binding here.
-          (define-key magit-mode-map [(control tab)] nil))))
+(with-eval-after-load "magit"
+  (and (boundp 'magit-mode-map)
+       ;; Initially, magit uses C-tab for magit-section-cycle, but
+       ;; since I use the key binding for
+       ;; `wfu/other-window-or-frame' so remove the binding here.
+       (define-key magit-mode-map [(control tab)] nil)))
 
 (when nil
   (let ((magit-git-dir (concat (expand-file-name user-emacs-directory)

@@ -130,8 +130,8 @@ supplied one, a warning message is generated."
     (when arg
          (select-frame-set-input-focus frame))))
 
-(eval-after-load "dired"
-  '(define-key dired-mode-map [(control return)] 'dired-find-file-other-frame))
+(with-eval-after-load "dired"
+  (define-key dired-mode-map [(control return)] 'dired-find-file-other-frame))
 
 
 (defun cinsk/buffer-directory (&optional buffer)

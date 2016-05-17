@@ -51,15 +51,13 @@
 (setq-default ps-multibyte-buffer 'non-latin-printer)
 
 ;; turn off C-h during input
-(eval-after-load "quail"
-  '(progn
-     (define-key quail-translation-keymap "\C-h"
-       'quail-delete-last-char)
-     ;;(define-key quail-translation-keymap "\C-?"
-     ;;  'quail-translation-help)
-     (define-key quail-translation-keymap "\C-?"
-       'quail-delete-last-char)
-     ))
+(with-eval-after-load "quail"
+  (define-key quail-translation-keymap "\C-h"
+    'quail-delete-last-char)
+  ;;(define-key quail-translation-keymap "\C-?"
+  ;;  'quail-translation-help)
+  (define-key quail-translation-keymap "\C-?"
+    'quail-delete-last-char))
 
 ;; The default coding system of the dired buffer is utf-8.
 (add-hook 'dired-before-readin-hook

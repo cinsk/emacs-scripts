@@ -17,15 +17,14 @@ If there is no ESS buffer, create one.  See `ess-switch-to-ESS' for EOB-P."
   (ess-force-buffer-current "Process to load into: ")
   (ess-switch-to-ESS eob-p))
 
-(eval-after-load "ess-mode"
-  '(progn
-     (when (boundp 'ess-mode-map)
-       (define-key ess-mode-map [(control ?c) ?\!] 'ess-shell)
-       (define-key ess-mode-map [(control ?c) (control ?q)] 'ess-dev-off)
-       (define-key ess-mode-map [(control ?c) ?q] 'ess-quit))
-     (when (boundp 'inferior-ess-mode-map)
-       (define-key ess-mode-map [(control ?c) (control ?q)] 'ess-dev-off)
-       (define-key ess-mode-map [(control ?c) ?q] 'ess-quit))))
+(with-eval-after-load "ess-mode"
+  (when (boundp 'ess-mode-map)
+    (define-key ess-mode-map [(control ?c) ?\!] 'ess-shell)
+    (define-key ess-mode-map [(control ?c) (control ?q)] 'ess-dev-off)
+    (define-key ess-mode-map [(control ?c) ?q] 'ess-quit))
+  (when (boundp 'inferior-ess-mode-map)
+    (define-key ess-mode-map [(control ?c) (control ?q)] 'ess-dev-off)
+    (define-key ess-mode-map [(control ?c) ?q] 'ess-quit)))
 
 
 

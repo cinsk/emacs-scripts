@@ -49,6 +49,5 @@ instead of the current word."
           (push-mark)
           (goto-char (cdr range))))))
 
-(eval-after-load "tex-mode"
-  '(progn
-     (define-key tex-mode-map [(control ?c) ?e] 'latex-enclose-word)))
+(with-eval-after-load "tex-mode"
+  (define-key tex-mode-map [(control ?c) ?e] 'latex-enclose-word))

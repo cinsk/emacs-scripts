@@ -19,83 +19,82 @@
 ;;
 ;;(autoload 'python-mode "python-mode" "Python editing mode." t))
 
-(eval-after-load "python-mode"
-  '(progn
-     ;; C-c C-b py-execute-buffer
-     ;; C-c C-r py-execute-region
-     ;; C-c C-e py-execute-string
-     ;;
-     ;; C-c C-c py-comment-region
-     ;; C-c C-i py-indent-region
-     ;;
-     ;; C-c [   py-shift-region-left
-     ;; C-c ]   py-shift-region-right
+(with-eval-after-load "python-mode"
+  ;; C-c C-b py-execute-buffer
+  ;; C-c C-r py-execute-region
+  ;; C-c C-e py-execute-string
+  ;;
+  ;; C-c C-c py-comment-region
+  ;; C-c C-i py-indent-region
+  ;;
+  ;; C-c [   py-shift-region-left
+  ;; C-c ]   py-shift-region-right
 
-     (let ((map (if (boundp 'python-mode-map)
-                    python-mode-map
-                  py-mode-map)))
-       (define-key map [(control ?c) ?\]]
-         'py-shift-region-right)
-       (define-key map [(control ?c) ?\[]
-         'py-shift-region-left)
+  (let ((map (if (boundp 'python-mode-map)
+                 python-mode-map
+               py-mode-map)))
+    (define-key map [(control ?c) ?\]]
+      'py-shift-region-right)
+    (define-key map [(control ?c) ?\[]
+      'py-shift-region-left)
 
-       ;; To eval string/region/buffer in native python,
-       ;; use py-execute-(string|region|buffer).
-       ;;
-       ;; To eval in ipython, use py-execute-(string|region|buffer)-ipython.
+    ;; To eval string/region/buffer in native python,
+    ;; use py-execute-(string|region|buffer).
+    ;;
+    ;; To eval in ipython, use py-execute-(string|region|buffer)-ipython.
 
-       (if (and (executable-find "ipython")
-                (fboundp 'py-execute-region-ipython))
-           (progn
-             (setq py-start-run-ipython-shell t)
-             (setq-default py-shell-name "ipython")
+    (if (and (executable-find "ipython")
+             (fboundp 'py-execute-region-ipython))
+        (progn
+          (setq py-start-run-ipython-shell t)
+          (setq-default py-shell-name "ipython")
 
-             ;; The default prompt of ipython is not working properly
-             ;; it contains some ^A (ASCII 1) which makes completion
-             ;; not working.
-             (setq-default ;; py-python-command-args '("-i" "--classic")
-                           py-ipython-command-args "-i --classic")
+          ;; The default prompt of ipython is not working properly
+          ;; it contains some ^A (ASCII 1) which makes completion
+          ;; not working.
+          (setq-default ;; py-python-command-args '("-i" "--classic")
+           py-ipython-command-args "-i --classic")
 
-             (define-key map [(control ?c) (control ?b)]
-               'py-execute-buffer-ipython)
-             (define-key map [(control ?c) (control ?r)]
-               'py-execute-region-ipython)
-             (define-key map [(control ?c) ?f]
-               'py-execute-def-ipython)
-             ;; py-execute-string-ipython is not provided yet
-             ;; (python-mode 6.0.10)
-             (define-key map [(control ?c) (control ?e)]
-               'py-execute-string))
-         (progn
-           (define-key map [(control ?c) (control ?b)]
-             'py-execute-buffer)
-           (define-key map [(control ?c) (control ?r)]
-             'py-execute-region)
-             (define-key map [(control ?c) ?f]
-               'py-execute-def)
-           (define-key map [(control ?c) (control ?e)]
-             'py-execute-string)))
+          (define-key map [(control ?c) (control ?b)]
+            'py-execute-buffer-ipython)
+          (define-key map [(control ?c) (control ?r)]
+            'py-execute-region-ipython)
+          (define-key map [(control ?c) ?f]
+            'py-execute-def-ipython)
+          ;; py-execute-string-ipython is not provided yet
+          ;; (python-mode 6.0.10)
+          (define-key map [(control ?c) (control ?e)]
+            'py-execute-string))
+      (progn
+        (define-key map [(control ?c) (control ?b)]
+          'py-execute-buffer)
+        (define-key map [(control ?c) (control ?r)]
+          'py-execute-region)
+        (define-key map [(control ?c) ?f]
+          'py-execute-def)
+        (define-key map [(control ?c) (control ?e)]
+          'py-execute-string)))
 
-       (define-key map [(control ?c) (control ?c)] 'py-comment-region)
-       (define-key map [(control ?c) ?i] 'py-indent-region)
+    (define-key map [(control ?c) (control ?c)] 'py-comment-region)
+    (define-key map [(control ?c) ?i] 'py-indent-region)
 
-       (when (and (boundp 'py-shell-map)
-                  (null (lookup-key py-shell-map [(tab)]))
-                  (fboundp 'py-shell-complete))
-         (define-key py-shell-map [(tab)] 'py-shell-complete))
+    (when (and (boundp 'py-shell-map)
+               (null (lookup-key py-shell-map [(tab)]))
+               (fboundp 'py-shell-complete))
+      (define-key py-shell-map [(tab)] 'py-shell-complete))
 
-       (when (locate-file "pychecker" exec-path)
-         (define-key map [(control ?c) ?c] 'py-pychecker-run))
+    (when (locate-file "pychecker" exec-path)
+      (define-key map [(control ?c) ?c] 'py-pychecker-run))
 
-       ;; python-mode uses `C-c C-d' for `py-pdbtrack-toggle-stack-tracking'
-       (define-key map [(control ?c) (control ?d)] 'zap-to-nonspace))
+    ;; python-mode uses `C-c C-d' for `py-pdbtrack-toggle-stack-tracking'
+    (define-key map [(control ?c) (control ?d)] 'zap-to-nonspace))
 
-     (when (and (boundp 'py-shell-map)
-                (null (lookup-key py-shell-map [(control ?a)])))
-       ;; `move-beginning-of-line' (C-a) ignore the prompt, which is
-       ;; inconvinient.
-       (define-key py-shell-map [(control ?a)]
-         'comint-bol-or-process-mark))))
+  (when (and (boundp 'py-shell-map)
+             (null (lookup-key py-shell-map [(control ?a)])))
+    ;; `move-beginning-of-line' (C-a) ignore the prompt, which is
+    ;; inconvinient.
+    (define-key py-shell-map [(control ?a)]
+      'comint-bol-or-process-mark)))
 
 (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
 (setq interpreter-mode-alist (cons '("python" . python-mode)

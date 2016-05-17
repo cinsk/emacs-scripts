@@ -205,8 +205,8 @@ Each elements must be a directory name or a jar archive name")
               (throw 'found target))))))))
 
 
-(eval-after-load "ffap"
-  '(add-to-list 'ffap-alist '(java-mode . ffap-java-mode)))
+(with-eval-after-load "ffap"
+  (add-to-list 'ffap-alist '(java-mode . ffap-java-mode)))
 
 (provide 'ffap-java)
 ;;; ffap-java.el ends here

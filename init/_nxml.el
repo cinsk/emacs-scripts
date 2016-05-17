@@ -57,15 +57,14 @@
 ;; remedy this.
 (setq nxml-child-indent 2)
 
-(eval-after-load "nxml-mode"
-  '(progn
-     ;; Make a slash automatically completes the end-tag
-     (setq nxml-slash-auto-complete-flag t)
-     (define-key nxml-mode-map [(control ?c) (control ?e)]
-       'nxml-enclose-paragraph)
+(with-eval-after-load "nxml-mode"
+  ;; Make a slash automatically completes the end-tag
+  (setq nxml-slash-auto-complete-flag t)
+  (define-key nxml-mode-map [(control ?c) (control ?e)]
+    'nxml-enclose-paragraph)
 
-     ;; install abbrev table
-     (add-hook 'nxml-mode-hook (function (lambda nil (abbrev-mode 1))))))
+  ;; install abbrev table
+  (add-hook 'nxml-mode-hook (function (lambda nil (abbrev-mode 1)))))
 
 
 (when (fboundp 'nxml-mode)

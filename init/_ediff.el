@@ -66,34 +66,33 @@
 ;; no effect here
 ;;(setq ediff-make-wide-display-function 'cinsk/ediff-make-wide-display)
 
-(eval-after-load "ediff"
-  '(progn
-     ;; I haven't digged much, but restoring the frame is not working
-     ;; (esp. on merge session) if `ediff-toggle-wide-display' is
-     ;; registered in `ediff-quit-hook'.  Registering
-     ;; `ediff-cleanup-hook' solves the problem. -- cinsk
+(with-eval-after-load "ediff"
+  ;; I haven't digged much, but restoring the frame is not working
+  ;; (esp. on merge session) if `ediff-toggle-wide-display' is
+  ;; registered in `ediff-quit-hook'.  Registering
+  ;; `ediff-cleanup-hook' solves the problem. -- cinsk
 
-     (add-hook 'ediff-cleanup-hook (lambda ()
-                                     (if ediff-wide-display-p
-                                         (ediff-toggle-wide-display))))
+  (add-hook 'ediff-cleanup-hook (lambda ()
+                                  (if ediff-wide-display-p
+                                      (ediff-toggle-wide-display))))
 
-     ;; Change the algorithm perhaps find a smaller set of changes.
-     ;; This makes `diff' slower.
-     (setq ediff-diff-options "-d")
+  ;; Change the algorithm perhaps find a smaller set of changes.
+  ;; This makes `diff' slower.
+  (setq ediff-diff-options "-d")
 
-     ;; ignore whitespaces and newlines. (can be toggled on/off via `##')
-     (setq ediff-ignore-similar-regions t)
-     ;; do not create new frame for the control panel
-     (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-     ;; If nil, ask the user to kill the buffers on exit.
-     ;; (setq ediff-keep-variants nil)
+  ;; ignore whitespaces and newlines. (can be toggled on/off via `##')
+  (setq ediff-ignore-similar-regions t)
+  ;; do not create new frame for the control panel
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+  ;; If nil, ask the user to kill the buffers on exit.
+  ;; (setq ediff-keep-variants nil)
 
-     ;; Delete the buffer for the revision files on `ediff-quit'.
-     (add-to-list 'ediff-cleanup-hook #'cinsk/ediff-janitor)
+  ;; Delete the buffer for the revision files on `ediff-quit'.
+  (add-to-list 'ediff-cleanup-hook #'cinsk/ediff-janitor)
 
-     ;; no effect
-     ;; (setq ediff-make-wide-display-function 'cinsk/ediff-make-wide-display)
-     ))
+  ;; no effect
+  ;; (setq ediff-make-wide-display-function 'cinsk/ediff-make-wide-display)
+  )
 
 
 (defun diff-ediff-patch2 (&optional arg)
@@ -113,10 +112,8 @@ command."
     (let ((ediff-patch-options new-ediff-patch-options))
       (call-interactively #'diff-ediff-patch))))
 
-(eval-after-load "diff-mode"
-  '(progn
-     (define-key diff-mode-map [(control ?c) (control ?e)]
-       'diff-ediff-patch2)))
+(with-eval-after-load "diff-mode"
+  (define-key diff-mode-map [(control ?c) (control ?e)] 'diff-ediff-patch2))
 
 (defvar cinsk/ediff-wide-display-policy 'center
   "Policy of the ediff frame resizing
