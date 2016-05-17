@@ -15,10 +15,9 @@
                                              user-emacs-directory)
                                             "TAGS.emacs") t)))
 
-(eval-after-load "lisp-mode"
-  '(progn
-     (define-key emacs-lisp-mode-map [f5] 'eval-buffer)
-     (define-key emacs-lisp-mode-map [(control c) ?\|] 'eval-region)))
+(with-eval-after-load "lisp-mode"
+  (define-key emacs-lisp-mode-map [f5] 'eval-buffer)
+  (define-key emacs-lisp-mode-map [(control c) ?\|] 'eval-region))
 
 
 ;;;
@@ -48,9 +47,9 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (interactive "P")
   (lisp-macroexpand-region (point) (scan-sexps (point) 1) and-go))
 
-(eval-after-load "inf-lisp"
-  '(define-key inferior-lisp-mode-map [(control ?x) (control ?m)]
-     'lisp-macro-expand-sexp))
+(with-eval-after-load "inf-lisp"
+  (define-key inferior-lisp-mode-map [(control ?x) (control ?m)]
+    'lisp-macro-expand-sexp))
 
 (define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
 
@@ -59,26 +58,25 @@ Prefix argument means switch to the Lisp buffer afterwards."
 ;;; slime
 ;;;
 (when (locate-library "slime-autoloads")
-  (eval-after-load "slime"
-    '(progn
-       (slime-setup)
-       ;; C-c C-b slime-eval-buffer
-       ;; C-c C-e slime-eval-last-expression
-       ;; C-c C-r slime-eval-region
+  (with-eval-after-load "slime"
+    (slime-setup)
+    ;; C-c C-b slime-eval-buffer
+    ;; C-c C-e slime-eval-last-expression
+    ;; C-c C-r slime-eval-region
 
-       ;; `M-x slime-interrupt' moved to `C-c C-B' from `C-c C-b'
-       (move-key slime-mode-map [(control ?c) (control ?b)]
-                 [(control ?c) (control ?B)])
-       (move-key slime-mode-map [(control ?c) (control ?e)]
-                 [(control meta ?\:)])
-       ;; C-c v   slime-describe-symbol
-       ;; C-c f   slime-describe
-       ;;(define-key slime-mode-map [(control ?c) ?v] 'slime-describe-symbol)
-       ;;(define-key slime-mode-map [(control ?c) ?f] 'slime-describe-function)
-       (define-key slime-mode-map [(control ?c) (control ?e)]
-         'slime-eval-last-expression)
-       (define-key slime-mode-map [(control ?c) (control ?b)]
-         'slime-eval-buffer)))
+    ;; `M-x slime-interrupt' moved to `C-c C-B' from `C-c C-b'
+    (move-key slime-mode-map [(control ?c) (control ?b)]
+              [(control ?c) (control ?B)])
+    (move-key slime-mode-map [(control ?c) (control ?e)]
+              [(control meta ?\:)])
+    ;; C-c v   slime-describe-symbol
+    ;; C-c f   slime-describe
+    ;;(define-key slime-mode-map [(control ?c) ?v] 'slime-describe-symbol)
+    ;;(define-key slime-mode-map [(control ?c) ?f] 'slime-describe-function)
+    (define-key slime-mode-map [(control ?c) (control ?e)]
+      'slime-eval-last-expression)
+    (define-key slime-mode-map [(control ?c) (control ?b)]
+      'slime-eval-buffer))
   (require 'slime-autoloads))
 
 
@@ -146,3 +144,12 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (eldoc-add-command
    'paredit-backward-delete
    'paredit-close-round))
+
+
+
+
+(when (locate-library "geiser")
+  (add-hook 'racket-mode-hook '(lambda () (geiser-mode 1))))
+
+(with-eval-after-load "geiser-mode"
+  (define-key geiser-mode-map [(control ?c) ?\!] 'geiser-mode-switch-to-repl))
