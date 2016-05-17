@@ -149,7 +149,12 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 
 (when (locate-library "geiser")
-  (add-hook 'racket-mode-hook '(lambda () (geiser-mode 1))))
+  (when (locate-library "racket-mode")
+    (add-hook 'racket-mode-hook '(lambda () (geiser-mode 1)))
+
+    ;; geiser-mode made .rkt file uses scheme-mode.  Force to use
+    ;; racket-mode if it is installed
+    (priortize-auto-mode 'racket-mode)))
 
 (with-eval-after-load "geiser-mode"
   (define-key geiser-mode-map [(control ?c) ?\!] 'geiser-mode-switch-to-repl))

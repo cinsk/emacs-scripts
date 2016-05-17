@@ -54,6 +54,7 @@
 (defvar dwim-c/build-tool-alist
   '((sbt "\\`build\\.sbt\\'" nil t)
     (maven "\\`pom\\.xml\\'" nil t)
+    (clojure clojure-mode "lein run")
     (gradle "\\`build\\.gradle\\'" gradle-execute t)
     (c c-mode "cc -Wall -c %s")
     (cc c++-mode "c++ -Wall -c %s")

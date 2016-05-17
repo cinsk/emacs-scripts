@@ -7,6 +7,47 @@
 (eval-when-compile
   (require 'ediff-ptch))
 
+;;
+;; Whenever I had tried to modified ediff-make-wide-dispaly, I always
+;; forgot how it works.  Currently, ediff uses its function,
+;; `ediff-toggle-wide-display' to toggle wide mode.  (A) Assuming that
+;; currently in no wide mode, it will call function stored in the
+;; variable, `ediff-make-wide-display-function'.  This variable is
+;; also permenent buffer local variable, and it's default value is set
+;; to the function `ediff-make-wide-display'.  This function will save
+;; some of the current frame parameteres (specifically `left and
+;; `width) in to another buffer local variable,
+;; `ediff-wide-display-orig-parameters', then change the frame to the
+;; wide display.  (B) Assuming that currently in the wide mode,
+;; `ediff-toggle-wide-display' will restore the frame by the saved
+;; setting in the `ediff-wide-display-orig-parameters'.
+;;
+;; My configuration is very dirty.  First, it activates the around
+;; advice to `ediff-toggle-wide-display'.  It calculate the desired
+;; window (not frame!) width for the wide display, then set the (not
+;; buffer local) local variable `cinsk/ediff-wide-window-width'.
+;; Then, I redefine the default variable of
+;; `ediff-make-wide-display-function', so that
+;; `ediff-make-wide-display' will call my function, stored in
+;; `ediff-make-wide-display-function' named
+;; `cinsk/ediff-make-wide-display'. (Currently, only frame width
+;; information is passed.)  The funciton,
+;; `cinsk/ediff-make-wide-display' will accept the desired window with
+;; from `cinsk/ediff-wide-window-width', and calculate the desired
+;; frame `left and `width based on the current ediff-mode. (i,e,
+;; whether the ediff session currently in 2way or 3way.)
+;;
+;; Note.  Remember that restoring from the wide mode is totally upto
+;; the `ediff-toggle-wide-display' which we cannot modify.  It reads
+;; the saved frame parameters from
+;; `ediff-wide-dispay-orig-parameters'.  It turns out that any frame
+;; configuration saved in the variable will be used.
+;;
+;; Note. If you quit ediff session in the wide mode, the default
+;; implementation will leave the frame as in wide mode.  I added one
+;; lambda in `ediff-cleanup-hook', so that it will restore to the
+;; non-wide mode if the frame is in the wide mode.
+
 ;; Note that some external packages loads 'ediff by themselves, such
 ;; as magit and color-theme.  Since `ediff-make-wide-display-function'
 ;; should be set before loading `ediff, ediff customization should be

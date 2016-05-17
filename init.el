@@ -74,7 +74,7 @@
     (package-initialize)))
 
 (unless (locate-library "s")
-  (error "You need to install \"s\" package using M-x package-install"))
+  (package-install 's))
 
 ;; I will install packages that is not managed by packages.el in
 ;; "$HOME/.emacs.d/site-lisp".
@@ -113,6 +113,20 @@ FILE is normally a feature name, but it can also be a file name,
 in case that file does not provide any feature."
     (declare (indent 1) (debug t))
     `(eval-after-load ,file (lambda () ,@body))))
+
+(defun priortize-auto-mode (mode)
+  "Sort(prepend) `auto-mode-alist' entries that has MODE in them."
+  (setq auto-mode-alist
+        (let (newlst filtered)
+          (if (rassoc mode auto-mode-alist)
+              (progn
+                (dolist (pair auto-mode-alist)
+                  (if (eq (cdr pair) mode)
+                      (setq filtered (cons pair filtered))
+                    (setq newlst (cons pair newlst))))
+                (append filtered (nreverse newlst)))
+            auto-mode-alist))))
+
 
 ;;
 ;; No bell (beep)
@@ -557,6 +571,16 @@ and to remove trailing whitespaces")
 
 (global-set-key [(control meta ?\])] #'forward-page)
 (global-set-key [(control meta ?\[)] #'backward-page)
+
+
+
+(when (and (display-graphic-p)
+           (eq (lookup-key (current-global-map) [(control ?z)])
+               #'suspend-frame))
+  ;; `suspend-frame' is bound to `C-z' and `C-x C-z'.
+  ;; As I accidentally press `C-z' so remove its binding.
+  (global-unset-key [(control ?z)]))
+
 
 
 
