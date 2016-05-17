@@ -60,6 +60,8 @@
     (add-to-list 'package-archives
                  '("marmalade" . "https://marmalade-repo.org/packages/"))
     (add-to-list 'package-archives
+                 '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+    (add-to-list 'package-archives
                  '("sc" . "http://joseito.republika.pl/sunrise-commander/") t)
     (add-to-list 'package-archives
                  '("melpa" . "https://melpa.org/packages/") t)
@@ -102,6 +104,15 @@ by package.el")
 (add-site-lisp-packages "/usr/local/share/emacs/site-lisp")
 (add-site-lisp-packages user-site-lisp-directory)
 
+
+(unless (fboundp 'with-eval-after-load)
+  ;; with-eval-after-load was added in Emacs 24.4
+  (defmacro with-eval-after-load (file &rest body)
+    "Execute BODY after FILE is loaded.
+FILE is normally a feature name, but it can also be a file name,
+in case that file does not provide any feature."
+    (declare (indent 1) (debug t))
+    `(eval-after-load ,file (lambda () ,@body))))
 
 ;;
 ;; No bell (beep)
@@ -380,8 +391,8 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;; updated, or until I found better way, I'll stick to
 ;; 'icomplete-mode.
 (icomplete-mode 1)
-(eval-after-load "icomplete"
-  '(uinit/require 'icomplete+ nil 'noerror))
+(with-eval-after-load "icomplete"
+  (uinit/require 'icomplete+ nil 'noerror))
 
 (when (> emacs-major-version 23)
   ;; diable completion cycling
@@ -843,8 +854,8 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 ;;; CSS mode
 ;;;
-(eval-after-load "css-mode"
-  '(setq cssm-indent-function #'cssm-c-style-indenter))
+(with-eval-after-load "css-mode"
+  (setq cssm-indent-function #'cssm-c-style-indenter))
 (autoload 'css-mode "css-mode" "CSS editing major mode" t)
 (add-to-list 'auto-mode-alist '("\\.css\\'" . css-mode))
 
@@ -905,9 +916,8 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;; Currently neither of them provides Korean dictionary.
 ;;; Currently, ispell complained that it does not have proper dictionary in
 ;;; Korean language environment.
-(eval-after-load "ispell"
-  '(progn
-     (setq ispell-dictionary "english")))
+(with-eval-after-load "ispell"
+  (setq ispell-dictionary "english"))
 
 
 
@@ -930,12 +940,11 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;;
 
 (when (locate-library "erc")
-  (eval-after-load "erc"
-    '(progn
-       (setq erc-default-coding-system '(cp949 . undecided))
-       (setq erc-nick '("cinsk" "cinsky" "cinsk_" "cinsk__"))
-       (setq erc-user-full-name "Seong-Kook Shin")
-       (setq erc-server "localhost:8668"))))
+  (with-eval-after-load "erc"
+    (setq erc-default-coding-system '(cp949 . undecided))
+    (setq erc-nick '("cinsk" "cinsky" "cinsk_" "cinsk__"))
+    (setq erc-user-full-name "Seong-Kook Shin")
+    (setq erc-server "localhost:8668")))
 
 
 ;;;
@@ -979,6 +988,10 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 (uinit/load "_js"
   (locate-library "js-comint"))
+
+
+(uinit/load "_rust"
+  (locate-library "rust-mode"))
 
 
 (uinit/load "maven" 'maven)
