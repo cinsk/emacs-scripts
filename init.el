@@ -901,6 +901,10 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
       (setq holiday-general-holidays cal-korea-x-korean-holidays))))
 
 
+(when (locate-library "amazon-util")
+  (require 'amazon-util))
+
+
 (uinit/load "_org" (locate-library "org"))
 
 
