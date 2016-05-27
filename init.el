@@ -1059,7 +1059,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   (setq w3m-use-cookies t)
   (when (locate-library "w3m-load")
     ;; w3m-load is not available if w3m is installed via packages
-    (require 'w3m-load)))
+    (require 'w3m-load))
 
   ;; If you have an error message like:
   ;; "w3m-toolbar-define-keys: `keymap' is reserved for embedded parent maps"
@@ -1069,7 +1069,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   ;; Reference: http://emacs-w3m.namazu.org/ml/msg11491.html
 
   (setq w3m-use-toolbar nil)
-  )
+)
 
 
 ;;;
