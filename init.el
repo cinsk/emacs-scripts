@@ -23,6 +23,10 @@
     (setenv "SHELL" sh)
     (setq shell-file-name sh)))
 
+(when (file-directory-p "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp")
+  (add-to-list 'load-path "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp")
+  (require 'amz-common))
+
 (setq user-emacs-directory "~/.emacs.d/")
 
 (if (not (file-accessible-directory-p user-emacs-directory))
@@ -864,7 +868,9 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 
 (uinit/load "color" 'color-theme)
-(global-hl-line-mode 1)
+
+(when (display-graphic-p)
+  (global-hl-line-mode 1))
 
 
 ;;;
@@ -1051,7 +1057,9 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 (when (locate-library "w3m")
   (setq w3m-use-cookies t)
-  (require 'w3m-load)
+  (when (locate-library "w3m-load")
+    ;; w3m-load is not available if w3m is installed via packages
+    (require 'w3m-load)))
 
   ;; If you have an error message like:
   ;; "w3m-toolbar-define-keys: `keymap' is reserved for embedded parent maps"
