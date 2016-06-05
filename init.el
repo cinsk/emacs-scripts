@@ -186,6 +186,23 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;; longer version.
 (defalias 'yes-or-no-p 'y-or-n-p)
 
+;; ;;; I haven't tested throughly, but macro version of `move-key' makes
+;; ;;; `cider-jack-in' causes problems.
+;; (defmacro move-key (key-map old-bind new-bind)
+;;   "Move the bound command from OLD-BIND to NEW-BIND.
+;;
+;; This macro returns the command of NEW-BIND if any, otherwise
+;; returns nil.  If there is no command for OLD-BIND, this macro
+;; will do nothing."
+;;   (let ((new-key (gensym))
+;;         (old-key (gensym)))
+;;     `(let ((,new-key (lookup-key ,key-map ,new-bind))
+;;            (,old-key (lookup-key ,key-map ,old-bind)))
+;;        (when ,old-key
+;;          (define-key ,key-map ,new-bind ,old-key)
+;;          (define-key ,key-map ,old-bind nil)
+;;          ,new-key))))
+
 (defun move-key (keymap old-key new-key)
   "Move the key definition from OLD-KEY to NEW-KEY in KEYMAP."
   (let ((def (lookup-key keymap old-key))
@@ -730,6 +747,17 @@ starting number."
 ;;
 ;;(add-hook 'temp-buffer-show-hook
 ;;          'fit-frame-if-one-window 'append)
+(when (locate-library "rainbow-delimiters")
+  (mapc (lambda (hook)
+          (add-hook hook 'rainbow-delimiters-mode))
+        (list 'emacs-lisp-mode-hook
+              'lisp-interaction-mode-hook
+              'ielm-mode-hook
+              'scheme-mode-hook
+              'clojure-mode-hook)))
+
+(uinit/load "_paren.el" (or (locate-library "paredit")
+                            (locate-library "smartparens")))
 
 (uinit/load "lisp"
   'lisp)
