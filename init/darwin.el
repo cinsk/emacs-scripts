@@ -6,6 +6,8 @@
 
 ;; (require 'ucs-normalize)
 ;; (set-file-name-coding-system 'utf-8-hfs)
+(eval-when-compile
+  (require 'cl))
 
 (defun darwin-smart-other-frame (&optional arg)
   "Switch to other frame or call `tmm-menubar`."
@@ -50,6 +52,23 @@
   (setq insert-directory-program "/usr/local/bin/ls")))
 
 
+(defun darwin/display-list ()
+  "List display resolution of darwin.
+
+Each element has the form (WIDTH . HEIGHT) in pixel."
+  (let (result)
+    (with-temp-buffer
+      (shell-command "system_profiler SPDisplaysDataType | grep -i resolution"
+                     'current-buffer nil)
+      (goto-char (point-min))
+      (while (re-search-forward
+              "\\([[:digit:]]*\\) *x *\\([[:digit:]]*\\)" nil 'noerror)
+        (let ((width (string-to-number (match-string-no-properties 1)))
+              (height (string-to-number (match-string-no-properties 2))))
+          (setq result (cons (cons width height)
+                             result)))))
+    (nreverse result)))
+
 (when nil
   ;; These configuration seems to stop working in recent version of
   ;; Emacs 24.x.
@@ -84,13 +103,19 @@
   ;; (set-face-attribute 'default nil :height 160)
 
   ;;(set-fontset-font t 'unicode (font-spec :size 20.0))
-
-  (when (locate-library "fontutil")
-    (require 'fontutil)
   ;; You may add :size POINT in below font-spec if you want to use
   ;; specific size of Hangul font regardless of default font size
 
-    (fontutil/set-font "inconsolata-16")))
+  (when (locate-library "fontutil")
+    (require 'fontutil)
+    (let ((displays (darwin/display-list)))
+      (if (or (> (length displays) 1)
+              (> (length (cl-find-if (lambda (x) (>= (car x) 3000))
+                                     displays)) 0))
+          (fontutil/set-font "pt-16")
+        (fontutil/set-font "pt-14")))))
+
+
 
 (setq default-frame-alist (append default-frame-alist
                                   '((width . 80) (height . 45)

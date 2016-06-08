@@ -897,8 +897,8 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 (uinit/load "color" 'color-theme)
 
-(when (display-graphic-p)
-  (global-hl-line-mode 1))
+;; (when (display-graphic-p)
+;;   (global-hl-line-mode 1))
 
 
 ;;;
