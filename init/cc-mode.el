@@ -27,15 +27,13 @@
 ;;; C & C++
 (add-hook 'c-mode-hook
           #'(lambda ()
-              (safe-visit-tags-table (concat (file-name-as-directory
-                                              user-emacs-directory)
-                                             "TAGS.sys") t)))
+              (cinsk/visit-tags-table (path-join user-emacs-directory
+                                                 "TAGS.sys") t)))
 
 (add-hook 'c++-mode-hook
           #'(lambda ()
-              (safe-visit-tags-table (concat (file-name-as-directory
-                                              user-emacs-directory)
-                                             "TAGS.sys") t)))
+              (cinsk/visit-tags-table (path-join user-emacs-directory
+                                                 "TAGS.sys") t)))
 
 (add-hook 'c-mode-hook (function (lambda nil (abbrev-mode 1))))
 (add-hook 'c++-mode-hook (function (lambda nil (abbrev-mode 1))))

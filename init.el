@@ -10,48 +10,57 @@
 ;;; $ # make sure that you don't have .emacs.d/ nor .emacs file
 ;;; $ rm -r .emacs.d .emacs
 ;;; $ # Get the source file from my repository
-;;; $ git clone http://www.cinsk.org/git/emacs-scripts .emacs.d
+;;; $ git clone http://github.com/cinsk/emacs-scripts.git .emacs.d
 ;;;
 
 ;;;
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 ;;;
+(require 'cl)
+
+(defun path-join (path &rest args)
+  "Join all parameters to build a pathname."
+  (if args
+      (apply 'path-join
+             (concat (file-name-as-directory path) (car args))
+             (cdr args))
+    path))
+
+
 
 (when (string-equal (getenv "SHELL") "/bin/false")
-  ;; "$SHELL" is set to "/bin/false" in darwin under Amazon User Cert. System.
+  ;; "$SHELL" is set to "/bin/false" in darwin under Amazon User
+  ;; Cert. System. -- Hmm. this seems not true.
   (let ((sh (or (executable-find "bash") "/bin/sh")))
     (setenv "SHELL" sh)
     (setq shell-file-name sh)))
 
-(when (file-directory-p "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp")
-  (add-to-list 'load-path "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp")
-  (require 'amz-common))
+
 
 (setq user-emacs-directory "~/.emacs.d/")
 
-(if (not (file-accessible-directory-p user-emacs-directory))
-    (if (yes-or-no-p
-         (format "create user directory(%s)? " user-emacs-directory))
-        (make-directory user-emacs-directory t)))
+(when (and (not (file-accessible-directory-p user-emacs-directory))
+           (not noninteractive))
+  (if (yes-or-no-p
+       (format "create user directory(%s)? " user-emacs-directory))
+      (make-directory user-emacs-directory t)))
 
-(let ((srcpath (concat (file-name-as-directory
-                                 (expand-file-name user-emacs-directory))
-                                "src")))
+(let ((srcpath (expand-file-name (path-join user-emacs-directory "src"))))
   (add-to-list 'load-path srcpath)
   (when (and (boundp 'uinit/use-byte-compile) uinit/use-byte-compile)
     (byte-recompile-directory srcpath 0)))
 
-(defvar user-custom-package-directory
-  (concat (file-name-as-directory user-emacs-directory)
-          "packages")
-  "Manually installed packages are in this directory")
-
 
+;;
+;; http://bling.github.io/blog/2016/01/18/why-are-you-changing-gc-cons-threshold/
+;;
+(setq garbage-collection-messages t)
+
+
 ;;;
 ;;; package
 ;;;
-(let ((pkgdir (concat (file-name-as-directory user-emacs-directory)
-                      "package")))
+(let ((pkgdir (path-join user-emacs-directory "package")))
   ;; PKGDIR will contains the last emacs-23 compatible package.el from
   ;; https://github.com/technomancy/package.el
   (when (and (file-readable-p pkgdir)
@@ -61,16 +70,13 @@
   (when (and (>= emacs-major-version 23)
              (locate-library "package"))
     (require 'package)
-    (add-to-list 'package-archives
-                 '("marmalade" . "https://marmalade-repo.org/packages/"))
-    (add-to-list 'package-archives
-                 '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-    (add-to-list 'package-archives
-                 '("sc" . "http://joseito.republika.pl/sunrise-commander/") t)
-    (add-to-list 'package-archives
-                 '("melpa" . "https://melpa.org/packages/") t)
-    (add-to-list 'package-archives
-                 '("gnu" . "https://elpa.gnu.org/packages/") t)
+
+    (dolist (entry '(("marmalade" . "https://marmalade-repo.org/packages/")
+                     ("sc" . "http://joseito.republika.pl/sunrise-commander/")
+                     ("melpa" . "https://melpa.org/packages/")
+                     ("melpa-stable" . "https://stable.melpa.org/packages/")
+                     ("gnu" . "https://elpa.gnu.org/packages/")))
+      (add-to-list 'package-archives entry))
     ;; According to the package.el, if `package-enable-at-startup' is
     ;; t, it will load all the packages on start up.  But it didn't.
     ;; Perhaps it's a problem related to the version (currently Emacs
@@ -80,56 +86,15 @@
 (unless (locate-library "s")
   (package-install 's))
 
+
 ;; I will install packages that is not managed by packages.el in
 ;; "$HOME/.emacs.d/site-lisp".
 ;;
 ;; Note that packages in this directory has higher priority than others.
-(defvar user-site-lisp-directory
-  (concat (file-name-as-directory user-emacs-directory) "site-lisp")
-  "a directory name that contains packages which are not managed
-by package.el")
 
-(defun add-site-lisp-packages (dir)
-  "Add the subdirectories of DIR into `load-path'."
-  (when (file-accessible-directory-p dir)
-    (dolist (elem (directory-files-and-attributes dir))
-      (let* ((fname (car elem))
-             (attrs (cdr elem))
-             (path (expand-file-name
-                    (concat (file-name-as-directory dir)
-                            fname))))
-        (when (and (not (string-equal fname "."))
-                   (not (string-equal fname ".."))
-                   (eq t (car attrs)))
-          ;; Add directories in $HOME/.emacs.d/site-lisp/ to the `load-path'
-          (message "load-path: adding %s" path)
-          (add-to-list 'load-path path))))))
-
-(add-site-lisp-packages "/usr/local/share/emacs/site-lisp")
-(add-site-lisp-packages user-site-lisp-directory)
-
-
-(unless (fboundp 'with-eval-after-load)
-  ;; with-eval-after-load was added in Emacs 24.4
-  (defmacro with-eval-after-load (file &rest body)
-    "Execute BODY after FILE is loaded.
-FILE is normally a feature name, but it can also be a file name,
-in case that file does not provide any feature."
-    (declare (indent 1) (debug t))
-    `(eval-after-load ,file (lambda () ,@body))))
-
-(defun priortize-auto-mode (mode)
-  "Sort(prepend) `auto-mode-alist' entries that has MODE in them."
-  (setq auto-mode-alist
-        (let (newlst filtered)
-          (if (rassoc mode auto-mode-alist)
-              (progn
-                (dolist (pair auto-mode-alist)
-                  (if (eq (cdr pair) mode)
-                      (setq filtered (cons pair filtered))
-                    (setq newlst (cons pair newlst))))
-                (append filtered (nreverse newlst)))
-            auto-mode-alist))))
+(defvar user-custom-packages-directory
+  (path-join user-emacs-directory "local")
+  "Manually installed packages are in this directory")
 
 
 ;;
@@ -142,17 +107,20 @@ in case that file does not provide any feature."
 (setq uinit/init-directory "~/.emacs.d/init")
 
 (require 'uinit)
+(uinit/require 'cinsk-common)
+
+(global-set-key [(control ?c) ?n] #'cinsk/line-numbers-on-region)
+(global-set-key [(control ?c) ?q] 'fill-text-line-paragraph)
+
+(cinsk/add-site-lisp-directories "/usr/local/share/emacs/site-lisp")
+(cinsk/add-site-lisp-directories user-custom-packages-directory)
 
 
-(defun accessible-directories (&rest dirs)
-  "Return the list of directories that are accessible.
+(when (file-directory-p "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp")
+  (add-to-list 'load-path "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp"))
 
-Each elements in DIRS will be expanded using `expand-file-name'."
-  (remove nil (mapcar (lambda (path)
-                        (setq path (expand-file-name path))
-                        (if (file-accessible-directory-p path)
-                            path))
-                      dirs)))
+(when (locate-library "amz-common")
+  (uinit/require 'amz-common))
 
 
 (uinit/require 'capitalize+)
@@ -190,39 +158,10 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;; longer version.
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-;; ;;; I haven't tested throughly, but macro version of `move-key' makes
-;; ;;; `cider-jack-in' causes problems.
-;; (defmacro move-key (key-map old-bind new-bind)
-;;   "Move the bound command from OLD-BIND to NEW-BIND.
-;;
-;; This macro returns the command of NEW-BIND if any, otherwise
-;; returns nil.  If there is no command for OLD-BIND, this macro
-;; will do nothing."
-;;   (let ((new-key (gensym))
-;;         (old-key (gensym)))
-;;     `(let ((,new-key (lookup-key ,key-map ,new-bind))
-;;            (,old-key (lookup-key ,key-map ,old-bind)))
-;;        (when ,old-key
-;;          (define-key ,key-map ,new-bind ,old-key)
-;;          (define-key ,key-map ,old-bind nil)
-;;          ,new-key))))
-
-(defun move-key (keymap old-key new-key)
-  "Move the key definition from OLD-KEY to NEW-KEY in KEYMAP."
-  (let ((def (lookup-key keymap old-key))
-        (alt (lookup-key keymap new-key)))
-    (define-key keymap new-key def)
-    (define-key keymap old-key nil)
-    alt))
 
 
 ;;; Helpers for TAGS manipulation
 (setq tags-add-tables 't)               ; do not ask to add new tags table.
-
-(defun safe-visit-tags-table (file &optional local)
-  "Call `visit-tags-table' iff FILE is readable"
-  (and (file-readable-p file)
-       (visit-tags-table file local)))
 
 
 ;;; Set up the keyboard so the delete key on both the regular keyboard
@@ -338,8 +277,7 @@ Each elements in DIRS will be expanded using `expand-file-name'."
   (load-library "xskel"))
 
 (let ((abb_default "~/.abbrev_defs")
-      (abb_correct (concat (file-name-as-directory user-emacs-directory)
-                           "abbrev_defs")))
+      (abb_correct (path-join user-emacs-directory "abbrev_defs")))
   ;; Prefer "~/.emacs.d/abbrev_defs" to "~/.abbrev_defs"
   (setq abbrev-file-name
         (if (file-readable-p abb_correct)
@@ -347,23 +285,6 @@ Each elements in DIRS will be expanded using `expand-file-name'."
           (if (file-readable-p abb_default)
               abb_default
             abb_correct))))
-
-(when nil
-  (require 'autoinsert)
-
-  (let ((aid_correct (concat (file-name-as-directory user-emacs-directory)
-                             "insert"))
-        (aid_default (if (boundp 'auto-insert-directory)
-                         auto-insert-directory
-                       "~/insert")))
-    (setq auto-insert-directory
-          (if (file-accessible-directory-p aid_correct)
-              aid_correct
-            aid_default)))
-
-  (add-hook 'find-file-hook 'auto-insert))
-
-;; navigation
 
 
 ;;;
@@ -433,19 +354,10 @@ Each elements in DIRS will be expanded using `expand-file-name'."
   ;; diable completion cycling
   (setq completion-cycle-threshold nil))
 
-(when (and nil (locate-library "helm-config"))
-  (require 'helm-config)
-  (helm-mode 1)
-  (define-key global-map [remap find-file] 'helm-find-files)
-  (define-key global-map [remap occur] 'helm-occur)
-  (define-key global-map [remap list-buffers] 'helm-buffers-list)
-  (define-key global-map [remap dabbrev-expand] 'helm-dabbrev)
-  (define-key lisp-interaction-mode-map [remap completion-at-point]
-    'helm-lisp-completion-at-point)
-  (define-key emacs-lisp-mode-map       [remap completion-at-point]
-    'helm-lisp-completion-at-point)
-  (add-hook 'kill-emacs-hook #'(lambda () (delete-file "$TMP"))))
-
+;; Now I'm using helm.  One minor problem is, whenever I invoke
+;; `helm-find-files', sometimes it freezes.  I believe this is related
+;; to the garbage collection. See the comment in the beginning of the
+;; file for `garbage-collection-messages'.
 (uinit/load "_helm" (locate-library "helm"))
 
 
@@ -471,84 +383,23 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 (setq resize-minibuffer-mode t)         ; ensure all contents of mini
                                         ; buffer visible
 
+;; (when (display-graphic-p)
+;;   (global-hl-line-mode 1))
+
+
 ;; I'll try the `ido-use-filename-at-point' instead ffap for now
 ;;
 ;;(setq ffap-require-prefix t)
 ;;(ffap-bindings)                         ; context-sensitive find-file
 
-;;;
-;;; TAB & space setting
-;;;
-(setq-default indent-tabs-mode nil)     ; do not insert tab character.
 
-(defun source-untabify ()
-  "Stealed from Jamie Zawinski's homepage,
-http://www.jwz.org/doc/tabs-vs-spaces.html
-Remove any right trailing whitespaces and convert any tab
-character to the spaces"
-  (save-excursion
-    (goto-char (point-min))
-    (while (re-search-forward "[ \t]+$" nil t)
-      (delete-region (match-beginning 0) (match-end 0)))
-    (goto-char (point-min))
-    (if (search-forward "\t" nil t)
-        (untabify (1- (point)) (point-max))))
-  nil)
-
-;; These hook configuration ensures that all tab characters in C, C++
-;; source files are automatically converted to spaces on saving.
-(defvar untabify-remove-trailing-spaces-on-write-modes
-  '(c-mode c++-mode java-mode emacs-lisp-mode lisp-mode nxml-mode)
-  "List of major mode that needs to convert tab characters into spaces,
-and to remove trailing whitespaces")
-
-(defun untabify-remove-trailing-spaces-on-write ()
-  "Utility function that removes tabs and trailing whitespaces"
-  (when (memq major-mode untabify-remove-trailing-spaces-on-write-modes)
-    (untabify (point-min) (point-max))
-    (delete-trailing-whitespace))
-  ;; Should return nil so that if this function is registered into
-  ;; `write-contents-functions', and if we need to propagate the control
-  ;; to the other functions in `write-contents-functions'.
-  ;;
-  ;; Personally, this function should be registered into
-  ;; `before-save-hook' anyway.
-  nil)
-
-(add-hook 'before-save-hook 'untabify-remove-trailing-spaces-on-write)
-
-;; As suggested in
-;;  http://stackoverflow.com/questions/935723/find-tab-characters-in-emacs,
-;;
-;; Following sexp visualize tab character.
-(when nil
-  (add-hook 'font-lock-mode-hook
-            '(lambda ()
-               (when (memq major-mode
-                           untabify-remove-trailing-spaces-on-write-modes)
-                 (font-lock-add-keywords nil
-                                         '(("\t" 0
-                                            'trailing-whitespace prepend)))))))
+(uinit/require 'untabify)
 
 
-(when nil
-  (add-hook 'c-mode-hook '(lambda ()
-                            (make-local-variable 'write-contents-hooks)
-                            (add-hook 'write-contents-hooks 'source-untabify)))
-  (add-hook 'c++-mode-hook '(lambda ()
-                              (make-local-variable 'write-contents-hooks)
-                              (add-hook 'write-contents-hooks 'source-untabify))))
 
 
 (uinit/load "delete"
   'delete)
-
-
-(when nil
-  ;; Support for GNU global, the source code tag system
-  (load-library "gtags")
-  (add-hook 'c-mode-hook '(lambda () (gtags-mode 1)))
-  (add-hook 'c++-mode-hook '(lambda () (gtags-mode 1))))
 
 ;;;
 ;;; Colors
@@ -622,8 +473,7 @@ and to remove trailing whitespaces")
 ;;; vim-modeline
 ;;;
 (let ((vim-modeline-path (expand-file-name
-                          (concat (file-name-as-directory user-emacs-directory)
-                                  "vim-modeline"))))
+                          (path-join user-emacs-directory "vim-modeline"))))
   (when (file-accessible-directory-p vim-modeline-path)
     (add-to-list 'load-path vim-modeline-path)
     (when (locate-library "vim-modeline")
@@ -662,90 +512,6 @@ and to remove trailing whitespaces")
 
 
 
-(defun import-buffer-region (&optional after-import)
-  "Copy region from the current buffer to the previous buffer.
-
-Once called, Emacs enters in recursive edit mode.  Marking a region
-in some buffer then press \\[exit-recursive-edit] will copy the region
-into the buffer at the invocation time.
-
-If the function AFTER-IMPORT is non-nil, this function will call
-AFTER-IMPORT with the buffer where the user press
-\\[exit-recursive-edit].  In the AFTER-IMPORT, the mark is set to
-the beginning of the inserted text, and the point is set to the
-end of the inserted text.
-
-This function uses `recursive-edit' internally."
-  (interactive)
-  (let* ((map (current-global-map))
-         (old-binding (lookup-key map [(control meta ?c)])))
-    (substitute-key-definition
-     'exit-recursive-edit
-     'exit-import-buffer-region map)
-    ;; (define-key map [(control meta ?c)] 'exit-import-buffer-region)
-
-    (let ((old-buffer (current-buffer))
-          (src-buffer (unwind-protect
-                          (catch 'exit-from-import
-                            (message "Use `%s' when done, or use `%s' to abort."
-                                     (substitute-command-keys "\\[exit-import-buffer-region]")
-                                     (substitute-command-keys "\\[abort-recursive-edit]"))
-                            (recursive-edit))
-                        ;; (define-key map [(control meta ?c)] old-binding))))
-                        (substitute-key-definition
-                         'exit-import-buffer-region
-                         'exit-recursive-edit
-                         map))))
-      (when (buffer-live-p old-buffer)
-        (let ((display-buffer-reuse-frames t)
-              start end)
-          (pop-to-buffer old-buffer)
-          (with-current-buffer src-buffer
-            (when (and mark-active
-                       (or (and transient-mark-mode
-                                (use-region-p))
-                           (not transient-mark-mode)))
-              (setq start (region-beginning)
-                    end (region-end))))
-          (when (and start end)
-            (push-mark)
-            (insert-buffer-substring src-buffer start end)
-            (and after-import
-                 (funcall after-import src-buffer))
-            (pop-mark)))))))
-
-(defun exit-import-buffer-region ()
-  (interactive)
-  (throw 'exit-from-import (current-buffer)))
-
-(defun line-numbers-on-region (begin end &optional start)
-  "Insert line numbers on the region.
-
-When called interactively, it insert the line number starting
-from 1, in the region.  A numeric prefix argument specifies the
-starting number."
-  (interactive (list
-                (region-beginning)
-                (region-end)
-                (if current-prefix-arg
-                    (prefix-numeric-value current-prefix-arg)
-                  1)))
-  (unless start (setq start 1))
-  (let ((begin (region-beginning))
-        (end (region-end)))
-    (save-restriction
-      (let* ((lines (count-lines begin end))
-             (width (length (format "%d" (1- (+ lines start)))))
-             (fmt (format "%%%dd: " width)))
-        (goto-char begin)
-        (beginning-of-line)
-        (dotimes (i lines)
-          (insert (format fmt (+ start i)))
-          (forward-line))))))
-
-(global-set-key [(control ?c) ?n] #'line-numbers-on-region)
-
-
 ;;(require 'autofit-frame)
 ;;(add-hook 'after-make-frame-functions 'fit-frame)
 ;;
@@ -774,29 +540,6 @@ starting number."
   'latex-mode)
 
 
-(defun fill-text-line-paragraph (begin end)
-  "Convert each line in the region to a filled-paragraph"
-  (interactive "r")
-  (save-excursion
-    (save-restriction
-      (narrow-to-region begin end)
-
-      (let ((begin (set-marker (make-marker) begin))
-            (end (set-marker (make-marker) end)))
-        (set-marker-insertion-type end t)
-        (beginning-of-line)
-        (goto-char begin)
-        (while (eq (forward-line) 0)
-          (newline))
-
-        (goto-char begin)
-        (while (progn
-                 (fill-paragraph nil)
-                 (eq (forward-line) 0)))))))
-
-(global-set-key [(control ?c) ?q] 'fill-text-line-paragraph)
-
-
 
 (uinit/load "_mmm" 'deferred)
 
@@ -815,35 +558,6 @@ starting number."
 (global-set-key [(meta ?F) ?g ?d] 'find-grep-dired)
 (global-set-key [(meta ?F) ?g return] 'find-grep)
 (global-set-key [(meta ?F) ?r] 'rgrep)
-
-
-;;;
-;;; Launch view-mode when visiting other's file.
-;;;
-(defun file-uid (filename)
-  (cl-caddr (file-attributes (expand-file-name filename))))
-
-(defun smart-view-mode ()
-  "Enable `view-mode' on certain condition.
-
-If the user is not the owner of the file, or if the file's truename is
-not belong to user's home directory, then enable `view-mode'.
-
-This function is best used in `find-file-hook'."
-  (let* ((file (and buffer-file-name (file-truename buffer-file-name)))
-         (fuid (and file (file-uid file)))
-         (home (getenv "HOME")))
-    (setq home (and home (file-truename home)))
-    (when (or (and (not (null fuid))          ; file exists,
-                   (not (eq fuid (user-uid))) ; uid/owner differs,
-                   (not (eq (user-uid) 0)))   ; not root,
-              (and home file
-                   ;; if the file does not belong to user's $HOME,
-                   (not (string-equal home (substring file 0 (length home))))))
-      (view-mode 1))))
-
-(add-hook 'find-file-hook 'smart-view-mode)
-
 
 
 ;;;
@@ -897,9 +611,6 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 (uinit/load "color" 'color-theme)
 
-;; (when (display-graphic-p)
-;;   (global-hl-line-mode 1))
-
 
 ;;;
 ;;; YAML mode
@@ -933,8 +644,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 (global-set-key [(control f12)] 'calendar)
 
-(let ((my-diary-file (concat (file-name-as-directory user-emacs-directory)
-                             "diary")))
+(let ((my-diary-file (path-join user-emacs-directory "diary")))
   (if (file-readable-p my-diary-file)
       (setq diary-file my-diary-file)))
 
@@ -950,8 +660,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
       '((holiday-fixed 11 1 "삼성전자 창립일")))
 
 (let ((cal-korea-path (expand-file-name
-                       (concat (file-name-as-directory user-emacs-directory)
-                               "cal-korea-x"))))
+                       (path-join user-emacs-directory "cal-korea-x"))))
   (when (file-accessible-directory-p cal-korea-path)
     (add-to-list 'load-path cal-korea-path)
     (when (locate-library "cal-korea-x")
@@ -1041,8 +750,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   (locate-library "ruby-mode"))
 
 (uinit/load "python"
-  (let ((dir (concat (file-name-as-directory user-custom-package-directory)
-                     "python-mode")))
+  (let ((dir (path-join user-custom-packages-directory "python-mode")))
     (when (file-directory-p dir)
       (add-to-list 'load-path dir))
     (locate-library "python-mode")))
@@ -1077,8 +785,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 ;;  # Search all .el files for widget-mouse-face and comment the line
 ;;  # that make widget-mouse-face buffer local.
 
-(let ((w3mdir (concat (expand-file-name user-emacs-directory)
-                    "w3m")))
+(let ((w3mdir (expand-file-name (path-join user-emacs-directory "w3m"))))
   (when (file-directory-p w3mdir)
     (add-to-list 'load-path w3mdir)
     (add-to-list 'Info-directory-list w3mdir)))
@@ -1100,44 +807,9 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 )
 
 
-;;;
-;;; browse-url configuration
-;;;
-(require 'browse-url)
 
-(defun browse-url-w3m (url &optional new-window)
-  (interactive (browse-url-interactive-org "W3M URL: "))
-  (w3m url))
-
-(cond ((memq system-type '(windows-nt ms-dos cygwin))
-       ;; Use system default configuration
-       nil)
-
-      ((or (display-graphic-p)
-           ;; TODO: If DISPLAY environment variable is wrong,
-           ;;       xset will hang!
-           (= (call-process-shell-command "xset q") 0))
-       ;; Even if (display-graphic-p) returns nil,
-       ;; it may be possible to launch X application.
-       (cond ((executable-find "chromium")
-              (setq browse-url-browser-function 'browse-url-generic
-                    browse-url-generic-program (executable-find "chromium")))
-             ((executable-find browse-url-firefox-program)
-              (setq browse-url-browser-function 'browse-url-firefox))))
-
-      ((fboundp 'w3m)
-       (setq browse-url-browser-function 'browse-url-w3m)))
-
-(add-to-list 'browse-url-filename-alist
-             '("\\`/home/\\([^/]+\\)/public_html/\\(.*\\)\\'" .
-               "http://localhost/~\\1/\\2"))
-
-;; gentoo: /var/www/localhost/htdocs
-;; ubuntu: /var/www/
-;; centos: /var/www/html/  /var/www/cgi-bin/
-(add-to-list 'browse-url-filename-alist
-             '("\\'/var/www/localhost/htdocs/\\(.*\\)\\'" .
-               "http://localhost/\\1"))
+(uinit/load "_browse-url"
+  (locate-library "browse-url"))
 
 
 ;;;
@@ -1158,7 +830,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 (unless (locate-library "go-mode")
   (let* ((godir "/usr/local/go")
-         (gldir (concat (file-name-as-directory godir) "misc/emacs")))
+         (gldir (path-join godir "misc/emacs")))
     (when (file-accessible-directory-p gldir)
       (add-to-list 'load-path gldir 'append)
       (when (locate-library "go-mode-load")
@@ -1187,7 +859,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   ;; "~/.emacs.d/plugins/yasnippet-x.y.z/snippets", whereas Gentoo
   ;; yasnippet package installed them in
   ;; "/usr/share/emacs/etc/yasnippet/snippets".
-  (setq yas-snippet-dirs (accessible-directories
+  (setq yas-snippet-dirs (cinsk/accessible-directories
                           "~/.emacs.d/snippets"))
 
                           ;; (concat (file-name-directory
@@ -1297,7 +969,7 @@ in any of directory in `yas-snippet-dirs'."
 
 
 
-(let ((dir (concat (expand-file-name user-emacs-directory) "backups")))
+(let ((dir (expand-file-name (path-join user-emacs-directory "backups"))))
   (when (file-directory-p dir)
     (add-to-list 'tramp-backup-directory-alist (cons "." dir))))
 

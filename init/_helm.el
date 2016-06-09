@@ -44,7 +44,9 @@
 (define-key helm-map [(control ?z)] 'helm-select-action)
 
 (when (executable-find "curl")
-  (setq helm-google-suggest-use-curl-p t))
+  (if (boundp 'helm-net-prefer-curl)
+      (setq helm-net-prefer-curl t)
+    (setq helm-google-suggest-use-curl-p t)))
 
 
 (define-key helm-command-map [?\`] 'helm-resume)

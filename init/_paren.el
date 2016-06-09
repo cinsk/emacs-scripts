@@ -61,9 +61,9 @@
      'paredit-backward-delete
      'paredit-close-round))
 
-  (move-key paredit-mode-map [(control ?k)] [(control ?K)])
-  (move-key paredit-mode-map [(control ?d)] [(control ?D)])
-  (move-key paredit-mode-map (kbd "DEL") [(shift backspace)]))
+  (cinsk/move-key paredit-mode-map [(control ?k)] [(control ?K)])
+  (cinsk/move-key paredit-mode-map [(control ?d)] [(control ?D)])
+  (cinsk/move-key paredit-mode-map (kbd "DEL") [(shift backspace)]))
 
 
 (when nil

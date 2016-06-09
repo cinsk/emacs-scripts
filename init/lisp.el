@@ -11,9 +11,8 @@
 
 (add-hook 'emacs-lisp-mode-hook
           '(lambda ()
-             (safe-visit-tags-table (concat (file-name-as-directory
-                                             user-emacs-directory)
-                                            "TAGS.emacs") t)))
+             (cinsk/visit-tags-table (path-join user-emacs-directory
+                                               "TAGS.emacs") t)))
 
 (with-eval-after-load "lisp-mode"
   (define-key emacs-lisp-mode-map [f5] 'eval-buffer)
@@ -65,10 +64,10 @@ Prefix argument means switch to the Lisp buffer afterwards."
     ;; C-c C-r slime-eval-region
 
     ;; `M-x slime-interrupt' moved to `C-c C-B' from `C-c C-b'
-    (move-key slime-mode-map [(control ?c) (control ?b)]
-              [(control ?c) (control ?B)])
-    (move-key slime-mode-map [(control ?c) (control ?e)]
-              [(control meta ?\:)])
+    (cinsk/move-key slime-mode-map [(control ?c) (control ?b)]
+                    [(control ?c) (control ?B)])
+    (cinsk/move-key slime-mode-map [(control ?c) (control ?e)]
+                    [(control meta ?\:)])
     ;; C-c v   slime-describe-symbol
     ;; C-c f   slime-describe
     ;;(define-key slime-mode-map [(control ?c) ?v] 'slime-describe-symbol)
@@ -154,7 +153,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
     ;; geiser-mode made .rkt file uses scheme-mode.  Force to use
     ;; racket-mode if it is installed
-    (priortize-auto-mode 'racket-mode)))
+    (cinsk/priortize-auto-mode 'racket-mode)))
 
 (with-eval-after-load "geiser-mode"
   (define-key geiser-mode-map [(control ?c) ?\!] 'geiser-mode-switch-to-repl))

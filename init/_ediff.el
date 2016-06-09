@@ -5,6 +5,8 @@
 ;;;
 
 (eval-when-compile
+  (require 'diff-mode)
+  (require 'ediff)
   (require 'ediff-ptch))
 
 ;;

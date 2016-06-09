@@ -107,18 +107,14 @@
     ;;
     ;; html5 related setting
     ;;
-    (let ((html5-el (concat (file-name-as-directory
-                             (expand-file-name user-emacs-directory))
-                            "html5-el"))
-          (schema (concat (file-name-as-directory
-                           (expand-file-name user-emacs-directory))
-                          "schema/relaxng/xhtml5.rnc"))
-          (schema-file (concat (file-name-as-directory
-                                (expand-file-name user-emacs-directory))
-                               "schema/schemas-html5.xml"))
-          (oldschema-file (concat (file-name-as-directory
-                                   (expand-file-name user-emacs-directory))
-                                  "schema/schemas.xml")))
+    (let ((html5-el (expand-file-name (path-join user-emacs-directory
+                                                 "html5-el")))
+          (schema (expand-file-name (path-join user-emacs-directory
+                                               "schema/relaxng/xhtml5.rnc")))
+          (schema-file (expand-file-name (path-join user-emacs-directory
+                                                    "schema/schemas-html5.xml")))
+          (oldschema-file (expand-file-name (path-join user-emacs-directory
+                                                       "schema/schemas.xml"))))
 
       (when (locate-library "rng-loc")
         ;; loading "rng-loc" is required, otherwise,
@@ -144,9 +140,8 @@
           (add-to-list 'rng-schema-locating-files "schemas.xml"))))
 
     ;; Adding .emacs.d/schema/schemas.xml for schema searching path
-    (let ((schema-file (concat (file-name-as-directory
-                                (expand-file-name user-emacs-directory))
-                               "schema/schemas.xml")))
+    (let ((schema-file (expand-file-name (path-join user-emacs-directory
+                                                    "schema/schemas.xml"))))
       (when (and (file-readable-p schema-file)
                  (not (member schema-file rng-schema-locating-files)))
         (setq rng-schema-locating-files-default

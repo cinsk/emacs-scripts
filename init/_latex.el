@@ -4,6 +4,9 @@
 ;;; TeX & LaTeX configuration
 ;;;
 
+(eval-when-compile
+  (require 'tex-mode))
+
 (defun bounds-of-word-markers (&optional no-region)
   "Return the start and end buffer locations for the word at point.
 

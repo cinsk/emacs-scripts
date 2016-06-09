@@ -5,9 +5,6 @@
 ;;; Clojure configuration
 ;;;
 
-(eval-when-compile
-  (require 'cider))
-
 (defun run-clojure ()
   (interactive)
   (if (or (not (fboundp 'cider-connected-p))

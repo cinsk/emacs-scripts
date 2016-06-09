@@ -187,7 +187,6 @@ Best used for `smtpmail-smtp-service' as the default value.")
 (with-eval-after-load "sendmail"
   (define-key mail-mode-map [(meta return)] 'complete-contact-address)
 
-  (let ((contacts (concat (file-name-as-directory user-emacs-directory)
-                          "contacts.el")))
+  (let ((contacts (path-join user-emacs-directory "contacts.el")))
     (when (file-exists-p contacts)
       (load-file contacts))))

@@ -65,8 +65,7 @@
   ;; /opt/scala
   (when (not (locate-library "scala-mode-auto"))
     (let* ((scala-mode-path "/opt/scala/misc/scala-tool-support/emacs")
-           (scala-file (concat (file-name-as-directory scala-mode-path)
-                               "scala-mode-auto.el")))
+           (scala-file (path-join scala-mode-path "scala-mode-auto.el")))
       (if (file-exists-p scala-file)
           (add-to-list 'load-path scala-mode-path))))
 
@@ -82,8 +81,8 @@
       'scala-eval-definition)
     ;;
     ;; scala-undent-line: `C-<tab>' -> `<backtab>'
-    (move-key scala-mode-map
-              [(control tab)] [backtab])
+    (cinsk/move-key scala-mode-map
+                    [(control tab)] [backtab])
 
     (define-key scala-mode-map [(control ?c) ?\!] 'scala-run-scala)
     )

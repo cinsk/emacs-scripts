@@ -272,13 +272,13 @@ not NOT-THIS-COMMAND"
 
   ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
   ;; since I use "C-<TAB>" for `smart-other-window'.
-  (move-key org-mode-map [(control tab)] [(control x) (control tab)])
+  (cinsk/move-key org-mode-map [(control tab)] [(control x) (control tab)])
 
   ;; Move the binding of `org-deadline' from "C-c C-d" to "C-c
   ;; C-S-d", since I'vd used the keybinding for
   ;; `delete-chars-forward-with-syntax'.
-  (move-key org-mode-map [(control ?c) (control ?d)]
-            [(control ?c) (control shift ?d)])
+  (cinsk/move-key org-mode-map [(control ?c) (control ?d)]
+                  [(control ?c) (control shift ?d)])
 
   (define-key org-mode-map [(control c) (control ?\\)]
     'org-table-convert-from-lines)
@@ -459,8 +459,7 @@ Filenames that matches Dropbox conflict will not be included."
                   t)))
 
   (if (file-accessible-directory-p my-org-directory)
-      (let ((notefile (concat (file-name-as-directory my-org-directory)
-                              "notes.org")))
+      (let ((notefile (path-join my-org-directory "notes.org")))
         ;; Install all .org files in `my-org-directory' if exists
         ;;
         ;; Currently `my-org-directory' is maintained by Dropbox.
@@ -478,28 +477,23 @@ Filenames that matches Dropbox conflict will not be included."
 
 (setq org-capture-templates
       '(("w" "Work-related TODO" entry
-         (file+headline (concat (file-name-as-directory org-directory)
-                                "work.org")
+         (file+headline (path-join org-directory "work.org")
                         "Tasks")
          "* TODO %? %T\n  %i\n  %a")
         ("p" "Personal Project-related TODO" entry
-         (file+headline (concat (file-name-as-directory org-directory)
-                                "pproject.org")
+         (file+headline (path-join org-directory "pproject.org")
                         "Tasks")
          "* TODO %? %T\n  %i\n  %a")
         ("P" "Personal TODO" entry
-         (file+headline (concat (file-name-as-directory org-directory)
-                                "personal.org")
+         (file+headline (path-join org-directory "personal.org")
                         "Tasks")
          "* TODO %? %T\n  %i\n  %a")
         ("e" "Emacs Tips" entry
-         (file+headline (concat (file-name-as-directory user-emacs-directory)
-                                "emacs-tips.org")
+         (file+headline (path-join user-emacs-directory "emacs-tips.org")
                         "Tips")
          "* TODO %? %T\n  %i\n  %a")
         ("j" "Personal Journal (date based)" entry
-         (file+datetree (concat (file-name-as-directory org-directory)
-                                "personal.org"))
+         (file+datetree (path-join org-directory "personal.org"))
          "* %?\n  Entered on %U\n  %i\n  %a")))
 
 ;; (add-to-list 'org-agenda-files "~/.emacs.d/personal.org")
