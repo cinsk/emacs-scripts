@@ -96,11 +96,13 @@
     (define-key py-shell-map [(control ?a)]
       'comint-bol-or-process-mark)))
 
-(setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
-(setq interpreter-mode-alist (cons '("python" . python-mode)
-                                   interpreter-mode-alist))
-
+;; (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
+;; (setq interpreter-mode-alist (cons '("python" . python-mode)
+;;                                    interpreter-mode-alist))
+;;
 (when (locate-library "python-mode")
+  ;; The vanilla Emacs already includes `python-mode'.  So we need to
+  ;; explicitly require `python-mode' to use the packaged version.
   (require 'python-mode))
 
 ;; ipython.el does not work with python-mode any longer. And since

@@ -4,6 +4,7 @@
 ;;; Shell configuration
 ;;;
 (eval-when-compile
+  (require 'eshell)
   (require 'term))
 
 ;;
@@ -107,7 +108,7 @@ shell."
 (global-set-key "\C-cd" 'shell)
 
 ;; TODO: implement generic function to send arbitrary command to eshell.
-(require 'eshell)
+;; (require 'eshell)
 
 (defun eshell-cd (&optional dir)
   "Switch to eshell and cd to DIR.
@@ -138,8 +139,9 @@ This function is stealed from `helm-ff-switch-to-eshell'."
 (global-set-key [(control meta ?\!)] 'eshell-cd)
 
 ;;(require 'eshell)
-(require 'em-term)
-(add-to-list 'eshell-visual-commands "vim")
+;;(require 'em-term)
+(with-eval-after-load "em-term"
+    (add-to-list 'eshell-visual-commands "vim"))
 
 ;; (require 'em-smart)
 ;; (setq eshell-where-to-jump 'begin)
