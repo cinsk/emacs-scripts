@@ -19,7 +19,7 @@
     ;; `cider-doc-map' to `C-c s'.
     (cinsk/move-key cider-mode-map [(control ?c) (control ?d)] [(control ?c) ?s])))
 
-(with-eval-after-load "cider-repl-mode"
+(with-eval-after-load "cider-repl"
   (when (boundp 'cider-repl-mode-map)
     (cinsk/move-key cider-repl-mode-map [(control ?c) (control ?d)] [(control ?c) ?s])))
 
