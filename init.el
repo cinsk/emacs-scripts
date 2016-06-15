@@ -223,7 +223,7 @@
 
 
 
-(uinit/load "shell"
+(uinit/load "_shell"
   'shell)
 
 (uinit/load "buffer-menu"
