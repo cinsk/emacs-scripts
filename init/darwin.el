@@ -152,3 +152,9 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
 ;; (desktop-save-mode 1)
 
 (add-to-list 'Info-additional-directory-list "/usr/local/share/info")
+
+
+(defun browse-url-mac-osx-open (url &rest args)
+  (shell-command (format "/usr/bin/open %s" url)))
+
+(setq browse-url-mailto-function #'browse-url-mac-osx-open)

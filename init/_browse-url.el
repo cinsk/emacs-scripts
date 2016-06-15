@@ -37,3 +37,18 @@
 (add-to-list 'browse-url-filename-alist
              '("\\'/var/www/localhost/htdocs/\\(.*\\)\\'" .
                "http://localhost/\\1"))
+
+(defun browse-url-dwim (&optional arg)
+  "Open URL.
+
+If the protocol is either http or https, call `browse-url'.
+If the URL ends with one of HTML file extension, call `browse-url'.
+Otherwise, call the command that is bound to 'C-x C-f'."
+  (interactive "P")
+  (let ((url (or (thing-at-point 'url) (thing-at-point 'filename))))
+    (if (and url (or (string-match "\\`https?:/" url)
+                     (string-match "\\.[sx]?html?\\(\\.[a-zA-Z_]+\\)?\\'" url)))
+        (call-interactively #'browse-url)
+      (call-interactively (lookup-key (current-global-map) [(control ?x) (control ?f)])))))
+
+(global-set-key [(control ?c) (control ?o)] #'browse-url-dwim)
