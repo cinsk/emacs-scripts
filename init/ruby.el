@@ -61,9 +61,7 @@
       'ruby-send-region))
 
 
-  (if (fboundp 'ruby-send-buffer)
-      (lwarn '(dot-emacs) :warning
-             "`ruby-send-buffer' already defined.  need to update init.el")
+  (unless (fboundp 'ruby-send-buffer)
     (defun ruby-send-buffer ()
       "Send the current buffer to the inferior Ruby process."
       (interactive)
