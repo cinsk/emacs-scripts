@@ -147,7 +147,20 @@ This function is stealed from `helm-ff-switch-to-eshell'."
 ;; (setq eshell-where-to-jump 'begin)
 ;; (setq eshell-review-quick-commands nil)
 ;; (setq eshell-smart-space-goes-to-end t)
+(setq shell-pushd-regexp "\\(pushd\\|p\\)"
+      shell-popd-regexp "\\(popd\\|o\\)")
 
+;;
+;; From NEWS Emacs version 25
+;;
+;; When you invoke 'shell' interactively, the '*shell*' buffer will now
+;; display in a new window.  However, you can customize this behavior via
+;; the 'display-buffer-alist' variable.  For example, to get
+;; the old behavior -- '*shell*' buffer displays in current window -- use
+;; (add-to-list 'display-buffer-alist
+;;      '("^\\*shell\\*$" . (display-buffer-same-window))).
+(add-to-list 'display-buffer-alist
+             '("^\\*shell\\*$" . (display-buffer-same-window)))
 
 (with-eval-after-load "shell"
   (cinsk/move-key shell-mode-map [(control ?c) (control ?o)] [(control ?c) (control ?O)]))
