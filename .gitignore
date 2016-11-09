@@ -16,6 +16,6 @@ site-lisp
 *~
 *.elc
 /unmaintained
-abbrev_defs
+/abbrev_defs
 /w3m
 /packages

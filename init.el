@@ -60,6 +60,13 @@
 ;;;
 ;;; package
 ;;;
+
+;;;
+;;; Whenever major upgrade for Emacs, try to execute below sexp to recompile
+;;; everything in elpa/ directory.
+;;;
+;;;   (byte-recompile-directory package-user-dir nil 'force)
+;;;
 (let ((pkgdir (path-join user-emacs-directory "package")))
   ;; PKGDIR will contains the last emacs-23 compatible package.el from
   ;; https://github.com/technomancy/package.el
@@ -81,7 +88,9 @@
     ;; t, it will load all the packages on start up.  But it didn't.
     ;; Perhaps it's a problem related to the version (currently Emacs
     ;; 23).  Thus, I'll force to load it here.
-    (package-initialize)))
+    (package-initialize)
+    (setq package-enable-at-startup t)))
+
 
 (unless (locate-library "s")
   (package-install 's))
@@ -120,7 +129,14 @@
   (add-to-list 'load-path "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp"))
 
 (when (locate-library "amz-common")
-  (uinit/require 'amz-common))
+  (uinit/require 'amz-common)
+
+  (when (boundp 'c-default-style)
+    ;; Amazon library uses BSD style for C/C++, which I don't like
+    (setq c-default-style (delq (assoc 'c++-mode c-default-style)
+                                c-default-style)
+          c-default-style (delq (assoc 'c-mode c-default-style)
+                                c-default-style))))
 
 
 (uinit/require 'capitalize+)
