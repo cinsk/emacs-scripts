@@ -618,8 +618,10 @@ following:
             "#+END_SRC\n")
     (push mode cinsk/org-sourcefy-history)))
 
-
-(setq org-todo-keywords
-      '((sequence "TODO" "|" "DONE")
-        (sequence "RESEARCH" "|" "DEVELOP" "|" "TEST" "|" "OP-DONE")
-        (sequence "IMPL" "|" "REVIEW" | "RELEASE" "|" "SP-DONE")))
+;;
+;; This setting causes org export to HTML failed.
+;;
+;; (setq org-todo-keywords
+;;       '((sequence "TODO" "|" "DONE")
+;;         (sequence "RESEARCH" "|" "DEVELOP" "|" "TEST" "|" "OP-DONE")
+;;         (sequence "IMPL" "|" "REVIEW" | "RELEASE" "|" "SP-DONE")))
