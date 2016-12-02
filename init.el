@@ -977,7 +977,34 @@ in any of directory in `yas-snippet-dirs'."
 ;;;
 (autoload 'calc "calc" "The Emacs Calculator" t)
 (global-set-key [f10] 'calc)
-(global-set-key [(control f10)] 'quick-calc)
+(global-set-key [(control f10)] 'quick-calc-dwim)
+
+(defun quick-calc-dwim (arg)
+  "Call `calc-eval-region' if there is active region, otherwise
+call `quick-calc'"
+  (interactive "P")
+  (let ((prefix (prefix-numeric-value arg)))
+    (let ((current-prefix-arg prefix))
+      (if (use-region-p)
+          (call-interactively 'calc-eval-region)
+        (call-interactively 'quick-calc)))))
+
+(defun calc-eval-region (arg beg end)
+  "Calculate the region and display the result in the echo area.
+With a prefix ARG non-nil, replace the region with the result. With two prefix ARGs, insert the result at the end of region."
+  (interactive "p\nr")
+  (let* ((expr (buffer-substring-no-properties beg end))
+         (result (calc-eval expr)))
+    (cond ((eq arg 4)
+           (goto-char beg)
+           (push-mark (point) 'nomsg)
+           (delete-region beg end)
+           (insert result))
+          ((eq arg 16)
+           (goto-char end)
+           (push-mark (point) 'nomsg)
+           (insert result))
+          (t (message "%s = %s" expr result)))))
 
 
 (when (locate-library "eimp")
