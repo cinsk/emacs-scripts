@@ -357,3 +357,9 @@ to the display width"
   "hotkey keymap for save/load frameconfiguration")
 
 (global-set-key [(control f3)] frame-configuration-map)
+
+
+
+
+;; To prevent vertical split
+(setq split-width-threshold 200)
