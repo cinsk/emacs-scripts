@@ -100,6 +100,9 @@
 ;; (setq interpreter-mode-alist (cons '("python" . python-mode)
 ;;                                    interpreter-mode-alist))
 ;;
+
+(setq py-indent-paren-spanned-multilines-p nil)
+
 (when (locate-library "python-mode")
   ;; The vanilla Emacs already includes `python-mode'.  So we need to
   ;; explicitly require `python-mode' to use the packaged version.
