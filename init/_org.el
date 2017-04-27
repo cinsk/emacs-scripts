@@ -330,7 +330,7 @@ not NOT-THIS-COMMAND"
     ;; what I want.  It's better to use `browse-url' to determine
     ;; the suitable browser.
     (add-to-list 'org-file-apps
-                 '("\\.x?html?\\'" . (browse-url file))))
+                 '("\\.x?html?\\'" . (lambda (file link) (browse-url file)))))
 
   ;; Org mode requires font-locking on every org buffer
   ;; Since I use global-font-lock-mode, below sexp is not necessary.
