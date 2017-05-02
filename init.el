@@ -528,6 +528,13 @@
 
 
 
+;;
+;; Company mode
+;;
+(with-eval-after-load "company"
+  (define-key company-mode-map [(meta ?I)] 'company-complete-common))
+
+
 ;;(require 'autofit-frame)
 ;;(add-hook 'after-make-frame-functions 'fit-frame)
 ;;
