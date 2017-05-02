@@ -70,4 +70,4 @@ See https://github.com/auto-complete/auto-complete for more"
             ;; A key binding to force complete (show completion candidate).
             ;; I thought `ac-complete' would call `ac-complete-go', but
             ;; `ac-complete' has no effect.
-            (define-key go-mode-map [(meta ?I)] 'ac-complete-go)))))))
+            (define-key go-mode-map [(control meta ?I)] 'ac-complete-go)))))))

@@ -532,7 +532,12 @@
 ;; Company mode
 ;;
 (with-eval-after-load "company"
-  (define-key company-mode-map [(meta ?I)] 'company-complete-common))
+  (define-key company-mode-map [(control meta ?i)] 'company-complete-common)
+  (define-key company-active-map [(control ?n)] 'company-select-next)
+  (define-key company-active-map [(control ?p)] 'company-select-previous)
+  (define-key company-active-map [(control ?v)] 'company-next-page)
+  (define-key company-active-map [(meta ?v)] 'company-previous-page)
+  )
 
 
 ;;(require 'autofit-frame)
