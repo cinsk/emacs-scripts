@@ -9,6 +9,27 @@
   (require 'org)
   (require 'org-table))
 
+(unless (fboundp 's-trim)
+  ;; I stole these three string functions from s package.
+  ;; See https://github.com/magnars/s.el for more
+  (defun s-trim-left (s)
+    "Remove whitespace at the beginning of S."
+    (save-match-data
+      (if (string-match "\\`[ \t\n\r]+" s)
+          (replace-match "" t t s)
+        s)))
+
+  (defun s-trim-right (s)
+    "Remove whitespace at the end of S."
+    (save-match-data
+      (if (string-match "[ \t\n\r]+\\'" s)
+          (replace-match "" t t s)
+        s)))
+
+  (defun s-trim (s)
+    "Remove whitespace at the beginning and end of S."
+    (s-trim-left (s-trim-right s))))
+
 ;;
 ;; Disable the prompt for evaluation of code block
 ;;

@@ -151,7 +151,13 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
 
 ;; (desktop-save-mode 1)
 
-(add-to-list 'Info-additional-directory-list "/usr/local/share/info")
+
+;; `Info-additional-directory-list' is not a variable but a
+;; customizable variable.  `add-to-list' may fail if it is not defined
+;; yet.
+(if (boundp 'Info-additional-directory-list)
+    (add-to-list 'Info-additional-directory-list "/usr/local/share/info")
+  (setq Info-additional-directory-list '("/usr/local/share/info")))
 
 
 (defun browse-url-mac-osx-open (url &rest args)

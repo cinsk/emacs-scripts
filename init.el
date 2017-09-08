@@ -92,8 +92,8 @@
     (setq package-enable-at-startup t)))
 
 
-(unless (locate-library "s")
-  (package-install 's))
+;;(unless (locate-library "s")
+;;  (package-install 's))
 
 
 ;; I will install packages that is not managed by packages.el in
@@ -1030,10 +1030,10 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
 
 
 
-(let ((dir (expand-file-name "~/.emacs.d/emacs-gradle-mode")))
-  (when (file-exists-p dir)
-    (add-to-list 'load-path dir)))
-(uinit/require 'gradle-mode)
+;; (let ((dir (expand-file-name "~/.emacs.d/emacs-gradle-mode")))
+;;   (when (file-exists-p dir)
+;;     (add-to-list 'load-path dir))
+;;   (uinit/require 'gradle-mode))
 
 
 
