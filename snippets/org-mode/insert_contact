@@ -1,0 +1,6 @@
+# contributor: Seong-Kook Shin <cinsky@gmail.com>
+# name: @contact
+# key: @
+# expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region 'nil))
+# --
+`(cinsk/org-insert-contact)`
