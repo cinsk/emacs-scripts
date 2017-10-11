@@ -30,8 +30,30 @@
     (set-frame-parameter frame 'top '(- 5000))))
 
 
-(setq mac-option-modifier 'super
-      mac-command-modifier 'meta)
+;; Aquamacs had '*scratch*' buffer in text mode; force it having lisp mode
+(setq initial-major-mode 'lisp-interaction-mode)
+
+(when (boundp 'aquamacs-version)
+  ;; These are Aquamacs specific configuration
+
+  ;; `mac-command-modifier' is set to 'alt by default.
+  ;; if we override it before `mac-options-modifier' points `alt,
+  ;; some of the Aquamacs specific shortcut will be ruined.
+  (setq mac-options-modifier mac-command-modifier)
+  (setq mac-command-modifier 'meta)
+
+  ;; Aquamacs has `cursor-type' to bar which is hardly visible.
+  (setq-default cursor-type 'box)
+
+  ;; CMD-}   next-tab-or-buffer
+  ;; CMD-{   previous-tab-or-buffer
+  ;; CMD-OPT-1 aquamacs-join-windows
+  ;; CMD-OPT-2 aquamacs-split-windows-vertically
+  ;; CMD-C-F   aquamacs-toggle-full-frame
+)
+
+
+
 ;; sets fn-delete to be right-delete
 (global-set-key [kp-delete] 'delete-char)
 
