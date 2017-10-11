@@ -37,7 +37,7 @@
     (add-hook 'ruby-mode-hook 'inf-ruby-keys)
     (add-hook 'ruby-mode-hook
               (lambda ()
-                (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
+                (define-key ruby-mode-map [(control ?c) ?\!] 'inf-ruby-console-auto)
                 (define-key ruby-mode-map [(control ?c) (control ?c)]
                   'comment-region)
                 (define-key ruby-mode-map [(control ?c) (control ?b)]
