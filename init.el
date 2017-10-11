@@ -1056,6 +1056,12 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
       (ansi-color-apply-on-region compilation-filter-start (point-max))))
   (add-hook 'compilation-filter-hook 'my-colorize-compilation-buffer))
 
+
+
+(when (locate-library "irfc")
+  (add-to-list 'auto-mode-alist '("[rR][fF][cC].*\\.txt" . irfc-mode)))
+
+
 
 ;;(global-set-key [f2] 'ff-find-other-file)
 ;;(global-set-key [f3] 'dired-jump)
