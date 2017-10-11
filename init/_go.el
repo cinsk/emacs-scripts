@@ -15,6 +15,11 @@
             (lambda ()
               (subword-mode 1))))
 
+(add-hook 'go-mode-hook 'cinsk/go-check-utils)
+
+(with-eval-after-load "go-mode"
+  (add-hook 'before-save-hook 'gofmt-before-save))
+
 ;;
 ;; Prefer company-mode based auto-completion to auto-complete-mode based one.
 ;;
@@ -27,7 +32,17 @@
   (unless (executable-find "gocode")
     (add-to-list 'exec-path (substitute-in-file-name "$GOPATH/bin"))
     (unless (and (executable-find "gocode") nowarn)
-      (warn "gocode not found; try build it using 'go install github.com/nsf/gocode' in $GOPATH directory"))))
+      (warn "gocode not found; try build it using 'go get github.com/nsf/gocode' in $GOPATH directory"))))
+
+(defun cinsk/go-check-utils (&optional nowarn)
+  (if (executable-find "goimports")
+      (setq gofmt-command "goimports")
+    (add-to-list 'exec-path (substitute-in-file-name "$GOPATH/bin"))
+
+    (if (executable-find "goimports")
+        (setq gofmt-command "goimports")
+      (unless nowarn
+        (warn "goimports not found; try build it using 'go get golang.org/x/tools/cmd/goimports' in $GOPATH directory")))))
 
 (defun cinsk/go-init-cp-autocomplete ()
   "Set up auto completion of Go sources using `company-mode'"
