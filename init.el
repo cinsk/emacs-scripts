@@ -281,6 +281,10 @@
 
 (global-set-key [(f11)] 'toggle-case-fold-search)
 
+;;; Show matching parenthese
+(when (fboundp 'show-paren-mode)
+  (show-paren-mode 1))
+
 ;;;
 ;;; ICE setup
 ;;;
@@ -330,7 +334,8 @@
 
 (when (uinit/require 'ido)
   (ido-mode 1)
-  (setq ido-default-buffer-method 'maybe-frame)
+
+  ;;(setq ido-default-buffer-method 'maybe-frame)
   (setq ido-use-filename-at-point 'guess)
   (setq ido-max-directory-size 100000)
 
@@ -786,6 +791,12 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 
 (uinit/load "_js"
   (locate-library "js-comint"))
+
+(when (locate-library "js2-mode")
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode)))
+
+(when (locate-library "indium")
+  (add-hook 'js2-mode-hook #'indium-interaction-mode))
 
 
 (uinit/load "_rust"
