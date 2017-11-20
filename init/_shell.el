@@ -147,8 +147,8 @@ This function is stealed from `helm-ff-switch-to-eshell'."
 ;; (setq eshell-where-to-jump 'begin)
 ;; (setq eshell-review-quick-commands nil)
 ;; (setq eshell-smart-space-goes-to-end t)
-(setq shell-pushd-regexp "\\(pushd\\|p\\)"
-      shell-popd-regexp "\\(popd\\|o\\)")
+(setq shell-pushd-regexp "\\(pushd\\|c\\)"
+      shell-popd-regexp "\\(popd\\|p\\)")
 
 ;;
 ;; From NEWS Emacs version 25
