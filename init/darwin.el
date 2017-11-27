@@ -42,6 +42,8 @@
   (setq mac-options-modifier mac-command-modifier)
   (setq mac-command-modifier 'meta)
 
+  (setq select-enable-clipboard t)
+
   ;; Aquamacs has `cursor-type' to bar which is hardly visible.
   (setq-default cursor-type 'box)
 
