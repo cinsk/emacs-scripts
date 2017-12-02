@@ -39,7 +39,7 @@
   ;; `mac-command-modifier' is set to 'alt by default.
   ;; if we override it before `mac-options-modifier' points `alt,
   ;; some of the Aquamacs specific shortcut will be ruined.
-  (setq mac-options-modifier mac-command-modifier)
+  (setq mac-option-modifier 'alt)
   (setq mac-command-modifier 'meta)
 
   (setq select-enable-clipboard t)
