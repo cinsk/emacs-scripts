@@ -1048,6 +1048,12 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
 
 
 
+(when (locate-library "dtrace-script-mode")
+  (autoload 'dtrace-script-mode "dtrace-script-mode" () t)
+  (add-to-list 'auto-mode-alist '("\\.d\\'" . dtrace-script-mode)))
+
+
+
 ;; See http://stackoverflow.com/questions/13397737/ansi-coloring-in-compilation-mode
 (ignore-errors
   (require 'ansi-color)
