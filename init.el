@@ -1069,11 +1069,33 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
 
 
 
+(defun fkey (arg)
+  "Send a function key press event to Emacs.
+
+Without a prefix argument, it simulate <f1> key press.
+A prefix argument N is translated to <fn> key"
+  (interactive "p")
+  (if (<= arg 0)
+      (error "prefix argument between 1 to 12 is required"))
+  (let ((ks (kbd (format "<f%d>" arg))))
+         ;(vector (list (intern (format "f%d" arg))))))
+    (message "key: %S" ks)
+    (add-to-list 'unread-command-events (listify-key-sequence ks))))
+
 ;;(global-set-key [f2] 'ff-find-other-file)
 ;;(global-set-key [f3] 'dired-jump)
 
-(uinit/summarize)
+
+;; On Emacs version 25, especiall on text terminal, the key `M-['
+;; conflict with other control sequences (e.g. cannot use 'paste the
+;; clipboard text' feature of terminal to Emacs.
+;;
+;; See https://emacs.stackexchange.com/questions/28851/how-to-turn-off-bracketed-paste-mode
+(unless window-system
+  (global-unset-key (kbd "M-[")))
+
 
+(uinit/summarize)
 
 (defun my-minibuffer-setup-hook ()
   (setq gc-cons-threshold most-positive-fixnum))
