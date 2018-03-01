@@ -52,7 +52,14 @@
     ;; above sexp is not evaulated.  Instead, the minor mode map,
     ;; `inf-ruby-minor-mode-map' is defined.  So I'll put all key
     ;; bindings in it.
-    (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
+
+    ;; In inf-ruby (checked at version 20180121.2300), the meaning of
+    ;; `run-ruby' changed, and it is no longer a command.  Alternative: `inf-ruby'.
+    ;; from https://github.com/nonsequitur/inf-ruby/issues/112.
+    ;;
+    ;; (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
+    (define-key ruby-mode-map [(control ?c) ?\!] 'inf-ruby)
+
     (define-key ruby-mode-map [(control ?c) (control ?c)]
       'comment-region)
     (define-key ruby-mode-map [(control ?c) (control ?b)]
