@@ -134,11 +134,10 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
     (require 'fontutil)
     (let ((displays (darwin/display-list)))
       (if (or (> (length displays) 1)
-              (> (length (cl-find-if (lambda (x) (>= (car x) 3000))
-                                     displays)) 0))
+              (not (null (cl-find-if (lambda (x) (>= (car x) 3000))
+                                     displays))))
           (fontutil/set-font "pt-16")
         (fontutil/set-font "pt-14")))))
-
 
 
 (setq default-frame-alist (append default-frame-alist
