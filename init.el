@@ -437,7 +437,8 @@
 ;;;
 ;;; emacs server
 ;;;
-;;(server-start)
+(when (and (not noninteractive) (display-graphic-p))
+  (server-start))
 
 ;;;
 ;;; I prefer case-sensitive search & replace
@@ -1051,6 +1052,11 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
 (when (locate-library "dtrace-script-mode")
   (autoload 'dtrace-script-mode "dtrace-script-mode" () t)
   (add-to-list 'auto-mode-alist '("\\.d\\'" . dtrace-script-mode)))
+
+
+
+(when (locate-library "triton-ssh")
+  (require 'triton-ssh))
 
 
 
