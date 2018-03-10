@@ -5,6 +5,44 @@
 ;;; Lisp (Emacs Lisp, Common Lisp, slime, and Scheme) configuration
 ;;;
 
+(defun syntactic-close-or-self-insert (&optional arg)
+  "Call `syntactic-close' and if there is no matching character,
+insert the character the user typed by calling `self-insert-command'."
+  (interactive "P")
+  (unless (call-interactively 'syntactic-close)
+    (call-interactively 'self-insert-command nil
+                        [(listify-key-sequence (this-command-keys))])))
+
+(defun cinsk/register-syntactic-close-binding (map)
+  (define-key map [(?\))] 'syntactic-close-or-self-insert)
+  (define-key map [(?\])] 'syntactic-close-or-self-insert)
+  (define-key map [(?\})] 'syntactic-close-or-self-insert)
+  (define-key map [(?\>)] 'syntactic-close-or-self-insert))
+
+
+(when (locate-library "syntactic-close")
+  ;; '(lisp-interaction-mode-map emacs-lisp-mode-map lisp-mode-map)
+  (cinsk/register-syntactic-close-binding lisp-mode-shared-map)
+
+  (with-eval-after-load "racket-mode"
+    (cinsk/register-syntactic-close-binding racket-mode-map))
+  (with-eval-after-load "geiser-repl"
+    (cinsk/register-syntactic-close-binding geiser-repl-mode-map))
+  (with-eval-after-load "scheme"
+    (cinsk/register-syntactic-close-binding scheme-mode-map))
+  (with-eval-after-load "clojure-mode"
+    (cinsk/register-syntactic-close-binding clojure-mode-map)))
+
+(with-eval-after-load "lisp-mode"
+  (define-key emacs-lisp-mode-map [f5] 'eval-buffer)
+  (define-key emacs-lisp-mode-map [(control c) ?\|] 'eval-region))
+
+
+
+
+
+
+
 ;;;
 ;;; Emacs Lisp Mode
 ;;;
