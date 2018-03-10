@@ -438,7 +438,8 @@
 ;;; emacs server
 ;;;
 (when (and (not noninteractive) (display-graphic-p))
-  (server-start))
+  (ignore-errors
+    (server-start)))
 
 ;;;
 ;;; I prefer case-sensitive search & replace
