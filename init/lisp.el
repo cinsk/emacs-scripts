@@ -193,5 +193,14 @@ Prefix argument means switch to the Lisp buffer afterwards."
     ;; racket-mode if it is installed
     (cinsk/priortize-auto-mode 'racket-mode)))
 
+(with-eval-after-load "racket-mode"
+  (when (locate-library "geiser")
+    ;; `C-c C-c' bound to `racket-run`, which is unnecessary since we
+    ;; are going to use geiser's `geiser-mode-switch-to-repl' to
+    ;; create the REPL.  Also, I am used to use `C-c C-c' as
+    ;; `comment-region'.
+    (define-key racket-mode-map [(control ?c) (control ?c)] nil)))
+
 (with-eval-after-load "geiser-mode"
-  (define-key geiser-mode-map [(control ?c) ?\!] 'geiser-mode-switch-to-repl))
+  (define-key geiser-mode-map [(control ?c) ?\!] 'geiser-mode-switch-to-repl)
+  (cinsk/move-key geiser-mode-map [(control ?c) (control ?c)] [(control ?c) (control ?C)]))
