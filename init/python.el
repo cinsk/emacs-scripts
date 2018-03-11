@@ -19,6 +19,11 @@
 ;;
 ;;(autoload 'python-mode "python-mode" "Python editing mode." t))
 
+;;
+;; From IPython 5, its prompt is not compatible with Emacs.
+;; -- source: https://www.emacswiki.org/emacs/PythonProgrammingInEmacs
+;;
+
 (with-eval-after-load "python-mode"
   ;; C-c C-b py-execute-buffer
   ;; C-c C-r py-execute-region
@@ -29,6 +34,10 @@
   ;;
   ;; C-c [   py-shift-region-left
   ;; C-c ]   py-shift-region-right
+  (let ((options (split-string py-ipython-command-args)))
+    (unless (member "--simple-prompt" options)
+      (setq py-ipython-command-args (string-join (cons "--simple-prompt" options)
+                                                 " "))))
 
   (let ((map (if (boundp 'python-mode-map)
                  python-mode-map
@@ -43,37 +52,39 @@
     ;;
     ;; To eval in ipython, use py-execute-(string|region|buffer)-ipython.
 
-    (if (and (executable-find "ipython")
-             (fboundp 'py-execute-region-ipython))
-        (progn
-          (setq py-start-run-ipython-shell t)
-          (setq-default py-shell-name "ipython")
+    (when nil
+      (if (and (executable-find "ipython")
+               (fboundp 'py-execute-region-ipython))
+          (progn
+            (setq py-start-run-ipython-shell t)
+            (setq-default py-shell-name "ipython")
 
-          ;; The default prompt of ipython is not working properly
-          ;; it contains some ^A (ASCII 1) which makes completion
-          ;; not working.
-          (setq-default ;; py-python-command-args '("-i" "--classic")
-           py-ipython-command-args "-i --classic")
+            ;; The default prompt of ipython is not working properly
+            ;; it contains some ^A (ASCII 1) which makes completion
+            ;; not working.
+            (setq-default ;; py-python-command-args '("-i" "--classic")
+             py-ipython-command-args "-i --classic")
 
-          (define-key map [(control ?c) (control ?b)]
-            'py-execute-buffer-ipython)
-          (define-key map [(control ?c) (control ?r)]
-            'py-execute-region-ipython)
-          (define-key map [(control ?c) ?f]
-            'py-execute-def-ipython)
-          ;; py-execute-string-ipython is not provided yet
-          ;; (python-mode 6.0.10)
-          (define-key map [(control ?c) (control ?e)]
-            'py-execute-string))
-      (progn
-        (define-key map [(control ?c) (control ?b)]
-          'py-execute-buffer)
-        (define-key map [(control ?c) (control ?r)]
-          'py-execute-region)
-        (define-key map [(control ?c) ?f]
-          'py-execute-def)
-        (define-key map [(control ?c) (control ?e)]
-          'py-execute-string)))
+            (define-key map [(control ?c) (control ?b)]
+              'py-execute-buffer-ipython)
+            (define-key map [(control ?c) (control ?r)]
+              'py-execute-region-ipython)
+            (define-key map [(control ?c) ?f]
+              'py-execute-def-ipython)
+            ;; py-execute-string-ipython is not provided yet
+            ;; (python-mode 6.0.10)
+            (define-key map [(control ?c) (control ?e)]
+              'py-execute-string))))
+
+    (progn
+      (define-key map [(control ?c) (control ?b)]
+        'py-execute-buffer)
+      (define-key map [(control ?c) (control ?r)]
+        'py-execute-region)
+      (define-key map [(control ?c) ?f]
+        'py-execute-def)
+      (define-key map [(control ?c) (control ?e)]
+        'py-execute-string))
 
     (define-key map [(control ?c) (control ?c)] 'py-comment-region)
     (define-key map [(control ?c) ?i] 'py-indent-region)

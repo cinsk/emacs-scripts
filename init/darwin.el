@@ -47,6 +47,10 @@
        ;; Aquamacs has `cursor-type' to bar which is hardly visible.
        (setq-default cursor-type 'box)
 
+       (setq special-display-regexps
+             (remove "[ ]?\\*info.*\\*[ ]?"
+                     (remove "[ ]?\\*[hH]elp.*" special-display-regexps)))
+
        ;; CMD-}   next-tab-or-buffer
        ;; CMD-{   previous-tab-or-buffer
        ;; CMD-OPT-1 aquamacs-join-windows
