@@ -196,3 +196,22 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
   (shell-command (format "/usr/bin/open %s" url)))
 
 (setq browse-url-mailto-function #'browse-url-mac-osx-open)
+
+
+(defun darwin-dictionary-look-up (&optional word)
+  "Look up WORD using Mac Dictionary Application.
+
+If WORD is nil, try to get a word from the current region if active,
+then try to use a word at point."
+  (interactive)
+  (let ((use-empty-active-region nil))
+    (let ((w (or word
+                 (and (use-region-p)
+                      (buffer-substring-no-properties (region-beginning) (region-end)))
+                 (thing-at-point 'word))))
+      (if (or (null w) (eq (length w) 0))
+          (message "Nothing at point nor nothing in the region")
+        (message "Looking up '%s'..." w)
+        (call-process "/usr/bin/open" nil nil nil (format "dict://%s" w))))))
+
+(global-set-key [(alt ?d)] 'darwin-dictionary-look-up)
