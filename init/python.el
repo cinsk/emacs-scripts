@@ -24,6 +24,9 @@
 ;; -- source: https://www.emacswiki.org/emacs/PythonProgrammingInEmacs
 ;;
 
+(eval-when-compile
+  (require 'subr-x))
+
 (with-eval-after-load "python-mode"
   ;; C-c C-b py-execute-buffer
   ;; C-c C-r py-execute-region
