@@ -252,9 +252,10 @@
 (setq mouse-yank-at-point t)
 
 ;; browse-kill-ring: interactive kill-ring navigation
-(when (uinit/require 'browse-kill-ring)
-  (when (fboundp 'browse-kill-ring)
-    (global-set-key [(control ?c) (control ?k)] 'browse-kill-ring)))
+;; I don't use this anymore as helm provides similar feature
+;;(when (uinit/require 'browse-kill-ring)
+;;  (when (fboundp 'browse-kill-ring)
+;;    (global-set-key [(control ?c) (control ?k)] 'browse-kill-ring)))
 
 
 ;;;
