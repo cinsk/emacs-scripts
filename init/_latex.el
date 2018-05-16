@@ -4,6 +4,9 @@
 ;;; TeX & LaTeX configuration
 ;;;
 
+;; https://github.com/tom-tan/auctex-latexmk/issues/18
+(setq japanese-TeX-error-messages nil)
+
 (eval-when-compile
   (require 'tex-mode))
 
@@ -13,13 +16,14 @@
 The value is a cons cell (START-MARK . END-MARK) giving the start
 and end markers.  If NO-REGION is not nil and there is no word at point,
 this function returns a cons cell of current region."
-  (let ((bounds (bounds-of-thing-at-point 'word)))
-    (if (and (not bounds) (not no-region) mark-active)
-        (setq bounds (cons (region-beginning) (region-end))))
-
-    (if bounds
-        (cons (set-marker (make-marker) (car bounds))
-              (set-marker (make-marker) (cdr bounds))))))
+  (let (begin end)
+    (if (use-region-p)
+        (cons (set-marker (make-marker) (region-beginning))
+              (set-marker (make-marker) (region-end)))
+      (let ((bounds (bounds-of-thing-at-point 'word)))
+        (when bounds
+          (cons (set-marker (make-marker) (car bounds))
+                (set-marker (make-marker) (cdr bounds))))))))
 
 (defun latex-enclose-word (&optional arg)
   "Enclose current word with the supplied command name
