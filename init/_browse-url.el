@@ -8,7 +8,7 @@
   (interactive (browse-url-interactive-arg "W3M URL: "))
   (w3m url))
 
-(cond ((memq system-type '(windows-nt ms-dos cygwin))
+(cond ((memq system-type '(windows-nt ms-dos cygwin darwin))
        ;; Use system default configuration
        nil)
 
