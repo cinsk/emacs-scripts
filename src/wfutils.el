@@ -160,7 +160,13 @@ except it will select a frame rather than a window in general."
              (= (length (frame-list)) 1))
         (call-interactively switchfunc)
       (if (null arg)
-          (if (eq 1 (length (visible-frame-list)))
+          ;; If emacs has a tty frame and other graphical frames, in a
+          ;; tty frame, it cannot switch to other frames, and M-<TAB>
+          ;; may not work.  So it's best to check `display-graphic-p'
+          ;; first, and call `other-window' if it is not a graphical
+          ;; frames.
+          (if (or (not (display-graphic-p))
+                  (eq 1 (length (visible-frame-list))))
               (other-window 1)
             (other-frame 1))
         (let ((index (prefix-numeric-value arg)))
