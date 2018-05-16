@@ -8,6 +8,10 @@
 (require 'cc-mode)
 
 
+
+;;; TODO: https://github.com/torvalds/linux/blob/master/Documentation/process/coding-style.rst
+
+
 ;;;
 ;;; This sets up the coding mode for linux kernel sources.
 ;;; (originally obtained from Documentation/CodingStyle in Linux kernel tree)
