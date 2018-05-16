@@ -32,7 +32,8 @@
                                   "license")
   "Directory for license templates")
 
-(defvar license-types '((gpl . "GPL-2.0")
+(defvar license-types '((mpl . "MPL-2.0")
+                        (gpl . "GPL-2.0")
                         (gpl2 . "GPL-2.0")
                         (gpl3 . "GPL-3.0")
                         (lgpl . "LGPL")
