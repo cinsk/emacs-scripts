@@ -136,13 +136,14 @@ This function is stealed from `helm-ff-switch-to-eshell'."
     (unless (get-buffer-process (current-buffer))
       (funcall cd-eshell))))
 
-(global-set-key [(control meta ?\!)] 'eshell-cd)
+;; (global-set-key [(control meta ?\!)] 'eshell-cd)
 
 ;;(require 'eshell)
 ;;(require 'em-term)
 (with-eval-after-load "em-term"
     (add-to-list 'eshell-visual-commands "vim"))
 
+
 ;; (require 'em-smart)
 ;; (setq eshell-where-to-jump 'begin)
 ;; (setq eshell-review-quick-commands nil)
@@ -162,5 +163,8 @@ This function is stealed from `helm-ff-switch-to-eshell'."
 (add-to-list 'display-buffer-alist
              '("^\\*shell\\*$" . (display-buffer-same-window)))
 
-(with-eval-after-load "shell"
-  (cinsk/move-key shell-mode-map [(control ?c) (control ?o)] [(control ?c) (control ?O)]))
+(with-eval-after-load "sh-script"
+  ;; sh-mode uses C-c C-o and C-c C-c for its own purpose, which
+  ;; prevents me to use them for a global binding.
+  (cinsk/move-key sh-mode-map [(control ?c) (control ?o)] [(control ?c) (control ?O)])
+  (cinsk/move-key sh-mode-map [(control ?c) (control ?c)] [(control ?c) (control ?C)]))
