@@ -22,7 +22,10 @@ New height will be calculated by (* FACTOR old-face-height)"
     (set-face-attribute 'default frame :height (round (* height factor)))))
 
 
-(when (display-graphic-p)
+(when (or (display-graphic-p) (daemonp)) ; I like to enable this
+                                         ; section even Aquamacs
+                                         ; starts as a daemon
+
   ;; When Emacs uses graphic display,"control + mouse wheel up"
   ;; increases the default font size whereas "control + mouse wheel
   ;; down " decreases the size.
