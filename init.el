@@ -13,6 +13,13 @@
 ;;; $ git clone http://github.com/cinsk/emacs-scripts.git .emacs.d
 ;;;
 
+;;; The default value of `gc-cons-threshold' is set to 800000 on
+;;; 64-bit system.
+
+(defvar cinsk/gc-cons-threshold (* 10 gc-cons-threshold))
+(setq gc-cons-threshold cinsk/gc-cons-threshold)
+;;(setq garbage-collection-messages t)
+
 ;;;
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 ;;;
@@ -51,11 +58,6 @@
     (byte-recompile-directory srcpath 0)))
 
 
-;;
-;; http://bling.github.io/blog/2016/01/18/why-are-you-changing-gc-cons-threshold/
-;;
-(setq garbage-collection-messages t)
-
 
 ;;;
 ;;; package
@@ -79,7 +81,7 @@
     (require 'package)
 
     (dolist (entry '(("marmalade" . "https://marmalade-repo.org/packages/")
-                     ("sc" . "http://joseito.republika.pl/sunrise-commander/")
+                     ;; ("sc" . "http://joseito.republika.pl/sunrise-commander/")
                      ("melpa" . "https://melpa.org/packages/")
                      ("melpa-stable" . "https://stable.melpa.org/packages/")
                      ("gnu" . "https://elpa.gnu.org/packages/")))
@@ -202,7 +204,7 @@
 ;;;
 ;;; Window-less system Configuration
 ;;;
-(when window-system
+(when (or window-system (daemonp))
   (menu-bar-mode 1)                    ; -1 to hide, 1 to show
   (tool-bar-mode -1)                   ; -1 to hide, 1 to show
   )
@@ -252,10 +254,11 @@
 (setq mouse-yank-at-point t)
 
 ;; browse-kill-ring: interactive kill-ring navigation
-;; I don't use this anymore as helm provides similar feature
-;;(when (uinit/require 'browse-kill-ring)
-;;  (when (fboundp 'browse-kill-ring)
-;;    (global-set-key [(control ?c) (control ?k)] 'browse-kill-ring)))
+;; disabled in favor of `helm-show-kill-ring'
+;;
+;; (when (uinit/require 'browse-kill-ring)
+;;   (when (fboundp 'browse-kill-ring)
+;;     (global-set-key [(control ?c) (control ?k)] 'browse-kill-ring)))
 
 
 ;;;
@@ -470,7 +473,7 @@
 
 
 
-(when (and (display-graphic-p)
+(when (and (or (display-graphic-p) (daemonp))
            (eq (lookup-key (current-global-map) [(control ?z)])
                #'suspend-frame))
   ;; `suspend-frame' is bound to `C-z' and `C-x C-z'.
@@ -559,6 +562,7 @@
         (list 'emacs-lisp-mode-hook
               'lisp-interaction-mode-hook
               'ielm-mode-hook
+              'racket-mode-hook
               'scheme-mode-hook
               'clojure-mode-hook)))
 
@@ -785,11 +789,10 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 (uinit/load "ruby"
   (locate-library "ruby-mode"))
 
-(uinit/load "python"
-  (let ((dir (path-join user-custom-packages-directory "python-mode")))
-    (when (file-directory-p dir)
-      (add-to-list 'load-path dir))
-    (locate-library "python-mode")))
+(uinit/load "_python"
+  ;; remember that Aquamacs provides its own version of python-mode
+  ;; which may not the one you're looking for.
+  (locate-library "python-mode"))
 
 
 (uinit/load "_js"
@@ -799,7 +802,10 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode)))
 
 (when (locate-library "indium")
-  (add-hook 'js2-mode-hook #'indium-interaction-mode))
+  (add-hook 'js2-mode-hook (lambda ()
+                             (unless (fboundp 'indium-interaction-mode)
+                               (require 'indium))
+                             (indium-interaction-mode))))
 
 
 (uinit/load "_rust"
@@ -1057,6 +1063,18 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
 
 
 
+(when (locate-library "projectile")
+  (projectile-global-mode))
+
+(with-eval-after-load "graphviz-dot-mode"
+  ;; `projectile-mode' uses "C-c p" as a prefix which conflicts with
+  ;; `graphviz-dot-preview'.  Since I use `projectile-mode' more
+  ;; commonly than `graphviz-dot-mode', I'll bind
+  ;; `graphviz-dot-preview to "C-c P"
+
+  (define-key graphviz-dot-mode-map [(control ?c) ?P] 'graphviz-dot-preview))
+
+
 (when (locate-library "triton-ssh")
   (require 'triton-ssh))
 
@@ -1105,11 +1123,16 @@ A prefix argument N is translated to <fn> key"
 
 (uinit/summarize)
 
+
+;;
+;; http://bling.github.io/blog/2016/01/18/why-are-you-changing-gc-cons-threshold/
+;;
+
 (defun my-minibuffer-setup-hook ()
   (setq gc-cons-threshold most-positive-fixnum))
 
 (defun my-minibuffer-exit-hook ()
-  (setq gc-cons-threshold 800000))
+  (setq gc-cons-threshold cinsk/gc-cons-threshold))
 
 (add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
 (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook 'append)
