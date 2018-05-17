@@ -11,7 +11,7 @@
 (setq Buffer-menu-sort-column 2)
 
 ;; ibuffer - advanced buffer menu
-(global-set-key (kbd "C-x C-b") 'ibuffer)
+(global-set-key [(control ?x) (control ?b)] 'ibuffer)
 (autoload 'ibuffer "ibuffer" "List buffers." t)
 
 (setq ibuffer-saved-filter-groups
