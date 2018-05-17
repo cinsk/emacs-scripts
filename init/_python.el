@@ -117,10 +117,11 @@
 
 (setq py-indent-paren-spanned-multilines-p nil)
 
-(when (locate-library "python-mode")
-  ;; The vanilla Emacs already includes `python-mode'.  So we need to
-  ;; explicitly require `python-mode' to use the packaged version.
-  (require 'python-mode))
+;; Aquamacs ships its own version of python-mode.
+;;
+;; TODO: do we need to check whether pytohn-mode provided by the
+;; package system?
+
 
 ;; ipython.el does not work with python-mode any longer. And since
 ;; python-mode provides an interface to ipython, I'll stick to
