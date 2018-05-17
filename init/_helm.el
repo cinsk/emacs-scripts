@@ -13,7 +13,8 @@
 
 (when (locate-library "helm")
   (require 'helm)
-  (require 'helm-config))
+  (require 'helm-config)
+  (helm-mode))
 
 (global-set-key [(control ?x) (control ?a)] 'helm-command-prefix)
 ;; (global-unset-key [(control ?x) ?c])
@@ -24,14 +25,15 @@
 
 (global-set-key [(meta ?x)] 'helm-M-x)
 
-(global-set-key [(control ?x) (control ?b)] 'helm-buffers-list)
+(global-set-key [(control ?x) ?b] 'helm-buffers-list)
 
 ;; (substitute-key-definition [(control ?x) (control ?f)]
 ;;                            [(control ?x) (control ?F)]
 ;;                            (current-global-map))
 (global-set-key [(control ?x) (control ?f)] 'helm-find-files)
 
-(global-set-key [(meta ?Y)] 'helm-show-kill-ring)
+(cinsk/move-key (current-global-map) [(meta ?y)] [(meta ?Y)])
+(global-set-key [(meta ?y)] 'helm-show-kill-ring)
 
 ;; See http://tuhdo.github.io/helm-intro.html
 
@@ -42,6 +44,9 @@
 
 ;; list actions using C-z
 (define-key helm-map [(control ?z)] 'helm-select-action)
+
+(define-key helm-map [(meta ?m)] 'helm-toggle-visible-mark)
+;(define-key helm-buffer-map [(meta ?m)] 'helm-toggle-visible-mark)
 
 (when (executable-find "curl")
   (if (boundp 'helm-net-prefer-curl)
