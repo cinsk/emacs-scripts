@@ -560,7 +560,7 @@ following:
                        (and (eq (forward-line) 0) (< (point) end))))
               (org-table-convert-region start end '(16))))))))
 
-(setq org-export-html-style "
+(setq org-html-head "
 <link rel=\"stylesheet\" type=\"text/css\"
       href=\"http://cinsk.github.io/bootstrap/css/bootstrap.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\"
@@ -623,21 +623,25 @@ following:
     (region-beginning)
     (region-end)))
 
-  (let ((text (buffer-substring-no-properties begin end))
-        require-newline-at-end)
-    (goto-char end)
-    (if (not (bolp))
-        (setq require-newline-at-end t))
+  (when (not (use-region-p))
+    (setq begin (point) end (point)))
 
-    (delete-region begin end)
-    (goto-char begin)
-    (push-mark)
-    (insert (if (bolp) "" "\n")
-            (format "#+BEGIN_SRC %s\n" mode)
-            text
-            (if require-newline-at-end "\n" "")
-            "#+END_SRC\n")
-    (push mode cinsk/org-sourcefy-history)))
+  (goto-char end)
+  (unless (bolp)
+    (newline))
+  (insert "#+END_SRC\n")
+  (push-mark)
+  (goto-char begin)
+  (unless (bolp)
+    (newline))
+  (insert (format "#+BEGIN_SRC %s\n" mode))
+  (end-of-line 0)
+
+  (when (use-region-p)
+    ;; Run keyboard macro C-' C-' (`org-edit-special' and `org-edit-src-exit')
+    ;; to indent the source block properly
+    (kmacro-exec-ring-item (quote ("''" 0 "%d")) 1))
+  (push mode cinsk/org-sourcefy-history))
 
 ;;
 ;; This setting causes org export to HTML failed.
