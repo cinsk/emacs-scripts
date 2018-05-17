@@ -36,7 +36,7 @@ New height will be calculated by (* FACTOR old-face-height)"
            (face-attribute 'default :height)))
 
 (defun fontutil/install-mouse-wheel ()
-  (when (display-graphic-p)
+  (when (or (display-graphic-p) (daemonp))
     ;; When Emacs uses graphic display,"control + mouse wheel up"
     ;; increases the default font size whereas "control + mouse wheel
     ;; down " decreases the size.
@@ -57,6 +57,10 @@ New height will be calculated by (* FACTOR old-face-height)"
       (global-set-key incr 'fontutil/increase-default-height)
       (global-set-key decr 'fontutil/decrease-default-height))))
 
+(defun fontutil/reload ()
+  (interactive)
+  (setq fontutil/fontconfig (fontutil/remove-unavailable fontutil/default-fontconfig)))
+
 (defun fontutil/remove-unavailable (specs)
   "Remove unavailable font specification from the SPECS.
 
@@ -69,8 +73,7 @@ See `fontutil/fontconfig' for the definition of SPECS."
                             elt)))
                     specs)))
 
-(defvar fontutil/fontconfig
-  (fontutil/remove-unavailable
+(defvar fontutil/default-fontconfig
    '(("scodepro-14" . (((:family "SourceCodePro" :size 14)
                         (hangul :family "NanumGothicCoding" :size 16)
                         (symbol :family "Symbola" :size 17))))
@@ -217,7 +220,7 @@ See `fontutil/fontconfig' for the definition of SPECS."
      ("firacode-18" . (((:family "Fira Code" :size 18)
                         (hangul :family "NanumGothicCoding" :size 22)
                         (symbol :family "Symbola" :size 24))))
-     ))
+     )
   "Font and Frame configuration list
 
 Each element has a form of (FONT-SPEC FRAME-SPEC), where
@@ -241,6 +244,10 @@ symbolic glyphs, then the FONT-SPEC might be
 
 As you can see in above, each font can have different size.  (This
 is useful for CJK fonts)")
+
+(defvar fontutil/fontconfig
+  (fontutil/remove-unavailable fontutil/default-fontconfig)
+  "Unavailable font config -- See also `fontutil/default-fontconfig'")
 
 (defun fontutil/apply (name)
   "Apply font specification, NAME.
