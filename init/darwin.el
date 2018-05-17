@@ -56,6 +56,8 @@
        ;; CMD-OPT-1 aquamacs-join-windows
        ;; CMD-OPT-2 aquamacs-split-windows-vertically
        ;; CMD-C-F   aquamacs-toggle-full-frame
+
+       ;; (setq same-window-regexps nil)
        )
       (t ; vanilla Emacs on MacOS (darwin
        (setq mac-option-modifier 'alt)
@@ -168,7 +170,7 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
 (with-eval-after-load "tex"
   (TeX-global-PDF-mode)
   (add-to-list 'TeX-command-list
-               '("View" "open -a Preview %o"
+               '("View" "open %o"
                  TeX-run-discard-or-function t t :help "Run Viewer")))
 
 (setq cinsk/ediff-wide-display-policy 'fullscreen)
@@ -215,3 +217,27 @@ then try to use a word at point."
         (call-process "/usr/bin/open" nil nil nil (format "dict://%s" w))))))
 
 (global-set-key [(alt ?d)] 'darwin-dictionary-look-up)
+
+(with-eval-after-load "dired-x"
+  (setq dired-guess-shell-alist-user
+        (append dired-guess-shell-alist-user
+                '(("\\.xbm\\'" "open") ; You may need to install a viewer application like ToyViewer.
+                  ("\\.png\\'" "open")
+                  ("\\.jpe?g\\'" "open")
+                  ("\\.tiff?\\'" "open")
+                  ("\\.pdf\\'" "open")
+                  ("\\.gnuplot\\'" "gnuplot")
+                  ("\\.svg\\'" "open")
+                  ("\\.e?ps\\'" "open")
+                  ("\\.docx?\\'" "open")
+                  ("\\.pptx?\\'" "open")
+                  ("\\.xlsx?\\'" "open")
+                  ("\\.dmg\\'" "open")
+                  ("\\.pkg\\'" "open")
+                  ("\\.otf\\'" "open")
+                  ("\\.ttf\\'" "open")
+                  ("\\.msg\\'" "msgconvert") ; https://github.com/mvz/email-outlook-message-perl
+                  ("\\.mobi\\'" "open -a ebook-viewer *") ; Install Calibre for ebook-viewer
+                  ("\\.e?ps\\.g?z\\'" "gunzip -qc * | open -a Preview -f")
+                  ("\\.e?ps\\.Z\\'" "zcat * | open -a Preview -f")
+                  ))))
