@@ -795,17 +795,7 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
   (locate-library "python-mode"))
 
 
-(uinit/load "_js"
-  (locate-library "js-comint"))
-
-(when (locate-library "js2-mode")
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode)))
-
-(when (locate-library "indium")
-  (add-hook 'js2-mode-hook (lambda ()
-                             (unless (fboundp 'indium-interaction-mode)
-                               (require 'indium))
-                             (indium-interaction-mode))))
+(uinit/load "_js" 'js)
 
 
 (uinit/load "_rust"
