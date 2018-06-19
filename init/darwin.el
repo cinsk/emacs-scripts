@@ -72,19 +72,23 @@
 
 (set-exec-path-from-shell-path)
 
-(cond
- ;; prefer GNU ls over the native one.
- ;;
- ;; GNU ls provides "--dired" for Emacs to provide special escape
- ;; sequences for certain unusual file names.
- ;;
- ;; My system (Mountain Lion, Homebrew coreutils) provides
- ;; "/usr/local/bin/gls" where the previous version provided
- ;; "/usr/local/bin/ls".
- ((executable-find "gls")
-  (setq insert-directory-program "gls"))
- ((executable-find "/usr/local/bin/ls")
-  (setq insert-directory-program "/usr/local/bin/ls")))
+(when nil
+
+  ;; As homebrew provides a way to override default binaries using PATH,
+  ;; Below code no longer necessary.
+  (cond
+   ;; prefer GNU ls over the native one.
+   ;;
+   ;; GNU ls provides "--dired" for Emacs to provide special escape
+   ;; sequences for certain unusual file names.
+   ;;
+   ;; My system (Mountain Lion, Homebrew coreutils) provides
+   ;; "/usr/local/bin/gls" where the previous version provided
+   ;; "/usr/local/bin/ls".
+   ((executable-find "gls")
+    (setq insert-directory-program "gls"))
+   ((executable-find "/usr/local/bin/ls")
+    (setq insert-directory-program "/usr/local/bin/ls"))))
 
 
 (defun darwin/display-list ()
@@ -142,7 +146,9 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
   ;; specific size of Hangul font regardless of default font size
 
   (when (locate-library "fontutil")
-    (require 'fontutil)
+    (require 'fontutil))
+
+  (when (eq 0 (string-to-int (or (getenv "EMACS_NOFONT") "0")))
     (let ((displays (darwin/display-list)))
       (if (or (> (length displays) 1)
               (not (null (cl-find-if (lambda (x) (>= (car x) 3000))
@@ -175,13 +181,16 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
 
 (setq cinsk/ediff-wide-display-policy 'fullscreen)
 
-(when (file-executable-p "/usr/local/bin/diff3")
-  (setq ediff-diff3-program "/usr/local/bin/diff3"
-        ediff-diff-program  "/usr/local/bin/diff"
-        ediff-cmp-program "/usr/local/bin/cmp"))
+(when nil
+  ;; By placing /usr/local/bin prior to /usr/bin, below snippets are
+  ;; not necessary
+  (when (file-executable-p "/usr/local/bin/diff3")
+    (setq ediff-diff3-program "/usr/local/bin/diff3"
+          ediff-diff-program  "/usr/local/bin/diff"
+          ediff-cmp-program "/usr/local/bin/cmp"))
 
-(when (file-executable-p "/usr/local/bin/patch")
-  (setq ediff-patch-program "/usr/local/bin/patch"))
+  (when (file-executable-p "/usr/local/bin/patch")
+    (setq ediff-patch-program "/usr/local/bin/patch")))
 
 ;; (desktop-save-mode 1)
 

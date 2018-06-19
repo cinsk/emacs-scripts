@@ -195,6 +195,8 @@ Examples:
 
 
 (uinit/require 'capitalize+)
+(substitute-key-definition 'capitalize-word 'capitalize-word+
+                           (current-global-map))
 
 
 (uinit/load "darwin"
@@ -244,7 +246,7 @@ Examples:
 
 
 
-(uinit/load "cc-mode"
+(uinit/load "_cc-mode"
   'cc-mode)
 
 
@@ -682,7 +684,7 @@ Examples:
   'mail-news-gnus)
 
 
-(uinit/load "color" 'color-theme)
+;;(uinit/load "color" 'color-theme)
 
 
 ;;;

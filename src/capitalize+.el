@@ -28,7 +28,7 @@
 ;; It seems that (require ...) loads only autoloaded functions, not
 ;; all functions.  Thus, (funcall 'dabbrev-select-buffers-function)
 ;; might fail unless loaded by (load ...)
-(load "dabbrev")
+(require 'dabbrev)
 
 (defvar capitalize+--state)
 (make-variable-buffer-local 'capitalize+--state)
@@ -72,6 +72,7 @@ For example, if LST is '(A B C D E), (sublist-circular lst 3) returns
       (setq result (cons (upcase s) result)))
     (nreverse result)))
 
+;;;###autoload
 (defun capitalize-word+ ()
   "Toggle case of the current word among all-lowercases,
 capitalized, and all-uppercases."
@@ -145,8 +146,6 @@ capitalized, and all-uppercases."
                                                         (length word))))))))))))
 )
 
-(substitute-key-definition 'capitalize-word 'capitalize-word+
-                           (current-global-map))
 
 ;;(global-set-key [(meta ?C)] 'capitalize-word)
 ;;(global-set-key [(meta ?c)] 'capitalize-word+)

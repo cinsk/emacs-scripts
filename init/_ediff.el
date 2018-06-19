@@ -55,36 +55,44 @@
 ;; should be set before loading `ediff, ediff customization should be
 ;; placed in the first place. -- cinsk
 (setq-default ediff-make-wide-display-function 'cinsk/ediff-make-wide-display)
-(require 'ediff)
-(require 'ediff-ptch)
 
-(global-set-key [(meta ?D) ?f]
-                (lambda (arg) (interactive "P")
-                  (cinsk/select-command arg 'ediff-files 'ediff-files3)))
-(global-set-key [(meta ?D) ?b]
-                (lambda (arg) (interactive "P")
-                  (cinsk/select-command arg 'ediff-buffers 'ediff-buffers3)))
-(global-set-key [(meta ?D) ?d]
-                (lambda (arg) (interactive "P")
-                  (cinsk/select-command arg 'ediff-directories
-                                        'ediff-directories3)))
-(global-set-key [(meta ?D) ?v] 'ediff-revision)
-(global-set-key [(meta ?D) ?r]
-                (lambda (arg) (interactive "P")
-                  (cinsk/select-command arg 'ediff-regions-wordwise
-                                        'ediff-regions-linewise)))
-(global-set-key [(meta ?D) ?w]
-                (lambda (arg) (interactive "P")
-                  (cinsk/select-command arg 'ediff-windows-wordwise
-                                        'ediff-windows-linewise)))
+;; (require 'ediff)
+;; (require 'ediff-ptch)
 
-(global-set-key [(meta ?D) ?p] 'ediff-patch-file)
-(global-set-key [(meta ?D) ?P] 'ediff-patch-buffer)
-(global-set-key [(meta ?D) ?m]
-                (lambda (arg) (interactive "P")
-                  (cinsk/select-command arg 'ediff-merge-revisions
-                                        'ediff-merge-revisions-with-ancestor)))
-(global-set-key [(meta ?D) (meta ?D)] 'ediff-show-registry)
+(let ((kmap (make-sparse-keymap)))
+  (define-key kmap [?f]
+    (lambda (arg) (interactive "P")
+      (cinsk/select-command arg 'ediff-files 'ediff-files3)))
+
+  (define-key kmap [?b]
+    (lambda (arg) (interactive "P")
+      (cinsk/select-command arg 'ediff-buffers 'ediff-buffers3)))
+
+  (define-key kmap [?d]
+    (lambda (arg) (interactive "P")
+      (cinsk/select-command arg 'ediff-directories
+                            'ediff-directories3)))
+
+  (define-key kmap [?v] 'ediff-revision)
+  (define-key kmap [?r]
+    (lambda (arg) (interactive "P")
+      (cinsk/select-command arg 'ediff-regions-wordwise
+                            'ediff-regions-linewise)))
+  (define-key kmap [?w]
+    (lambda (arg) (interactive "P")
+      (cinsk/select-command arg 'ediff-windows-wordwise
+                            'ediff-windows-linewise)))
+
+  (define-key kmap [?p] 'ediff-patch-file)
+  (define-key kmap [?P] 'ediff-patch-buffer)
+  (define-key kmap [?m]
+    (lambda (arg) (interactive "P")
+      (cinsk/select-command arg 'ediff-merge-revisions
+                            'ediff-merge-revisions-with-ancestor)))
+
+  (define-key kmap [(meta ?D)] 'ediff-show-registry)
+
+  (global-set-key [(meta ?D)] kmap))
 
 
 (defun cinsk/select-command (arg func1 func2)
@@ -169,28 +177,29 @@ the left corder unchanged.
 
 In addition to this, it can be either 'maximize or 'fullscreen")
 
-(defadvice ediff-toggle-wide-display (around cinsk/ad-ediff-toggle-wide-display
-                                             ())
-  (interactive)
-  (let ((w (prefix-numeric-value current-prefix-arg))
-        (min-width (cond ((window-live-p ediff-window-A)
-                          (if (eq ediff-split-window-function
-                                  'split-window-vertically)
-                              ;; ediff windows splitted like A/B
-                              (window-width ediff-window-A)
-                            ;; ediff windows splitted like A|B
-                            (frame-width (window-frame ediff-window-A))))
-                         ((buffer-live-p ediff-buffer-A)
-                          (buffer-local-value 'fill-column
-                                              ediff-buffer-A))
-                         (t (max fill-column 70)))))
-    (setq w (max min-width w))
-    ;;(message "width: %S" w)
+(with-eval-after-load "ediff-util"
+  (defadvice ediff-toggle-wide-display (around cinsk/ad-ediff-toggle-wide-display
+                                               ())
+    (interactive)
+    (let ((w (prefix-numeric-value current-prefix-arg))
+          (min-width (cond ((window-live-p ediff-window-A)
+                            (if (eq ediff-split-window-function
+                                    'split-window-vertically)
+                                ;; ediff windows splitted like A/B
+                                (window-width ediff-window-A)
+                              ;; ediff windows splitted like A|B
+                              (frame-width (window-frame ediff-window-A))))
+                           ((buffer-live-p ediff-buffer-A)
+                            (buffer-local-value 'fill-column
+                                                ediff-buffer-A))
+                           (t (max fill-column 70)))))
+      (setq w (max min-width w))
+      ;;(message "width: %S" w)
 
-    (let ((cinsk/ediff-wide-window-width w))
-      ad-do-it)))
+      (let ((cinsk/ediff-wide-window-width w))
+        ad-do-it)))
 
-(ad-activate 'ediff-toggle-wide-display)
+  (ad-activate 'ediff-toggle-wide-display))
 
 (defun cinsk/ediff-make-wide-display ()
   "Construct an alist of parameters for the wide display.

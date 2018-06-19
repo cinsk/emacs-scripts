@@ -5,7 +5,7 @@
 ;;; AWK, CORBA IDL.
 ;;;
 
-(require 'cc-mode)
+;; (require 'cc-mode)
 
 
 
@@ -29,41 +29,42 @@
 
 
 ;;; C & C++
-(add-hook 'c-mode-hook
-          #'(lambda ()
-              (cinsk/visit-tags-table (path-join user-emacs-directory
-                                                 "TAGS.sys") t)))
+(with-eval-after-load "cc-mode"
+  (add-hook 'c-mode-hook
+            #'(lambda ()
+                (cinsk/visit-tags-table (path-join user-emacs-directory
+                                                   "TAGS.sys") t)))
 
-(add-hook 'c++-mode-hook
-          #'(lambda ()
-              (cinsk/visit-tags-table (path-join user-emacs-directory
-                                                 "TAGS.sys") t)))
+  (add-hook 'c++-mode-hook
+            #'(lambda ()
+                (cinsk/visit-tags-table (path-join user-emacs-directory
+                                                   "TAGS.sys") t)))
 
-(add-hook 'c-mode-hook (function (lambda nil (abbrev-mode 1))))
-(add-hook 'c++-mode-hook (function (lambda nil (abbrev-mode 1))))
+  (add-hook 'c-mode-hook (function (lambda nil (abbrev-mode 1))))
+  (add-hook 'c++-mode-hook (function (lambda nil (abbrev-mode 1))))
 
-(when (locate-library "cc-subword")
-  (require 'cc-subword)
-  (define-key c-mode-base-map [(meta ?F)] 'c-forward-subword)
-  (define-key c-mode-base-map [(meta ?B)] 'c-backward-subword)
-  (define-key c-mode-base-map [(meta ?D)] 'c-kill-subword))
+  (when (locate-library "cc-subword")
+    (require 'cc-subword)
+    (define-key c-mode-base-map [(meta ?F)] 'c-forward-subword)
+    (define-key c-mode-base-map [(meta ?B)] 'c-backward-subword)
+    (define-key c-mode-base-map [(meta ?D)] 'c-kill-subword))
 
-(define-key c-mode-base-map [(meta ?{)] 'c-beginning-of-defun)
-(define-key c-mode-base-map [(meta ?})] 'c-end-of-defun)
+  (define-key c-mode-base-map [(meta ?{)] 'c-beginning-of-defun)
+  (define-key c-mode-base-map [(meta ?})] 'c-end-of-defun)
 
-(define-key c-mode-base-map [(control meta ?{)] 'c-up-conditional-with-else)
-(define-key c-mode-base-map [(control meta ?})] 'c-down-conditional-with-else)
+  (define-key c-mode-base-map [(control meta ?{)] 'c-up-conditional-with-else)
+  (define-key c-mode-base-map [(control meta ?})] 'c-down-conditional-with-else)
 
-;; Highlights suspicious C/C++ constructions
-(add-hook 'c-mode-common-hook (lambda () (cwarn-mode 1)))
+  ;; Highlights suspicious C/C++ constructions
+  (add-hook 'c-mode-common-hook (lambda () (cwarn-mode 1)))
 
-;;; Prompt for arguments to the preprocessor for `c-macro-expand'
-(setq c-macro-prompt-flag t)
+  ;; Java
+  (add-hook 'java-mode-hook (lambda ()
+                              (subword-mode 1)
+                              (c-set-offset 'statement-cont '++)))
 
-;;; Java
-(add-hook 'java-mode-hook (lambda ()
-                            (subword-mode 1)
-                            (c-set-offset 'statement-cont '++)))
+  ;; Prompt for arguments to the preprocessor for `c-macro-expand'
+  (setq c-macro-prompt-flag t)
 
-(when (locate-library "autodisass-java-bytecode")
-  (require 'autodisass-java-bytecode))
+  (when (locate-library "autodisass-java-bytecode")
+    (require 'autodisass-java-bytecode)))

@@ -57,6 +57,7 @@ New height will be calculated by (* FACTOR old-face-height)"
       (global-set-key incr 'fontutil/increase-default-height)
       (global-set-key decr 'fontutil/decrease-default-height))))
 
+;;;###autoload
 (defun fontutil/reload ()
   (interactive)
   (setq fontutil/fontconfig (fontutil/remove-unavailable fontutil/default-fontconfig)))
@@ -266,6 +267,7 @@ See also `fontutil/fontconfig' for the possible candidates"
       (dolist (f (frame-list))
         (modify-frame-parameters f params)))))
 
+;;;###autoload
 (defun fontutil/set-font (name)
   "Apply font specification, NAME from `fontutil/fontconfig'"
   (interactive (list (completing-read "font: " fontutil/fontconfig)))
