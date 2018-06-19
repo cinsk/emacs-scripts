@@ -33,6 +33,59 @@
              (cdr args))
     path))
 
+(defmacro time-loop (n &rest body)
+  "Return time before and after N iteration of BODY.
+
+DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
+  (declare (indent 1) (debug t))
+  `(let ((t1 (current-time)))
+     (dotimes (i ,n)
+       ,@body)
+     (time-subtract (current-time) t1)))
+
+(defmacro save-font-excursion (face &rest body)
+  "Save the :font property of given FACE during the execution of BODY."
+  (declare (indent 1) (debug t))
+  `(let ((oldfont (face-attribute ,face :font)) ret)
+     (setq ret (progn ,@body))
+     (or (string= oldfont (face-attribute ,face :font))
+         (set-face-attribute ,face nil :font oldfont))
+     ret))
+
+(defmacro enable-minor-mode (major-mode-file major-mode-hook feature minor-mode &rest condition)
+  "Enable MINOR-MODE on a major mode based on the CONDITION.
+
+This macro will register a function which enables MINOR-MODE
+based on CONDITION to the hook, MAJOR-MODE-HOOK.  Since
+MAJOR-MODE-HOOK might not available by the time this macro
+called, the whole code will be body of `with-eval-after-load'
+using MAJOR-MODE-FILE.
+
+If CONDITION is omitted, MODE will be enabled always. If
+CONDITION is a string, it will be treated as a regular expression
+pattern and if it matches to the buffer-file-name, MODE will be
+enabled.  Otherwise, CONDITION is treated as a form and MODE will
+be enabled if CONDITION evaluated as true.
+
+Examples:
+
+  (enable-minor-mode \"js2-mode\" js2-mode-hook skewer-mode skewer-mode)
+  (enable-minor-mode \"js2-mode\" js2-mode-hook skewer-mode skewer-mode \"/d3/.*\\\\.js\\\\'\")
+  (enable-minor-mode \"js2-mode\" js2-mode-hook skewer-mode skewer-mode
+  ;; ...
+  t)
+"
+  (declare (indent 4))
+  `(when (locate-library ,major-mode-file)
+     (with-eval-after-load ,major-mode-file
+       (require (quote ,feature))
+       (add-to-list (quote ,major-mode-hook)
+                    (lambda ()
+                      (when ,(cond ((null condition) t)
+                                   ((and (eq (length condition) 1) (stringp (car condition))) `(string-match ,@condition (buffer-file-name nil)))
+                                   (t `(progn ,@condition)))
+                        (,minor-mode)))))))
+
 
 
 (when (string-equal (getenv "SHELL") "/bin/false")
@@ -627,26 +680,6 @@
 
 (uinit/load "mail"
   'mail-news-gnus)
-
-
-(defmacro time-loop (n &rest body)
-  "Return time before and after N iteration of BODY.
-
-DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
-  (declare (indent 1) (debug t))
-  `(let ((t1 (current-time)))
-     (dotimes (i ,n)
-       ,@body)
-     (time-subtract (current-time) t1)))
-
-(defmacro save-font-excursion (face &rest body)
-  "Save the :font property of given FACE during the execution of BODY."
-  (declare (indent 1) (debug t))
-  `(let ((oldfont (face-attribute ,face :font)) ret)
-     (setq ret (progn ,@body))
-     (or (string= oldfont (face-attribute ,face :font))
-         (set-face-attribute ,face nil :font oldfont))
-     ret))
 
 
 (uinit/load "color" 'color-theme)

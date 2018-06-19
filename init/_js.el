@@ -35,6 +35,10 @@
     (define-key js-mode-map [(control ?c) (control ?r)] 'js-send-region-and-go)
     (define-key js-mode-map [(control ?c) (control ?b)] 'js-send-buffer-and-go)))
 
+
+(enable-minor-mode "js2-mode" js2-mode-hook skewer-mode skewer-mode)
+
+
 (with-eval-after-load "skewer-mode"
   (define-key skewer-mode-map [(control ?c) (control ?b)] 'skewer-load-buffer)
   (define-key skewer-mode-map [(control ?c) ?\!] 'skewer-repl))
