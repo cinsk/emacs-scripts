@@ -662,10 +662,12 @@ Examples:
 ;;; Read xcscope.el packaged in cscope source tarball. It can be obtained
 ;;; from http://cscope.sourceforge.net/
 ;;;
-(when (locate-library "xcscope")
-  (require 'xcscope)
-  (and (fboundp 'cscope-setup)
-       (cscope-setup)))
+;;; As xcscope is available in Melpa, manual configuration is no
+;;; longer needed.
+;; (when (locate-library "xcscope")
+;;   (require 'xcscope)
+;;   (and (fboundp 'cscope-setup)
+;;        (cscope-setup)))
 
 ;;;
 ;;; Version Control
