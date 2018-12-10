@@ -105,11 +105,6 @@ Examples:
        (format "create user directory(%s)? " user-emacs-directory))
       (make-directory user-emacs-directory t)))
 
-(let ((srcpath (expand-file-name (path-join user-emacs-directory "src"))))
-  (add-to-list 'load-path srcpath)
-  (when (and (boundp 'uinit/use-byte-compile) uinit/use-byte-compile)
-    (byte-recompile-directory srcpath 0)))
-
 
 
 ;;;
@@ -122,6 +117,19 @@ Examples:
 ;;;
 ;;;   (byte-recompile-directory package-user-dir nil 'force)
 ;;;
+
+(with-eval-after-load "tls"
+  ;; On recent Mac (Mac Mojave), the ca-bundle is not available from
+  ;; the file system, so `gnutls-trustfiles' would return nil. If the
+  ;; `tls-program' uses "--x509cafile nil" command-line, gnutls-cli
+  ;; will fail, so I'm going to remove "--x509cafile" from the
+  ;; command-line
+  ;;
+  ;; TODO: Is it secure enough?
+  ;; To verify, run:
+  ;;    (url-copy-file "https://www.google.com/" "google.txt")
+  (add-to-list 'tls-program "gnutls-cli -p %p %h"))
+
 (let ((pkgdir (path-join user-emacs-directory "package")))
   ;; PKGDIR will contains the last emacs-23 compatible package.el from
   ;; https://github.com/technomancy/package.el
@@ -133,11 +141,11 @@ Examples:
              (locate-library "package"))
     (require 'package)
 
-    (dolist (entry '(("marmalade" . "https://marmalade-repo.org/packages/")
+    (dolist (entry '(;; ("marmalade" . "https://marmalade-repo.org/packages/")
                      ;; ("sc" . "http://joseito.republika.pl/sunrise-commander/")
                      ("melpa" . "https://melpa.org/packages/")
                      ("melpa-stable" . "https://stable.melpa.org/packages/")
-                     ("gnu" . "https://elpa.gnu.org/packages/")))
+                     ("gnu" . "http://elpa.gnu.org/packages/")))
       (add-to-list 'package-archives entry))
     ;; According to the package.el, if `package-enable-at-startup' is
     ;; t, it will load all the packages on start up.  But it didn't.
@@ -149,6 +157,9 @@ Examples:
 
 ;;(unless (locate-library "s")
 ;;  (package-install 's))
+
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/skewer-mode"))
+(require 'skewer-mode)
 
 
 ;; I will install packages that is not managed by packages.el in
@@ -168,7 +179,14 @@ Examples:
 
 
 
-(setq uinit/init-directory "~/.emacs.d/init")
+(let ((srcpath (expand-file-name (path-join user-emacs-directory "src"))))
+  (add-to-list 'load-path srcpath)
+  )
+
+(setq uinit/init-directory "~/.emacs.d/init"
+      uinit/use-byte-compile t)
+
+;; (byte-recompile-directory package-user-dir nil 'force)
 
 (require 'uinit)
 (uinit/require 'cinsk-common)
@@ -544,11 +562,8 @@ Examples:
 ;;;
 ;;; Markdown mode
 ;;;
-(when (locate-library "markdown-mode")
-  (autoload 'markdown-mode "markdown-mode"
-    "Major mode for editing Markdown files" t)
-  (add-to-list 'auto-mode-alist
-               '("\\.md" . markdown-mode)))
+(with-eval-after-load "markdown-mode"
+  (add-to-list 'markdown-css-paths "http://thomasf.github.io/solarized-css/solarized-light.min.css"))
 
 
 ;;;
@@ -1091,7 +1106,8 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
 
 
 (when (locate-library "projectile")
-  (projectile-global-mode))
+  (and (fboundp 'projectile-global-mode)
+       (projectile-global-mode)))
 
 (with-eval-after-load "graphviz-dot-mode"
   ;; `projectile-mode' uses "C-c p" as a prefix which conflicts with
