@@ -29,6 +29,10 @@
     (set-frame-parameter frame 'left '(- 0))
     (set-frame-parameter frame 'top '(- 5000))))
 
+;; Disable autoface mode that uses variable-width font for text-mode
+;; derived modes.
+(when (fboundp 'aquamacs-autoface-mode)
+  (aquamacs-autoface-mode -1))
 
 ;; Aquamacs had '*scratch*' buffer in text mode; force it having lisp mode
 (setq initial-major-mode 'lisp-interaction-mode)
@@ -70,7 +74,7 @@
 ;; sets fn-delete to be right-delete
 (global-set-key [kp-delete] 'delete-char)
 
-(set-exec-path-from-shell-path)
+;;(set-exec-path-from-shell-path)
 
 (when nil
 
@@ -148,7 +152,7 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
   (when (locate-library "fontutil")
     (require 'fontutil))
 
-  (when (eq 0 (string-to-int (or (getenv "EMACS_NOFONT") "0")))
+  (when (eq 0 (string-to-number (or (getenv "EMACS_NOFONT") "0")))
     (let ((displays (darwin/display-list)))
       (if (or (> (length displays) 1)
               (not (null (cl-find-if (lambda (x) (>= (car x) 3000))
