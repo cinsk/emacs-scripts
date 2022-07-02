@@ -13,6 +13,15 @@
 
   (add-to-list 'interpreter-mode-alist  '("ruby" . ruby-mode)))
 
+(with-eval-after-load "rbenv"
+  (unless (file-executable-p rbenv-executable)
+    ;; If rbenv package couldn't find the rbenv executable, provide it
+    ;; from the PATH.
+    (let ((p (executable-find "rbenv")))
+      (and p
+           (setq rbenv-executable p))))
+  )
+
 (with-eval-after-load "ruby-mode"
   ;; Above configuration works on even ruby-mode 1.0, which is
   ;; distributed with Emacs 24 build-in.

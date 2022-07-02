@@ -91,7 +91,8 @@ Examples:
 (when (string-equal (getenv "SHELL") "/bin/false")
   ;; "$SHELL" is set to "/bin/false" in darwin under Amazon User
   ;; Cert. System. -- Hmm. this seems not true.
-  (let ((sh (or (executable-find "bash") "/bin/sh")))
+;;  (let ((sh (or (executable-find "bash") "/bin/sh")))
+  (let ((sh (or (executable-find "zsh") "/bin/zsh")))
     (setenv "SHELL" sh)
     (setq shell-file-name sh)))
 
@@ -141,11 +142,13 @@ Examples:
              (locate-library "package"))
     (require 'package)
 
-    (dolist (entry '(;; ("marmalade" . "https://marmalade-repo.org/packages/")
+    (dolist (entry '(;; marmalade cert expired.
+                     ;; ("marmalade" . "https://marmalade-repo.org/packages/")
                      ;; ("sc" . "http://joseito.republika.pl/sunrise-commander/")
                      ("melpa" . "https://melpa.org/packages/")
                      ("melpa-stable" . "https://stable.melpa.org/packages/")
-                     ("gnu" . "http://elpa.gnu.org/packages/")))
+                     ;; ("gnu" . "https://elpa.gnu.org/packages/")
+                     ))
       (add-to-list 'package-archives entry))
     ;; According to the package.el, if `package-enable-at-startup' is
     ;; t, it will load all the packages on start up.  But it didn't.
@@ -158,8 +161,8 @@ Examples:
 ;;(unless (locate-library "s")
 ;;  (package-install 's))
 
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/skewer-mode"))
-(require 'skewer-mode)
+;(add-to-list 'load-path (expand-file-name "~/.emacs.d/skewer-mode"))
+;(require 'skewer-mode)
 
 
 ;; I will install packages that is not managed by packages.el in

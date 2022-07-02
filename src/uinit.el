@@ -12,6 +12,12 @@
           "init")
   "Directory contains the init snippets.")
 
+(defvar uinit/byte-compile-directories
+  (list uinit/init-directory
+        (concat (expand-file-name user-emacs-directory)
+                "src"))
+  "List of directories which are targets of byte compilations..")
+
 (defvar uinit/use-byte-compile t
   "The time that Emacs start to load init files")
 
@@ -115,7 +121,7 @@
           (init-report-mode)
           (current-buffer)))))
 
-(defun uinit/logger (started success init-file)
+(defun uinit/logger (started success &optional init-file)
   "leave a log message in the buffer named `uinit/buffer-name'.
 
 STARTED is the time when the loading INIT-FILE started, SUCCESS should
@@ -126,8 +132,9 @@ init script."
           (status (if success "okay" "fail"))
           (latency (float-time (time-subtract (current-time) started))))
       (goto-char (point-max))
-      (insert (format "%3.5f  [%s] %s\n" latency status init-file))
-      (add-to-list 'uinit/loaded-init-files init-file))))
+      (insert (format "%3.5f  [%s] %s\n" latency status (or init-file "")))
+      (when init-file
+        (add-to-list 'uinit/loaded-init-files init-file)))))
 
 
 (defun uinit/summarize ()
@@ -181,7 +188,17 @@ init script."
   (font-lock-mode 1))
 )
 
-(when uinit/use-byte-compile
-  (byte-recompile-directory uinit/init-directory 0))
+(let ((do-compile (getenv "EMACS_COMPILE")))
+  (if (or (null do-compile)
+          (string-equal do-compile ""))
+      (setq do-compile uinit/use-byte-compile)
+    (setq do-compile (not (eq (string-to-number do-compile) 0))))
+
+  (when do-compile
+    (dolist (dir uinit/byte-compile-directories)
+      (let ((d (expand-file-name dir)))
+        (when (and (stringp d)
+                   (file-directory-p d))
+          (byte-recompile-directory d 0))))))
 
 (provide 'uinit)

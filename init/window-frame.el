@@ -216,7 +216,7 @@ CONFIGURATION."
 
 ;;(global-set-key [(control x) ?o] 'smart-other-frame)
 (global-unset-key [(control x) ?f])
-(global-set-key [(control x) ?f ?f] 'new-frame)
+(global-set-key [(control x) ?f ?f] 'make-frame) ; `new-frame' is obsolute
 (global-set-key [(control x) ?f ?k] '(lambda (&optional arg)
                                        (interactive "p")
                                        (let ((frame (selected-frame)))
