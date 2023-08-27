@@ -13,7 +13,7 @@
 
 (when (locate-library "helm")
   (require 'helm)
-  (require 'helm-config)
+  ; (require 'helm-config) -- it seems helm-config is removed
   (helm-mode))
 
 (global-set-key [(control ?x) (control ?a)] 'helm-command-prefix)

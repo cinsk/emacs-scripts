@@ -280,7 +280,8 @@ not NOT-THIS-COMMAND"
      (ruby . t)
      (dot . t)
      ,(when (locate-library "ob-go") '(go . t))
-     (sh . t)))
+     ; (sh . t) -- ob-sh renamed to ob-shell
+     (shell . t)))
 
   (define-key outline-mode-map [(control down)]
     'outline-next-visible-heading)
