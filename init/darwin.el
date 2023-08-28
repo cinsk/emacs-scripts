@@ -256,7 +256,6 @@ then try to use a word at point."
                   ))))
 
 ;; Darwin's default shell is zsh(1).  To prevent shell commands
-;; echoing, this is required.  To make this better, it should check
-;; whether the default shell is zsh(1) or not.  However I haven't
-;; figured it out how.
-(add-hook 'comint-mode-hook #'(lambda () (setq comint-process-echoes t)))
+;; echoing, this is required.
+(when (string-equal (file-name-nondirectory shell-file-name) "zsh")
+  (add-hook 'comint-mode-hook #'(lambda () (setq comint-process-echoes t))))
