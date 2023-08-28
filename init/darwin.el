@@ -63,7 +63,7 @@
 
        ;; (setq same-window-regexps nil)
        )
-      (t ; vanilla Emacs on MacOS (darwin
+      (t ; vanilla Emacs on MacOS (darwin)
        (setq mac-option-modifier 'alt)
        (setq mac-command-modifier 'meta)
        (setq select-enable-clipboard t))
@@ -254,3 +254,9 @@ then try to use a word at point."
                   ("\\.e?ps\\.g?z\\'" "gunzip -qc * | open -a Preview -f")
                   ("\\.e?ps\\.Z\\'" "zcat * | open -a Preview -f")
                   ))))
+
+;; Darwin's default shell is zsh(1).  To prevent shell commands
+;; echoing, this is required.  To make this better, it should check
+;; whether the default shell is zsh(1) or not.  However I haven't
+;; figured it out how.
+(add-hook 'comint-mode-hook #'(lambda () (setq comint-process-echoes t)))
