@@ -35,7 +35,7 @@ Best used for `smtpmail-smtp-service' as the default value.")
 (defvar company-firewall-on-effect nil
   "t if behind the infamous company firewall")
 
-(when (string-match "^selune" system-name)
+(when (string-match "^selune" (system-name))
   (setq company-firewall-on-effect t))
 
 ;; Since `gnus-nntp-server' will override `gnus-select-method', force
@@ -91,7 +91,7 @@ Best used for `smtpmail-smtp-service' as the default value.")
 
 (setq send-mail-function 'smtpmail-send-it
       message-send-mail-function 'smtpmail-send-it
-      mail-from-style nil
+      ;; mail-from-style nil
       user-full-name "Seong-Kook Shin"
       user-mail-address "cinsky@gmail.com"
       message-signature-file "~/.signature"

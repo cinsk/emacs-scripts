@@ -413,7 +413,7 @@ not NOT-THIS-COMMAND"
   ;; installed version is lower than 7.9.2.
   (require 'org-version)
   (if (and (fboundp 'org-release)
-           (not (string-lessp (org-release) "7.9.2")))
+           (string-lessp (org-release) "7.9.2"))
       ;; Around orgmode version 7.9.2 and version 7.9.3, if the module,
       ;; org-version is loaded, then some of org-related symbols are
       ;; accessible (e.g. `org-mode-map').

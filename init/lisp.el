@@ -48,7 +48,7 @@ insert the character the user typed by calling `self-insert-command'."
 ;;;
 
 (add-hook 'emacs-lisp-mode-hook
-          '(lambda ()
+          #'(lambda ()
              (cinsk/visit-tags-table (path-join user-emacs-directory
                                                "TAGS.emacs") t)))
 
@@ -187,7 +187,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 (when (locate-library "geiser")
   (when (locate-library "racket-mode")
-    (add-hook 'racket-mode-hook '(lambda () (geiser-mode 1)))
+    (add-hook 'racket-mode-hook #'(lambda () (geiser-mode 1)))
 
     ;; geiser-mode made .rkt file uses scheme-mode.  Force to use
     ;; racket-mode if it is installed

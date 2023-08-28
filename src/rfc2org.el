@@ -30,7 +30,7 @@
   "Page delimiters used to convert RFC to ORG format")
 
 (defvar table-of-contents nil
-  "dictionary of TOC (obsolete)"))
+  "dictionary of TOC (obsolete)")
 
 
 (defun rfc2org-buffer (src dst)
@@ -99,7 +99,7 @@ For example:
         (goto-char (point-min))
 
         (while (re-search-forward
-                "\\([sS]\\)ection\\([ \n\t]*\\)\\([0-9]+\\(?:\\.[0-9]+\\)*\\)" 
+                "\\([sS]\\)ection\\([ \n\t]*\\)\\([0-9]+\\(?:\\.[0-9]+\\)*\\)"
                 nil t)
           ;;(match-string 1))))
           (replace-match "\\1ection\\2[[\\3]]" nil nil)
@@ -116,7 +116,7 @@ For example:
   \"Section 3.5, 4, and, 9.\" => \"Section [[3.5]], [[4]], and, [[9]].\""
   (setq strict (if strict t nil))
   (let ((counter 0)
-        (section-regexp (if strict 
+        (section-regexp (if strict
                             "[sS]ections[ \n\t]*"
                           "[sS]ections?[ \n\t]*")))
     (set-buffer buffer)
@@ -129,7 +129,7 @@ For example:
           (while (setq beg (re-search-forward section-regexp nil t))
             (forward-paragraph)
             (set-marker end (point))
-            
+
             (goto-char beg)
             (message "beg:end = %d:%d" beg (marker-position end))
             (while (re-search-forward "\\([0-9]+\\(?:\\.[0-9]+\\)*\\)" end t)
@@ -172,7 +172,7 @@ sides of TOC block.  See `rfc2org-page-delimiter'."
                   (goto-char end)
                   (beginning-of-line)
                   (insert (format "%s\n\n" rfc2org-page-delimiter))))
-            
+
             (goto-char begin)
             (while (re-search-forward
                     "^\\([ \t]*\\)\\([0-9]+\\(?:\\.[0-9]+\\)*\\)" end t)
@@ -213,10 +213,10 @@ sides of TOC block.  See `rfc2org-page-delimiter'."
         (widen)
         (goto-char (point-min))
 
-        (while (re-search-forward 
-                "^\\([0-9]+\\(?:\\.[0-9]+\\)*\\)\\([ \t.]+.*\\)$" 
+        (while (re-search-forward
+                "^\\([0-9]+\\(?:\\.[0-9]+\\)*\\)\\([ \t.]+.*\\)$"
                 nil t)
-          (replace-match (format "%s \\1\\2 <<\\1>>" 
+          (replace-match (format "%s \\1\\2 <<\\1>>"
                                  (header-string (match-string 1))))
           (setq counter (1+ counter)))))
     counter))
@@ -233,8 +233,8 @@ sides of TOC block.  See `rfc2org-page-delimiter'."
           ;; (match-string 1) => "1.3"
           ;; (match-string 2) => "Terminology ..."
           ;; (match-string 3) => "8"
-          ;(list (match-string 1) 
-          ;(trim-string-right (match-string 2) " .") 
+          ;(list (match-string 1)
+          ;(trim-string-right (match-string 2) " .")
           ;(match-string 3)))
           (cons (match-string 1) (trim-string-right (match-string 2) " .")))
       nil)))

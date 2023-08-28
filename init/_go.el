@@ -13,6 +13,9 @@
 (when (locate-library "subword")
   (add-hook 'go-mode-hook
             (lambda ()
+              ;; Surprisingly, `c-basic-offset' has no effect on
+              ;; go-mode, but `tab-width' does.
+              (setq tab-width 4)
               (subword-mode 1))))
 
 (add-hook 'go-mode-hook 'cinsk/go-check-utils)
@@ -35,14 +38,16 @@
       (warn "gocode not found; try build it using 'go get github.com/nsf/gocode' in $GOPATH directory"))))
 
 (defun cinsk/go-check-utils (&optional nowarn)
-  (if (executable-find "goimports")
+  (if (or (executable-find "goimports")
+          (let ((binpath (path-join (string-trim (shell-command-to-string "go env GOPATH") nil)
+                                    "bin")))
+            (let ((pname (path-join binpath "goimports")))
+              (if (file-executable-p pname)
+                  (add-to-list 'exec-path binpath)))))
       (setq gofmt-command "goimports")
-    (add-to-list 'exec-path (substitute-in-file-name "$GOPATH/bin"))
+    (unless nowarn
+      (warn "goimports not found; try build it using 'go get golang.org/x/tools/cmd/goimports' in $GOPATH directory"))))
 
-    (if (executable-find "goimports")
-        (setq gofmt-command "goimports")
-      (unless nowarn
-        (warn "goimports not found; try build it using 'go get golang.org/x/tools/cmd/goimports' in $GOPATH directory")))))
 
 (defun cinsk/go-init-cp-autocomplete ()
   "Set up auto completion of Go sources using `company-mode'"

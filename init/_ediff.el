@@ -216,7 +216,7 @@ It assumes that it is called from within the control buffer."
            (frame-A-params (frame-parameters frame-A))
            (fw (frame-width frame-A))
            (fpw (frame-pixel-width frame-A))
-           (cw (ediff-frame-char-width frame-A))
+           (cw (frame-char-width frame-A)) ; `ediff-frame-char-width' obsolete
            (febw cw)                      ; frame external border width
            (fibw (- fpw (* fw cw)))       ; frame internal border width
            desired-fw desired-fpw desired-left)
@@ -257,7 +257,7 @@ It assumes that it is called from within the control buffer."
 
         (if (> (+ desired-left (+ (* desired-fw cw) fibw (/ febw 2)))
                (ediff-display-pixel-width))
-            (setq desired-left (- (ediff-display-pixel-width)
+            (setq desired-left (- (display-pixel-width) ; `ediff-display-pixel-width' obsolete
                                   (+ (* desired-fw cw) fibw (/ febw 2))))))
 
       ;; (message "resizing WIDTH to %S where LEFT to %S" desired-fw

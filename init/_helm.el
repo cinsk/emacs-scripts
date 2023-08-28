@@ -4,12 +4,18 @@
 ;;; Helm configuration
 ;;;
 
-(global-set-key [(meta ?X)]
-                (lookup-key (current-global-map) [(meta ?x)]))
-(global-set-key [(control ?x) (control ?B)]
-                (lookup-key (current-global-map) [(control ?x) (control ?b)]))
-(global-set-key [(control ?x) (control ?F)]
-                (lookup-key (current-global-map) [(control ?x) (control ?f)]))
+(eval-when-compile
+  (require 'cinsk-common))
+
+;; (global-set-key [(meta ?X)]
+;;                (lookup-key (current-global-map) [(meta ?x)]))
+;; (global-set-key [(control ?x) (control ?B)]
+;;                 (lookup-key (current-global-map) [(control ?x) (control ?b)]))
+;; (global-set-key [(control ?x) (control ?F)]
+;;                 (lookup-key (current-global-map) [(control ?x) (control ?f)]))
+(cinsk/copy-key (current-global-map) [(meta ?x)] [(meta ?X)])
+(cinsk/copy-key (current-global-map) [(control ?x) (control ?b)] [(control ?x) (control ?B)])
+(cinsk/copy-key (current-global-map) [(control ?x) (control ?f)] [(control ?x) (control ?F)])
 
 (when (locate-library "helm")
   (require 'helm)
@@ -51,7 +57,7 @@
 (when (executable-find "curl")
   (if (boundp 'helm-net-prefer-curl)
       (setq helm-net-prefer-curl t)
-    (setq helm-google-suggest-use-curl-p t)))
+    (setq helm-net-prefer-curl t)))
 
 
 (define-key helm-command-map [?\`] 'helm-resume)

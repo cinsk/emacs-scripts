@@ -209,6 +209,16 @@ See `fontutil/fontconfig' for the definition of SPECS."
                       (hangul :family "NanumGothicCoding" :size 22)
                       (symbol :family "Symbola" :size 20))))
 
+     ("noto-14" . (((:family "Noto Sans Mono" :size 14)
+                      (hangul :family "Noto Sans Mono CJK KR" :size 17)
+                      (symbol :family "Noto Sans Symbols" :size 16))))
+     ("noto-16" . (((:family "Noto Sans Mono" :size 16)
+                      (hangul :family "Noto Sans Mono CJK KR" :size 22)
+                      (symbol :family "Noto Sans Symbols" :size 16))))
+     ("noto-18" . (((:family "Noto Sans Mono" :size 18)
+                      (hangul :family "Noto Sans Mono CJK KR" :size 24)
+                      (symbol :family "Noto Sans Symbols" :size 18))))
+
      ("firacode-14" . (((:family "Fira Code" :size 14)
                     (hangul :family "NanumGothicCoding" :size 16)
                     (symbol :family "Symbola" :size 20))))

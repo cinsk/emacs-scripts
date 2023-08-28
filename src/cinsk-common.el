@@ -91,12 +91,20 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;          ,new-key))))
 
 (defun cinsk/move-key (keymap old-key new-key)
-  "Move the key definition from OLD-KEY to NEW-KEY in KEYMAP."
+  "Move the key definition from OLD-KEY to NEW-KEY in KEYMAP.
+
+It will return the previous key definition bound in NEW-KEY, and
+the definition bound in OLD-KEY will be removed."
   (let ((def (lookup-key keymap old-key))
         (alt (lookup-key keymap new-key)))
     (define-key keymap new-key def)
     (define-key keymap old-key nil)
     alt))
+
+(defun cinsk/copy-key (keymap src-key dst-key)
+  "Copy the key definition from SRC-KEY to DST-KEY"
+  (let ((def (lookup-key keymap src-key)))
+    (define-key keymap dst-key def)))
 
 (defun cinsk/visit-tags-table (file &optional local)
   "Call `visit-tags-table' iff FILE is readable"

@@ -25,7 +25,7 @@
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 
-(add-hook 'quail-inactivate-hook 'delete-quail-completions)
+(add-hook 'quail-deactivate-hook 'delete-quail-completions)
 (defun delete-quail-completions ()
   (when (get-buffer "*Quail Completions*")
     (kill-buffer "*Quail Completions*")))

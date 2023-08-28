@@ -217,11 +217,11 @@ CONFIGURATION."
 ;;(global-set-key [(control x) ?o] 'smart-other-frame)
 (global-unset-key [(control x) ?f])
 (global-set-key [(control x) ?f ?f] 'make-frame) ; `new-frame' is obsolute
-(global-set-key [(control x) ?f ?k] '(lambda (&optional arg)
-                                       (interactive "p")
-                                       (let ((frame (selected-frame)))
-                                         (other-frame arg)
-                                         (delete-frame frame))))
+(global-set-key [(control x) ?f ?k] #'(lambda (&optional arg)
+                                        (interactive "p")
+                                        (let ((frame (selected-frame)))
+                                          (other-frame arg)
+                                          (delete-frame frame))))
 
 (global-set-key [(control x) ?f ?K] 'delete-other-frames)
 (global-set-key [(control x) ?f ?n] 'smart-other-frame)
@@ -335,7 +335,7 @@ to the display width"
          (lastchar (aref cmdvec (1- (length cmdvec)))))
     (if current-prefix-arg
         (progn
-          (frame-configuration-to-register lastchar)
+          (frameset-to-register lastchar)
           (message "frame-configuration saved to register %c" lastchar))
       (jump-to-register lastchar)
       (message "frame-configuration restored from register %c" lastchar))))
