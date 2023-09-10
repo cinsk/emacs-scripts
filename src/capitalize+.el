@@ -93,7 +93,7 @@ capitalized, and all-uppercases."
                              (setcar (cdr capitalize+--state) pos)
                              (nth pos cand))
                     (let ((cand (capitalize--candidates word)))
-                      (setq pos (or (position word cand :test 'equal) -1))
+                      (setq pos (or (cl-position word cand :test 'equal) -1))
                       (setq pos (% (1+ pos) (length cand)))
                       (setq capitalize+--state (list (point-marker) pos cand))
                       (nth pos cand))))

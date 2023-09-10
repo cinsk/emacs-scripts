@@ -1,0 +1,77 @@
+# -*-org-*-
+
+* Welcome to Emacs
+  This is customized init file to remind myself of how to use Emacs
+  and my personal customizations.
+
+  - This file itself is in [[info:org][Org]] mode.  Use =C-c C-o= to visit any
+    hyperlink in this doc.
+  - To edit this file, press =C-x C-q= to disable read-only mode.
+
+* Languages Supports
+
+*** Common for Interpreters
+
+    For interpreter languages, such as Python or Ruby, here are common
+    key bindings:
+
+#+BEGIN_SRC
+    C-c !        Start the interpreter
+    C-c C-b      Execute buffer
+    C-c C-r      Execute region
+#+END_SRC
+
+    For additional bindings, look at the corresponding init files in
+    [[file://~/.emacs.d/init/]]
+
+* Version Control System support
+
+  =<f12>= or =M-x vc/dir= will launch version control system (VCS)
+  that matches with the current buffer.  (e.g. GIT, SVN or CVS)
+
+* Global Key bindings
+
+#+BEGIN_SRC
+  <f12>         launch version control system on current buffer
+  <f11>         toggle-case-fold-search  (ignore case)
+  <f10>         calc
+
+  C-c c         compile 
+  M-c           capitalize current word (e.g. word, Word, WORD)
+
+
+  C-x C-j       jump to the dired buffer 
+#+END_SRC
+
+  For full list of custom key bindings, you can press =C-c C-c= on
+  below =find= command.   Then, press =C-c _= to undo the result.
+  (You need to exit read-only mode by =C-x C-q= first)
+
+#+BEGIN_SRC bash :results value verbatim
+find . -path "./elpa" -prune -o \( -name '*.el' -a -type f \) -print | xargs grep global-set-key
+#+END_SRC
+
+
+* Emacs features that I forgot frequently
+*** Force inserting characters
+    - =C-q <tab>= to insert a =<tab>= character.
+    - =C-q C-j= t= insert a newline (useful when query-replace)
+    
+*** Keyboard Macros
+
+    =C-x (= to start a macro, =C-x )= to end the recording, =C-x e= to replay.
+    See [[info:Emacs#Keyboard Macros]]
+
+*** Lisp Code in query
+
+    When you do M-x replace-regexp, you could insert =\,(LISP...CODE)=.
+    See also [[info:Emacs#Regexp Replacement]] for more and possible examples.
+
+*** Recursive Edit
+    =C-r= to start it, =C-M-c= to exit, =C-]= to abort.
+    See also [[info:Emacs#Recursive Edit]]
+
+
+# Local Variables:
+# eval: (view-mode)
+# End:

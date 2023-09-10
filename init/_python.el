@@ -17,7 +17,12 @@
 ;; In python-mode 5.1.0, autoloading `python-mode' causes `eval-after-load'
 ;; failed.  Don't know why
 ;;
-;;(autoload 'python-mode "python-mode" "Python editing mode." t))
+; (autoload 'python-mode "python-mode" "Python editing mode." t))
+
+;;
+;; Emacs 27.1, python-mode-20230702.625:
+;; python-mode.el is not autoloaded unless we call explicit `require'.
+(require 'python-mode)
 
 ;;
 ;; From IPython 5, its prompt is not compatible with Emacs.
@@ -37,10 +42,11 @@
   ;;
   ;; C-c [   py-shift-region-left
   ;; C-c ]   py-shift-region-right
-  (let ((options (split-string py-ipython-command-args)))
-    (unless (member "--simple-prompt" options)
-      (setq py-ipython-command-args (string-join (cons "--simple-prompt" options)
-                                                 " "))))
+
+  ;; Previously, py-ipython-command-args was a string type, but it
+  ;; seems it is list of option strings at the moment.
+  (unless (member "--simple-prompt" py-ipython-command-args)
+    (add-to-list 'py-ipython-command-args "--simple-prompt"))
 
   (let ((map (if (boundp 'python-mode-map)
                  python-mode-map

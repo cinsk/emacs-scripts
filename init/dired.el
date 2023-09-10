@@ -155,7 +155,7 @@ supplied one, a warning message is generated."
                             (and (or (when (string-equal dir d)
                                        (message "dir: %S" d))
                                      (with-current-buffer buf
-                                       (member-if (lambda (d)
+                                       (cl-member-if (lambda (d)
                                                     (string-equal dir (car d)))
                                                   dired-subdir-alist)))
                                  buf)))))

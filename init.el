@@ -21,9 +21,16 @@
 ;;(setq garbage-collection-messages t)
 
 ;;;
+;;; Load custom configuration -- Emacs's customizable variables will
+;;; update this file if `custom-file' is nil which is not preferrable.
+(setq custom-file "~/.emacs.d/my-custom.el")
+(when (file-readable-p custom-file)
+  (load custom-file))
+
+;;;
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 ;;;
-(require 'cl)
+;;(require 'cl)
 
 (defun path-join (path &rest args)
   "Join all parameters to build a pathname."
@@ -106,6 +113,8 @@ Examples:
        (format "create user directory(%s)? " user-emacs-directory))
       (make-directory user-emacs-directory t)))
 
+(setq initial-buffer-choice "~/.emacs.d/README.org")
+
 
 
 ;;;
@@ -150,11 +159,16 @@ Examples:
                      ;; ("gnu" . "https://elpa.gnu.org/packages/")
                      ))
       (add-to-list 'package-archives entry))
+    (setq package-archive-priorities
+          '(("gnu" . 5)
+            ("melpa" . 0)
+            ("melpa-stable" . 10)))
     ;; According to the package.el, if `package-enable-at-startup' is
     ;; t, it will load all the packages on start up.  But it didn't.
     ;; Perhaps it's a problem related to the version (currently Emacs
     ;; 23).  Thus, I'll force to load it here.
     (package-initialize)
+    ;;
     (setq package-enable-at-startup t)))
 
 
@@ -1182,6 +1196,8 @@ A prefix argument N is translated to <fn> key"
 
 (add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
 (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook 'append)
+
+
 
 ;;; Local Variables:
 ;;; coding: utf-8
