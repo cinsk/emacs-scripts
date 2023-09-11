@@ -22,7 +22,7 @@
 #+END_SRC
 
     For additional bindings, look at the corresponding init files in
-    [[file://~/.emacs.d/init/]]
+    [[file:init/]]
 
 * Version Control System support
 
@@ -71,6 +71,38 @@ find . -path "./elpa" -prune -o \( -name '*.el' -a -type f \) -print | xargs gre
     =C-r= to start it, =C-M-c= to exit, =C-]= to abort.
     See also [[info:Emacs#Recursive Edit]]
 
+
+* Features I added/modified
+*** remove all whitespaces
+    zap-to-nonspace, [[file:init/delete.el::delete-chars-forward-with-syntax][delete-chars-forward-with-syntax]] can delete
+    one or more whitespaces starting from the point(cursor).
+    Use =C-c C-d=.
+
+*** launch VCS(version control system) like git, CVS, SVN, etc.
+    =<f12>= bounds to [[file:src/vc-dirx.el][vc/dir]], which is smart enough to launch
+    corresponding Emacs feature for VCS it detects.  For git(1), it
+    uses [[https://magit.vc/][magit]].
+
+*** Compile    
+    =C-c c= bounds to =dwim-c/compile=, which try to understand the
+    build(compile) tool name from the context.
+
+*** insert License clause
+    To insert license clause on your text file, do =M-x insert-license=.
+
+*** Capitalize Words
+    =M-c=, or =M-x capitalize-word+= will capitalize (or
+    de-capitalize) current word in the point.
+
+    For example, if the point is somewhere around "hello", pressing one or
+    more =M-c= will result "Hello", "HELLO", or "hello".
+
+    It may use the other capitalized word if it found from other
+    buffers.  For example, if there was a word "EmaCS" available in
+    current (or anyother) buffer, it will use it as one of candidates.
+
+*** Shell
+    =M-x shell= will behave like a login shell.
 
 # Local Variables:
 # eval: (view-mode)

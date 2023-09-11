@@ -13,7 +13,7 @@
   (save-excursion
     (let ((start (point))
           (end (point-max)))
-      (if (re-search-forward "[^ \n\t\v]" nil t)
+      (if (re-search-forward "[^[:blank:]]" nil t)
           (setq end (min (1- (point)) end)))
       (kill-region start end))))
 

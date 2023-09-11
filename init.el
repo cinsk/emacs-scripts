@@ -201,7 +201,7 @@ Examples:
   )
 
 (setq uinit/init-directory "~/.emacs.d/init"
-      uinit/use-byte-compile t)
+      uinit/use-byte-compile nil)
 
 ;; (byte-recompile-directory package-user-dir nil 'force)
 
@@ -461,9 +461,9 @@ Examples:
 ;; helm buffer.  It distract me from what I try to do.  Until helm
 ;; updated, or until I found better way, I'll stick to
 ;; 'icomplete-mode.
-(icomplete-mode 1)
-(with-eval-after-load "icomplete"
-  (uinit/require 'icomplete+ nil 'noerror))
+;(icomplete-mode 1)
+;(with-eval-after-load "icomplete"
+;  (uinit/require 'icomplete+ nil 'noerror))
 
 (when (> emacs-major-version 23)
   ;; diable completion cycling
