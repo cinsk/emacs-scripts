@@ -47,10 +47,9 @@
   below =find= command.   Then, press =C-c _= to undo the result.
   (You need to exit read-only mode by =C-x C-q= first)
 
-#+BEGIN_SRC bash :results value verbatim
-find . -path "./elpa" -prune -o \( -name '*.el' -a -type f \) -print | xargs grep global-set-key
+#+BEGIN_SRC bash :results output verbatim
+  find . -path "./elpa" -prune -o \( -name '*.el' -a -type f \) -print | xargs grep global-set-key
 #+END_SRC
-
 
 * Emacs features that I forgot frequently
 *** Force inserting characters
