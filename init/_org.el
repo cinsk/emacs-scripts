@@ -31,10 +31,15 @@
     (s-trim-left (s-trim-right s))))
 
 ;;
+;; Indent to outline node level
+;;
+(setq org-adapt-indentation t)
+
+
+;;
 ;; Disable the prompt for evaluation of code block
 ;;
 (setq org-confirm-babel-evaluate nil)
-
 
 ;;
 ;; generate link description automatically
@@ -275,11 +280,11 @@ not NOT-THIS-COMMAND"
   (org-babel-do-load-languages
    'org-babel-load-languages
    `((emacs-lisp . t)
-     (R . t)
-     (python . t)
-     (ruby . t)
+     ; (R . t)
+     ; (python . t)
+     ; (ruby . t)
      (dot . t)
-     ,(when (locate-library "ob-go") '(go . t))
+     ; ,(when (locate-library "ob-go") '(go . t))
      ; (sh . t) -- ob-sh renamed to ob-shell
      (shell . t)))
 

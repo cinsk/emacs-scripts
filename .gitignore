@@ -9,6 +9,10 @@
 auto-save-list/
 # untested schemas
 /schema/xmpp/
+
+# all schemas
+/schema
+
 # packages installed by package.el
 elpa
 # packages installed manually

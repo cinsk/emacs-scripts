@@ -3,7 +3,6 @@
 ;;; From Mr. Shin's FAQ
 ;;; and jay's setup <http://pllab.kaist.ac.kr/~jay>
 ;;; General korean langauge environment setting
-(eval-when-compile (require 'cl))
 
 ;;; set input method toggle key to 'Shift-Space'
 (global-set-key [?\S- ] 'toggle-input-method)

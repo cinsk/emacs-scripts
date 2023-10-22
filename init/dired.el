@@ -4,13 +4,18 @@
 ;;; Dired and dired-x setting
 ;;;
 
-(require 'dired-x)
+(with-eval-after-load "dired"
+  (require 'dired-x)
 
-;(eval-when-compile (require 'cl))
+  (define-key dired-mode-map [(control return)] 'dired-find-file-other-frame)
+  (define-key dired-mode-map [(meta ?O)] 'dired-do-desktop-open)
+  )
 
-(when (locate-library "dired+")
-  (setq diredp-hide-details-initially-flag nil)
-  (require 'dired+))
+
+(when nil
+  (when (locate-library "dired+")
+    (setq diredp-hide-details-initially-flag nil)
+    (require 'dired+)))
 
 
 ;; (global-set-key [(meta ?F)] 'find-dired)
@@ -69,7 +74,6 @@ supplied one, a warning message is generated."
                                     (dired-get-marked-files
                                      t
                                      current-prefix-arg)))))
-(define-key dired-mode-map [(meta ?O)] 'dired-do-desktop-open)
 
 (when nil
   ;; Modifying `dired-listing-switches' to use GNU ls(1) specific
@@ -127,9 +131,6 @@ supplied one, a warning message is generated."
     (when arg
          (select-frame-set-input-focus frame))))
 
-(with-eval-after-load "dired"
-  (define-key dired-mode-map [(control return)] 'dired-find-file-other-frame))
-
 
 (defun cinsk/buffer-directory (&optional buffer)
   "Return the expanded directory string of the BUFFER."
@@ -148,7 +149,7 @@ supplied one, a warning message is generated."
                         (with-current-buffer buf
                           (when (and (buffer-live-p buf)
                                      (memq major-mode '(dired-mode sr-mode))
-                                     (not (eq ?\
+                                     (not (eq ?\s
                                               (elt (buffer-name buf) 0))))
                             (and (or (when (string-equal dir d)
                                        (message "dir: %S" d))

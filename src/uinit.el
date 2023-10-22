@@ -21,6 +21,9 @@
 (defvar uinit/use-byte-compile t
   "The time that Emacs start to load init files")
 
+(defvar uinit/debug-nop nil
+  "uinit will not load any submodules if non-nil")
+
 (defmacro uinit/load (snippet &rest body)
   "If the last sexp of the BODY results non-nil, load the init script, SNIPPET.
 
@@ -39,7 +42,8 @@
            (when pred
              (condition-case err
                  (let* ((,began (current-time))
-                        (result (load ,absname)))
+                        (result (unless uinit/debug-nop
+                                  (load ,absname))))
                    (uinit/logger ,began result ,absname))
                (error (lwarn 'dot-emacs :warning
                              (format "%s: %s: %S" ,sname
@@ -60,7 +64,8 @@
        (if (and ,absname (member ,absname uinit/loaded-init-files))
            (setq ,result t)
          (condition-case err
-             (progn (require ,feature ,filename)
+             (progn (unless uinit/debug-nop
+                      (require ,feature ,filename))
                     (setq ,result t))
            (error (or ,noerror
                       (lwarn ,place :warning
@@ -188,11 +193,15 @@ init script."
   (font-lock-mode 1))
 )
 
-(let ((do-compile (getenv "EMACS_COMPILE")))
+(let ((do-compile (getenv "EMACS_COMPILE"))
+      (nop (getenv "EMACS_NOP")))
   (if (or (null do-compile)
           (string-equal do-compile ""))
       (setq do-compile uinit/use-byte-compile)
     (setq do-compile (not (eq (string-to-number do-compile) 0))))
+
+  (unless (null nop)
+    (setq uinit/debug-nop t))
 
   (when do-compile
     (dolist (dir uinit/byte-compile-directories)

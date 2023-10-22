@@ -30,7 +30,6 @@
 ;;;
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 ;;;
-;;(require 'cl)
 
 (defun path-join (path &rest args)
   "Join all parameters to build a pathname."

@@ -80,6 +80,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
           (add-to-list 'load-path egg-dir)
           (when (locate-library "egg")
             (require 'egg))))))
+
 
 ;;
 ;; vc-jump

@@ -26,7 +26,6 @@
 
 
 (require 'skeleton)
-;;(eval-when-compile (require 'cl))
 
 (defvar license-directory (concat (file-name-as-directory user-emacs-directory)
                                   "license")

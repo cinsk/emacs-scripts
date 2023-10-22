@@ -22,7 +22,8 @@
 ;;
 ;; Emacs 27.1, python-mode-20230702.625:
 ;; python-mode.el is not autoloaded unless we call explicit `require'.
-(require 'python-mode)
+;(require 'python-mode)
+(autoload 'python-mode "python-mode.el" "Python Mode." t)
 
 ;;
 ;; From IPython 5, its prompt is not compatible with Emacs.

@@ -252,11 +252,11 @@ windows toward that DIR, it returns one of the window."
     ;; I don't know what is the right value for hfringe and vfringe.
     ;; See the Section 28.3 Window Sizes of elisp reference for more.
     (message "point %S" point)
-    (some (lambda (w) w)
-          (mapcar (lambda (w)
-                    (let ((r (coordinates-in-window-p point w)))
-                               (if r w nil)))
-                           (window-list)))))
+    (cl-some (lambda (w) w)
+             (mapcar (lambda (w)
+                       (let ((r (coordinates-in-window-p point w)))
+                         (if r w nil)))
+                     (window-list)))))
 
 (defun wfu/move-window-border-up (&optional amount)
   "Move the window border upward.
@@ -266,13 +266,14 @@ bottom border upward. (This causes the selected window shrinks
 vertically.)  Otherwise it moves top border upward. (This causes
 the selected window grows vertically.)"
   (interactive "p")
-  (setq amount (if (eq amount 0) 1 amount))
-  (let ((win (wfu/adjacent-window 'up (selected-window))))
-    (if win
-        ;; this is not the top-most window
-        (adjust-window-trailing-edge win (- amount))
-      ;; this is the top-most window
-      (adjust-window-trailing-edge (selected-window) (- amount)))))
+  (unless (one-window-p)
+    (setq amount (if (eq amount 0) 1 amount))
+    (let ((win (wfu/adjacent-window 'up (selected-window))))
+      (if win
+          ;; this is not the top-most window
+          (adjust-window-trailing-edge win (- amount))
+        ;; this is the top-most window
+        (adjust-window-trailing-edge (selected-window) (- amount))))))
 
 (defun wfu/move-window-border-down (&optional amount)
   "Move the window border downward.
@@ -282,13 +283,14 @@ the top border downward. (This causes the selected window shrinks
 vertically.)  Otherwise it moves bottom border downward. (This
 causes the selected window grows vertically.)"
   (interactive "p")
-  (setq amount (if (eq amount 0) 1 amount))
-  (let ((win (wfu/adjacent-window 'down (selected-window))))
-    (if win
-        ;; this is not the bottom-most window
-        (adjust-window-trailing-edge (selected-window) amount)
-      ;; this is the bottom-most window
-      (window-resize (selected-window) (- amount)))))
+  (unless (one-window-p)
+    (setq amount (if (eq amount 0) 1 amount))
+    (let ((win (wfu/adjacent-window 'down (selected-window))))
+      (if win
+          ;; this is not the bottom-most window
+          (adjust-window-trailing-edge (selected-window) amount)
+        ;; this is the bottom-most window
+        (window-resize (selected-window) (- amount))))))
 
 (defun wfu/move-window-border-left (&optional amount)
   "Move the window border leftward.
@@ -298,15 +300,15 @@ right border leftward. (This causes the selected window shrinks
 horizontally.)  Otherwise it moves left border leftward. (This
 causes the selected window grows horizontally.)"
   (interactive "p")
-  (setq amount (if (eq amount 0) 1 amount))
-  (let ((win (wfu/adjacent-window 'left (selected-window))))
-    (message "left: %S" win)
-    (if win
-        ;; this is not the left-most window
-        (adjust-window-trailing-edge win (- amount) t)
+  (unless (one-window-p)
+    (setq amount (if (eq amount 0) 1 amount))
+    (let ((win (wfu/adjacent-window 'left (selected-window))))
+      (message "left: %S" win)
+      (if win
+          ;; this is not the left-most window
+          (adjust-window-trailing-edge win (- amount) t)
         ;; this is the left-most window
-      (adjust-window-trailing-edge (selected-window) (- amount) t)
-      )))
+        (adjust-window-trailing-edge (selected-window) (- amount) t)))))
 
 
 (defun wfu/move-window-border-right (&optional amount)
@@ -317,29 +319,35 @@ the left border rightward. (This causes the selected window
 shrinks horizontally.)  Otherwise it moves right border
 rightward. (This causes the selected window grows horizontally.)"
   (interactive "p")
-  (setq amount (if (eq amount 0) 1 amount))
-  (let ((win (wfu/adjacent-window 'right (selected-window))))
-    (message "right: %S" win)
-    (if win
-        ;; this is not the right-most window
-        (adjust-window-trailing-edge (selected-window) amount t)
+  (unless (one-window-p)
+    (setq amount (if (eq amount 0) 1 amount))
+    (let ((win (wfu/adjacent-window 'right (selected-window))))
+      (message "right: %S" win)
+      (if win
+          ;; this is not the right-most window
+          (adjust-window-trailing-edge (selected-window) amount t)
         ;; this is the right-most window
-      (window-resize (selected-window) (- amount) 'horizontal))))
+        (window-resize (selected-window) (- amount) 'horizontal)))))
 
 
 
 (global-set-key [(control tab)] 'wfu/other-window-or-frame)
 (global-set-key [(control x) ?o] 'wfu/other-frame-or-window)
 
-(global-set-key [(meta shift up)] 'wfu/move-window-border-up)
-(global-set-key [(meta shift down)] 'wfu/move-window-border-down)
-(global-set-key [(meta shift left)] 'wfu/move-window-border-left)
-(global-set-key [(meta shift right)] 'wfu/move-window-border-right)
+(global-set-key [(control meta shift up)] 'wfu/move-window-border-up)
+(global-set-key [(control meta shift down)] 'wfu/move-window-border-down)
+(global-set-key [(control meta shift left)] 'wfu/move-window-border-left)
+(global-set-key [(control meta shift right)] 'wfu/move-window-border-right)
 
 (let ((killmap (lookup-key (current-global-map) [(control ?c) ?k])))
   (when (or (null killmap) (keymapp killmap))
     (global-set-key [(control ?c) ?k ?w] 'delete-window)
-    (global-set-key [(control ?c) ?k ?f] 'delete-frame)))
+    (global-set-key [(control ?c) ?k ?f] 'delete-frame)
+
+    ;; It would be better if we don't call this map a killmap
+    ;; as I want to add additional key bindings
+    (global-set-key [(control ?c) ?k ?n] 'make-frame)
+    ))
 
 
 (defun wfu/widen-info (width &optional pivot frame)

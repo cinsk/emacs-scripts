@@ -1,8 +1,7 @@
 ;;;
 ;;; $Id$
-;;; 
+;;;
 (require 'dired)
-;;(eval-when-compile (require 'cl))
 
 (defvar dired-xx-file-type-use-file t
   "Use file(1) to determine the type of the file.")
@@ -63,7 +62,7 @@ token of TYPESTR separated by `,'."
       "directory"
     (condition-case nil
         (dired-xx-extract-file-type-string
-         (shell-command-to-string (format "file -b %s" 
+         (shell-command-to-string (format "file -b %s"
                                           (shell-quote-argument
                                            (dired-get-filename)))))
       (error nil))))
@@ -79,12 +78,12 @@ token of TYPESTR separated by `,'."
                                       'dired-xx-extension-history)
                 (if current-prefix-arg ?\040)))
   (let ((dired-marker-char (or marker-char dired-marker-char))
-        (ext (if (string= extension "") 
+        (ext (if (string= extension "")
                  nil
                (if (eq (elt extension 0) ?\.) ; remove dot in front if any
                    (substring extension 1)
                  extension))))
-    (dired-xx-mark-files-if (lambda (fn) 
+    (dired-xx-mark-files-if (lambda (fn)
                               (if (string= (file-name-extension fn) ext)
                                   t))
                             (format "%s file" extension))))

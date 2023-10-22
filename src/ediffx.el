@@ -20,14 +20,13 @@
 
 ;;; Commentary:
 
-;; 
+;;
 
 ;;; Code:
 
 
 (eval-when-compile
-  (require 'ediff)
-  (require 'cl))
+  (require 'ediff))
 
 (ediff-defvar-local ediffx-truncate-alist nil "")
 (ediff-defvar-local ediffx-next-truncates nil "")
@@ -42,25 +41,25 @@
   "Return alist of (BUFFER . TRUNCATE-LINES) of the current ediff buffers"
   (let (result)
     (mapc (lambda (buf)
-	    (setq result
-		  (cons (cons buf
-			      (buffer-local-value 'truncate-lines buf))
-			result)))
-	  (let (lst)
-	    (if (and (local-variable-p 'ediff-buffer-A) ediff-buffer-A)
-		(setq lst (cons ediff-buffer-A lst)))
-	    (if (and (local-variable-p 'ediff-buffer-B) ediff-buffer-B)
-		(setq lst (cons ediff-buffer-B lst)))
-	    (if (and (local-variable-p 'ediff-buffer-C) ediff-buffer-C)
-		(setq lst (cons ediff-buffer-C lst)))
-	    lst))
+            (setq result
+                  (cons (cons buf
+                              (buffer-local-value 'truncate-lines buf))
+                        result)))
+          (let (lst)
+            (if (and (local-variable-p 'ediff-buffer-A) ediff-buffer-A)
+                (setq lst (cons ediff-buffer-A lst)))
+            (if (and (local-variable-p 'ediff-buffer-B) ediff-buffer-B)
+                (setq lst (cons ediff-buffer-B lst)))
+            (if (and (local-variable-p 'ediff-buffer-C) ediff-buffer-C)
+                (setq lst (cons ediff-buffer-C lst)))
+            lst))
     (message "ediff-truncate-status: %S" result)
     result))
 
 (defun ediffx-truncate-lines-buffers (mode)
   "Set the `truncate-lines' to all buffers in `ediff-truncate-alist'."
   (if (not (local-variable-p 'ediffx-truncate-alist))
-      (progn 
+      (progn
         (make-local-variable 'ediffx-truncate-alist)
         (setq ediffx-truncate-alist (ediffx-truncate-status))))
   (save-current-buffer
@@ -87,7 +86,7 @@
 (defun ediffx-switch-truncate-lines ()
   (interactive)
   (let ((action (ediffx-next-truncate-status)))
-    (cond ((eq action :truncate)    
+    (cond ((eq action :truncate)
            (ediffx-truncate-lines-buffers :on)
            (message "Truncate lines of all buffers"))
           ((eq action :no_truncate)

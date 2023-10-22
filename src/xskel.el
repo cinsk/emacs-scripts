@@ -28,8 +28,6 @@
 (require 'autoinsert)
 (require 'xlicense)
 
-;;(eval-when-compile (require 'cl))
-
 (defun cinsk/safe-call-skeleton (func)
   "call FUNC if and only if the cuurent buffer looks like an user
 created file buffer."
@@ -136,7 +134,7 @@ created file buffer."
   "#+TODO: TODO(t) | DONE(d) CANCELED(c) POSTPONED\n"
   "#+DRAWERS: PROPERTIES CLOCK LOGBOOK COMMENT\n"
   "#+LATEX_CLASS: article\n"
-  "#+LATEX_CLASS_OPTIONS: [a4paper]\n"
+  "#+LATEX_CLASS_OPTIONS: [letterpaper]\n"
   "#+LATEX_HEADER: \\usepackage{kotex}\n"
   "#+TITLE: " (skeleton-read "Agenda Title: " (file-name-base)) \n
   "#+AUTHOR: " (skeleton-read "Author: " (user-full-name)) \n
@@ -185,10 +183,19 @@ created file buffer."
   "\n"
   "  - See [[http://en.wikibooks.org/wiki/LaTeX/Mathematics][Math]] or [[http://cdn.mathjax.org/mathjax/latest/test/sample-eqnum.html][sample-eqnum]] for math equations.\n"
   "\n"
+  "  - You can specify the source language and optionally put the header\n"
+  "    how Org handles result of the excution, either =value= or =output=.\n"
+  "    You can execute/insert the result by pressing =C-c C-c=. See also\n"
+  "    [[info:Org#Evaluating Code Blocks]]\n"
+  "\n"
+  "#+BEGIN_SRC bash :results output\n"
+  "echo \"hello, world\"\n"
+  "#+END_SRC\n"
+  "\n"
   "Table hints:\n"
-  "  - `C-c C-c' to re-align the table\n"
+  "  - =C-c C-c= to re-align the table\n"
   "  - Use \"<N>\" in the field to specify the width of the column.\n"
-  "  - Use `C-c `' to edit such a field.\n"
+  "  - Use =C-c `= to edit such a field.\n"
   "  - See also [[info:org#Column groups][info:Column groups]]\n"
   "  - See also [[info:org#The spreadsheet][info:Spreadsheet]]\n"
   ":END:\n"

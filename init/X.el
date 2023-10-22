@@ -7,7 +7,7 @@
 (eval-when-compile
   (require 'fontutil nil t))
 
-(setq x-select-enable-clipboard t)
+(setq select-enable-clipboard t)
 
 (when (display-graphic-p)
   (when (locate-library "fontutil")

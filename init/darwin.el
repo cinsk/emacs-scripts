@@ -6,8 +6,6 @@
 
 ;; (require 'ucs-normalize)
 ;; (set-file-name-coding-system 'utf-8-hfs)
-;;(eval-when-compile
-;;  (require 'cl))
 
 (defun darwin-smart-other-frame (&optional arg)
   "Switch to other frame or call `tmm-menubar`."
@@ -259,3 +257,8 @@ then try to use a word at point."
 ;; echoing, this is required.
 (when (string-equal (file-name-nondirectory shell-file-name) "zsh")
   (add-hook 'comint-mode-hook #'(lambda () (setq comint-process-echoes t))))
+
+;; Darwin (MacOS Ventura) uses Control-Meta-D for dictionary lookup,
+;; which is not able to override at the moment.  it is used for
+;; `isearch-del-char', so we can use Option key instead of C-M-d.
+(define-key isearch-mode-map (kbd "A-C-d") 'isearch-del-char)

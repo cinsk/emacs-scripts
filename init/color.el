@@ -1,7 +1,5 @@
 ;; -*-emacs-lisp-*-
 
-;;(require 'cl)
-
 ;;;
 ;;; Provides simple/consistent interface to color-theme or native Emacs 24 theme.
 ;;;

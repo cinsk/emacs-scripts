@@ -4,8 +4,9 @@
 ;;; Window and Frame related configuration
 ;;;
 
-(eval-when-compile
-  (require 'cl))
+;; `new-frame' was deprecated in favor of `make-frame'.  I still want
+;; to use it (interactively).
+(defalias 'new-frame #'make-frame)
 
 ;; Set the default value for the title bar of the Emacs frame.
 ;;

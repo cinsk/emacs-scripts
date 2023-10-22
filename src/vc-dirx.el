@@ -31,11 +31,16 @@
 
 ;;; Code:
 
-(require 'vc)
+;(eval-when-compile (require 'vc))
 
 (autoload #'svn-status "psvn" "Entry point into svn-status mode" t)
 (autoload #'cvs-status "pcvs" "Entry point into cvs mode" t)
 (autoload #'git-status "git" "Entry point into git-status mode" t)
+
+(autoload 'dired-current-directory "dired")
+(autoload 'magit-status "magit-status")
+(autoload 'cvs-flags-query "pcvs-util")
+
 
 (defvar vc/dir-function-alist
   '((Git . (vc/magit-status egg-status git-status))

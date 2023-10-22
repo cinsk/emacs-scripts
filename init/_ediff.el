@@ -171,11 +171,11 @@ command."
 
 Set to 'center so that `ediff-toggle-wide-display' will expand
 the frame with the pivot in the center of the original frame.
-'left causes `ediff-toggle-wide-display' will try to keep the
+\\='left causes `ediff-toggle-wide-display' will try to keep the
 right corder of the original frame.  'right causes to resize with
 the left corder unchanged.
 
-In addition to this, it can be either 'maximize or 'fullscreen")
+In addition to this, it can be either \\='maximize or \\='fullscreen")
 
 (with-eval-after-load "ediff-util"
   (defadvice ediff-toggle-wide-display (around cinsk/ad-ediff-toggle-wide-display

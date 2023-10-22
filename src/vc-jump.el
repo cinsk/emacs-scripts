@@ -52,9 +52,6 @@
 
 (require 'vc)
 
-(eval-when-compile
-  (require 'cl))
-
 (autoload #'svn-status "psvn" "Entry point into svn-status mode" t)
 (autoload #'cvs-status "pcvs" "Entry point into cvs mode" t)
 (autoload #'git-status "git" "Entry point into git-status mode" t)
