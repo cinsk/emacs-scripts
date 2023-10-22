@@ -55,7 +55,20 @@
 *** Force inserting characters
     - =C-q <tab>= to insert a =<tab>= character.
     - =C-q C-j= t= insert a newline (useful when query-replace)
-    
+
+*** Tramp    
+
+    =ssh= may not work on Darwin.  Use =sshx=, which is the default
+    tramp method.
+
+#+BEGIN_VERBATIM
+/-:host:/path/to/file
+/sudo::/path/to/file
+#+END_VERBATIM
+
+    See [[info:Tramp#Quick Start Guide]] for list of supported file name
+    syntax.
+
 *** Keyboard Macros
 
     =C-x (= to start a macro, =C-x )= to end the recording, =C-x e= to replay.

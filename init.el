@@ -1131,18 +1131,14 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
   (when (file-directory-p dir)
     (add-to-list 'tramp-backup-directory-alist (cons "." dir))))
 
+(setq tramp-default-method "sshx")
+
 
 
 ;; (let ((dir (expand-file-name "~/.emacs.d/emacs-gradle-mode")))
 ;;   (when (file-exists-p dir)
 ;;     (add-to-list 'load-path dir))
 ;;   (uinit/require 'gradle-mode))
-
-
-
-(when (locate-library "dtrace-script-mode")
-  (autoload 'dtrace-script-mode "dtrace-script-mode" () t)
-  (add-to-list 'auto-mode-alist '("\\.d\\'" . dtrace-script-mode)))
 
 
 
@@ -1157,11 +1153,6 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
   ;; `graphviz-dot-preview to "C-c P"
 
   (define-key graphviz-dot-mode-map [(control ?c) ?P] 'graphviz-dot-preview))
-
-
-(when (locate-library "triton-ssh")
-  (require 'triton-ssh))
-
 
 
 ;; See http://stackoverflow.com/questions/13397737/ansi-coloring-in-compilation-mode

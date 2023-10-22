@@ -49,12 +49,6 @@ supplied one, a warning message is generated."
 (setq auto-mode-alist (cons '("[^/]\\.dired$" . dired-virtual-mode)
                             auto-mode-alist))
 
-(when (eq (call-process insert-directory-program nil nil nil
-                        "-d" "--time-style=iso" "/") 0)
-  ;; Prefer ISO time style.
-  (setq dired-listing-switches (concat dired-listing-switches
-                                       " --time-style=iso")))
-
 (defvar dired-desktop-open-program
   (let ((open-sh (path-join user-emacs-directory "open.sh")))
     (cond ((eq system-type 'darwin) "open")
@@ -77,12 +71,16 @@ supplied one, a warning message is generated."
                                      current-prefix-arg)))))
 (define-key dired-mode-map [(meta ?O)] 'dired-do-desktop-open)
 
+(when nil
+  ;; Modifying `dired-listing-switches' to use GNU ls(1) specific
+  ;; options will prevent TRAMP working on Darwin as it uses BSD
+  ;; ls(1).
 (when (string-match "\\bgnu\\b" (symbol-name system-type))
   ;; If the operating system is gnu or gnu/linux,
   ;; we'll use GNU ls(1) --time-style option
   (setq dired-listing-switches
         (concat dired-listing-switches
-                "--group-directories-first --time-style=long-iso")))
+                "--group-directories-first --time-style=long-iso"))))
 
 (setq-if-equal dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$"
                (concat dired-omit-files
