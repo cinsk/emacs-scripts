@@ -234,6 +234,30 @@ Examples:
                            (current-global-map))
 
 
+(defun system--uname ()
+  "Return system information."
+  (let ((cmd (cond ((or (eq system-type 'gnu/linux)
+                        (eq system-type 'darwin))
+                    "uname -a")
+                   ((eq system-type 'windows-nt)
+                    "ver")
+                   (t
+                    nil))))
+    (if cmd
+        (string-trim (shell-command-to-string cmd))
+      "")))
+
+(defvar system-uname (system--uname)
+  "system information")
+
+(defun wsl-p ()
+  (if (and (eq system-type 'gnu/linux)
+           (string-match "[mM]icrosoft" system-uname))
+      t))
+
+(uinit/load "wsl"
+  (wsl-p))
+
 (uinit/load "darwin"
   (eq system-type 'darwin))
 
@@ -1198,6 +1222,10 @@ A prefix argument N is translated to <fn> key"
 (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook 'append)
 
 
+
+(setq joplin-curl-args '("--proxy" "http://172.22.144.1:8080"))
+(with-eval-after-load "markdown-mode"
+  (add-to-list 'markdown-mode-hook 'joplin-note-mode))
 
 ;;; Local Variables:
 ;;; coding: utf-8

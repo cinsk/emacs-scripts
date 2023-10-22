@@ -21,14 +21,18 @@
                     (name . "^\\*info.*\\*$")
                     (name . "^\\*Man.*\\*$")
                     (name . "^\\*Help.*\\*$")))
+         ("joplin" (or
+                    (mode . joplin-search-mode)
+                    (mode . joplin-mode)
+                    (name . "^\\*[jJ]oplin.*$")))
+         ("elisp" (or
+                   (mode . emacs-lisp-mode)
+                   (name . "\\`\\*scratch\\*\\'")))
          ("gnus" (or
                   (name . "\\`\\*Group\\*\\'")
                   (name . "\\`\\*Server\\*\\'")
                   (name . "\\`\\*Article .*\\*\\'")
                   (name . "\\`\\*Summary .*\\*\\'")))
-         ("elisp" (or
-                   (mode . emacs-lisp-mode)
-                   (name . "\\`\\*scratch\\*\\'")))
          ("internal" (or
                       (name . "^TAGS$")
                       (name . "^\\*.*\\*$"))))))

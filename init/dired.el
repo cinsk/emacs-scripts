@@ -6,7 +6,7 @@
 
 (require 'dired-x)
 
-(eval-when-compile (require 'cl))
+;(eval-when-compile (require 'cl))
 
 (when (locate-library "dired+")
   (setq diredp-hide-details-initially-flag nil)

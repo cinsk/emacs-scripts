@@ -70,6 +70,12 @@
     =C-r= to start it, =C-M-c= to exit, =C-]= to abort.
     See also [[info:Emacs#Recursive Edit]]
 
+*** Completing read /w Helm
+    Emacs has various ways to read the predefine input using completion.
+    The additional package, [Helm](https://github.com/emacs-helm/helm) also
+    override this interface to use it's own mechniasm.
+
+    - To select none (to return =""=), Use =C-RET= or =M-RET=.
 
 * Features I added/modified
 *** remove all whitespaces
@@ -102,6 +108,25 @@
 
 *** Shell
     =M-x shell= will behave like a login shell.
+
+*** Fonts
+    - Use `M-x fontutil/set-font` to change the font family.
+    - Use mouse scroll up/down to increase/decrease font size
+
+    See [[file:src/fontutil.el][fontutil.el]] for more
+
+* Setup
+
+*** Graphical display
+
+***** Fonts
+      
+      - Install NanumGothicCoding font on your system if you need Korean font.
+      - Install Symbola font on your system for symbolic fonts
+
+
+
+
 
 # Local Variables:
 # eval: (view-mode)
