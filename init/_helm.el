@@ -81,7 +81,7 @@
  ;; move to end or beginning of source when reaching top or
  ;; bottom of source.
  ;;
- ;; helm-move-to-line-cycle-in-source t
+ helm-move-to-line-cycle-in-source nil
 
  ;; search for library in `require' and `declare-function'
  ;; sexp.

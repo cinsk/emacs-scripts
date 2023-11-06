@@ -623,11 +623,8 @@ Examples:
   ;; scroll up/down.
   (when (or (memq 'scale (image-transforms-p))
             (image-type-available-p 'imagemagick))
-    ;; Ideally, image max height should be around 20 lines in pixel,
-    ;; max weight should be around 70% of window text width in pixel.
-    (setq markdown-max-image-size (cons (* 20 (line-pixel-height))
-                                        (floor (* (car (window-text-pixel-size))
-                                                  0.7))))))
+    (setq markdown-max-image-size (joplin-max-image-size))
+    ))
 
 
 ;;;
