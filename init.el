@@ -170,19 +170,22 @@ Examples:
     ;;
     (setq package-enable-at-startup t)))
 
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+(require 'use-package)
+(setq use-package-compute-statistics t)
 
 ;;(unless (locate-library "s")
 ;;  (package-install 's))
 
-;(add-to-list 'load-path (expand-file-name "~/.emacs.d/skewer-mode"))
-;(require 'skewer-mode)
+;;(add-to-list 'load-path (expand-file-name "~/.emacs.d/skewer-mode"))
+;;(require 'skewer-mode)
 
 
 ;; I will install packages that is not managed by packages.el in
 ;; "$HOME/.emacs.d/site-lisp".
 ;;
 ;; Note that packages in this directory has higher priority than others.
-
 (defvar user-custom-packages-directory
   (path-join user-emacs-directory "local")
   "Manually installed packages are in this directory")
@@ -205,21 +208,25 @@ Examples:
 ;; (byte-recompile-directory package-user-dir nil 'force)
 
 (require 'uinit)
-(uinit/require 'cinsk-common)
 
-(global-set-key [(control ?c) ?n] #'cinsk/line-numbers-on-region)
-(global-set-key [(control ?c) ?q] 'fill-text-line-paragraph)
+(use-package cinsk-common
+  :config
+  (global-set-key [(control ?c) ?n] #'cinsk/line-numbers-on-region)
+  (global-set-key [(control ?c) ?q] #'cinsk/fill-text-line-paragraph)
+  (global-set-key [(meta ?Q)] #'cinsk/unfill-paragraph)
+  ;;(cinsk/add-site-lisp-directories "/usr/local/share/emacs/site-lisp")
+  ;;(cinsk/add-site-lisp-directories user-custom-packages-directory)
+  )
 
-(cinsk/add-site-lisp-directories "/usr/local/share/emacs/site-lisp")
-(cinsk/add-site-lisp-directories user-custom-packages-directory)
+
 
 
 (when (file-directory-p "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp")
   (add-to-list 'load-path "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp"))
 
-(when (locate-library "amz-common")
-  (uinit/require 'amz-common)
-
+(use-package amz-common
+  :disabled
+  :config
   (when (boundp 'c-default-style)
     ;; Amazon library uses BSD style for C/C++, which I don't like
     (setq c-default-style (delq (assoc 'c++-mode c-default-style)
@@ -228,9 +235,10 @@ Examples:
                                 c-default-style))))
 
 
-(uinit/require 'capitalize+)
-(substitute-key-definition 'capitalize-word 'capitalize-word+
-                           (current-global-map))
+(use-package capitalize+
+  :config
+  (substitute-key-definition 'capitalize-word 'capitalize-word+
+                             (current-global-map)))
 
 
 (defun system--uname ()
@@ -275,7 +283,8 @@ Examples:
   'ediff)
 
 
-(when (uinit/require 'fontutil)
+(use-package fontutil
+  :config
   ;; For the actual fontset selection, see init/X.el or init/darwim.el
   (fontutil/install-mouse-wheel))
 
@@ -410,8 +419,7 @@ Examples:
 ;;;
 ;;; Abbrev mode, skeletons, and autoload settings
 ;;;
-(when (locate-library "xskel")
-  (load-library "xskel"))
+(use-package xskel)
 
 (let ((abb_default "~/.abbrev_defs")
       (abb_correct (path-join user-emacs-directory "abbrev_defs")))
@@ -427,7 +435,8 @@ Examples:
 ;;;
 ;;; Use hippie expansion for dynamic abbreviation
 ;;;
-(when (uinit/require 'hippie-exp)
+(use-package hippie-exp
+  :config
   (global-set-key [(meta ?/)] 'hippie-expand)
   (setq hippie-expand-try-functions-list
         '(try-complete-file-name-partially
@@ -445,21 +454,25 @@ Examples:
 ;;; Switching between buffers using iswitchb/ido
 ;;;
 
-(unless (locate-library "ido")
-  (iswitchb-mode 1)                     ; smart buffer switching mode
-  (setq iswitchb-default-method 'maybe-frame)) ; ask to use another frame.
+(unless (package-installed-p 'helm)
+  (use-package iswitchb
+    :disabled
+    :config
+    ;; (iswitchb-mode 1)                     ; smart buffer switching mode
+    (setq iswitchb-default-method 'maybe-frame)) ; ask to use another frame.
 
-(when (uinit/require 'ido)
-  (ido-mode 1)
+  (use-package ido
+    :config
+    (ido-mode 1)
 
-  ;;(setq ido-default-buffer-method 'maybe-frame)
-  (setq ido-use-filename-at-point 'guess)
-  (setq ido-max-directory-size 100000)
+    ;;(setq ido-default-buffer-method 'maybe-frame)
+    (setq ido-use-filename-at-point 'guess)
+    (setq ido-max-directory-size 100000)
 
-  (when (boundp 'ido-file-completion-map)
-    ;; The default binding `C-x C-f' is too much for me
-    (define-key ido-file-completion-map [(control return)] 'ido-enter-dired)
-    (define-key ido-file-completion-map [(meta return)] 'ido-enter-dired)))
+    (when (boundp 'ido-file-completion-map)
+      ;; The default binding `C-x C-f' is too much for me
+      (define-key ido-file-completion-map [(control return)] 'ido-enter-dired)
+      (define-key ido-file-completion-map [(meta return)] 'ido-enter-dired))))
 
 ;;
 ;; Normally, switching buffer commands (e.g. `switch-to-buffer' or
@@ -531,9 +544,10 @@ Examples:
 ;;(ffap-bindings)                         ; context-sensitive find-file
 
 
-(uinit/require 'untabify)
-
-
+(use-package untabify
+  :config
+  (setq-default indent-tabs-mode nil)     ; do not insert tab character.
+  (add-hook 'before-save-hook 'untabify-remove-trailing-spaces-on-write))
 
 
 (uinit/load "delete"
@@ -602,8 +616,18 @@ Examples:
 ;;;
 ;;; Markdown mode
 ;;;
-(with-eval-after-load "markdown-mode"
-  (add-to-list 'markdown-css-paths "http://thomasf.github.io/solarized-css/solarized-light.min.css"))
+(use-package markdown-mode
+  :config
+  (add-to-list 'markdown-css-paths "http://thomasf.github.io/solarized-css/solarized-light.min.css")
+  ;; On Emacs 27.1, if a displayed image is too tall, it prevent Emacs
+  ;; scroll up/down.
+  (when (or (memq 'scale (image-transforms-p))
+            (image-type-available-p 'imagemagick))
+    ;; Ideally, image max height should be around 20 lines in pixel,
+    ;; max weight should be around 70% of window text width in pixel.
+    (setq markdown-max-image-size (cons (* 20 (line-pixel-height))
+                                        (floor (* (car (window-text-pixel-size))
+                                                  0.7))))))
 
 
 ;;;
@@ -622,23 +646,25 @@ Examples:
   'version-control-system)
 
 
-(when (locate-library "cmake-mode")
-  (require 'cmake-mode)
+(use-package cmake-mode
+  :disabled
+  :config
   (setq auto-mode-alist
         (append '(("CMakeLists\\.txt\\'" . cmake-mode)
                   ("\\.cmake\\'" . cmake-mode))
                 auto-mode-alist)))
 
 
-(when (locate-library "winner")
+(use-package winner
+  :config
   ;; A history manager for window configuration.
   ;; `C-c left' for undo, `C-c right' for redo
-  (require 'winner)
   (winner-mode 1))
 
-(when (locate-library "windmove")
+(use-package windmove
+  :disabled
+  :config
   ;; Select a window by pressing arrow keys.
-  (require 'windmove)
   ;; The default modifier is 'shift which is not suitable for me since
   ;; I use `shift-left' and `shift-right' bindings in org-mode.
   ;;
@@ -661,21 +687,6 @@ Examples:
   )
 
 
-;;(require 'autofit-frame)
-;;(add-hook 'after-make-frame-functions 'fit-frame)
-;;
-;;(add-hook 'temp-buffer-show-hook
-;;          'fit-frame-if-one-window 'append)
-(when (locate-library "rainbow-delimiters")
-  (mapc (lambda (hook)
-          (add-hook hook 'rainbow-delimiters-mode))
-        (list 'emacs-lisp-mode-hook
-              'lisp-interaction-mode-hook
-              'ielm-mode-hook
-              'racket-mode-hook
-              'scheme-mode-hook
-              'clojure-mode-hook)))
-
 (uinit/load "_paren.el" (or (locate-library "paredit")
                             (locate-library "smartparens")))
 
@@ -737,18 +748,14 @@ Examples:
 
 ;;(split-window-horizontally)
 
-(uinit/load "mail"
-  'mail-news-gnus)
-
-
-;;(uinit/load "color" 'color-theme)
+;;(uinit/load "mail" 'mail-news-gnus)
 
 
 ;;;
 ;;; YAML mode
 ;;;
-(when (locate-library "yaml-mode")
-  (require 'yaml-mode)
+(use-package yaml-mode
+  :config
   (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode)))
 
 
@@ -764,8 +771,9 @@ Examples:
 ;;;
 ;;; htmlize
 ;;;
-(when (locate-library "htmlize")
-  (require 'htmlize)
+(use-package htmlize
+  :disabled
+  :config
   (setq htmlize-convert-nonascii-to-entities nil))
 
 
@@ -800,8 +808,9 @@ Examples:
       (setq holiday-general-holidays cal-korea-x-korean-holidays))))
 
 
-(when (locate-library "amazon-util")
-  (require 'amazon-util))
+(use-package amazon-util
+  :disabled
+  :requires amz-common)
 
 
 (uinit/load "_org" (locate-library "org"))
@@ -828,53 +837,8 @@ Examples:
 ;;; Do not display splash screen on startup
 ;;;
 
-;; Show the `*scratch*' buffer (even in the presence of command-line
-;; arguments for files)
-;;
-;; (setq initial-buffer-choice t)
-
 ;; Disable the startup screen
 (setq inhibit-splash-screen t)
-
-
-
-;;;
-;;; ERC (IRC client) settings
-;;;
-
-(when (locate-library "erc")
-  (with-eval-after-load "erc"
-    (setq erc-default-coding-system '(cp949 . undecided))
-    (setq erc-nick '("cinsk" "cinsky" "cinsk_" "cinsk__"))
-    (setq erc-user-full-name "Seong-Kook Shin")
-    (setq erc-server "localhost:8668")))
-
-
-;;;
-;;; erlang configuration
-;;;
-
-
-
-(when (locate-library "erlang-start")
-  (setq erlang-cinsk-init nil)  ; for one time init
-  ;; Note on key-binding of erlang-mode.
-  ;;
-  ;; `erlang-mode-map' is initialized inside of `erlang-mode'.  This
-  ;; means that we cannot use `erlang-mode-map' in any of
-  ;; `erlang-load-hook', nor `eval-after-load'.
-  ;;
-  ;; It may be possible that call `erlang-mode-commands' directly,
-  ;; but I don't want to do that, in case of future modification.
-  (add-hook 'erlang-mode-hook
-            (lambda ()
-              (unless erlang-cinsk-init
-                (define-key erlang-mode-map [(control ?c) ?b]
-                  'erlang-compile)
-                (define-key erlang-mode-map [(control ?c) ?\!]
-                  'erlang-shell-display)
-                (setq erlang-cinsk-init t))))
-  (require 'erlang-start))
 
 
 
@@ -895,48 +859,6 @@ Examples:
 
 
 (uinit/load "maven" 'maven)
-
-
-;;;
-;;; w3m
-;;;
-
-;; Nov. 24 2013,  In Mac
-;; The current emacs-w3m-1.4.4.tar.gz does not support emacs version 24.
-;; unpack the source, do the following:
-;;
-;;  $ autoconf
-;;  $ ./configure --prefix=SOMEWHERE
-;;  $ make all
-;;  $ make install
-;;  $ cp SOMEWHERE/share/emacs/site-lisp/w3m/* ~/.emacs.d/w3m
-;;  # There's some problem to load byte compiled w3m package
-;;  $ rm ~/.emacs.d/w3m/*.elc
-;;  # Search all .el files for widget-mouse-face and comment the line
-;;  # that make widget-mouse-face buffer local.
-
-(let ((w3mdir (expand-file-name (path-join user-emacs-directory "w3m"))))
-  (when (file-directory-p w3mdir)
-    (add-to-list 'load-path w3mdir)
-    (add-to-list 'Info-directory-list w3mdir)))
-
-(when (locate-library "w3m")
-  (setq w3m-use-cookies t)
-  (when (locate-library "w3m-load")
-    ;; w3m-load is not available if w3m is installed via packages
-    (require 'w3m-load))
-
-  ;; If you have an error message like:
-  ;; "w3m-toolbar-define-keys: `keymap' is reserved for embedded parent maps"
-  ;;
-  ;; set `w3m-use-toolbar' to nil might help.
-  ;;
-  ;; Reference: http://emacs-w3m.namazu.org/ml/msg11491.html
-
-  (setq w3m-use-toolbar nil)
-)
-
-
 
 (uinit/load "_browse-url"
   (locate-library "browse-url"))
@@ -980,10 +902,9 @@ Examples:
 ;;;
 ;;; YASnippet -- http://code.google.com/p/yasnippet/
 ;;;
-(when (locate-library "yasnippet")
+(use-package yasnippet
+  :config
   ;; tested with yasnippet 0.8.0 (beta)
-
-  (require 'yasnippet)
 
   ;; The official document describes the snippets directory in
   ;; "~/.emacs.d/plugins/yasnippet-x.y.z/snippets", whereas Gentoo
@@ -996,7 +917,6 @@ Examples:
                           ;;          (locate-library "yasnippet"))
                           ;;         "snippets")
                           ;; "/usr/share/emacs/etc/yasnippet/snippets"))
-
   (yas-global-mode 1)
 
   (global-set-key [(control ?x) (control ?/)] 'yas-insert-snippet)
@@ -1038,8 +958,6 @@ in any of directory in `yas-snippet-dirs'."
       ;; Otherwise, use the new interface.
       (and (fboundp 'yas-reload-all)
            (yas-reload-all))))
-
-
   )
 
 
@@ -1119,10 +1037,6 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
            (push-mark (point) 'nomsg)
            (insert result))
           (t (message "%s = %s" expr result)))))
-
-
-(when (locate-library "eimp")
-  (add-hook 'image-mode-hook 'eimp-mode))
 
 
 
@@ -1212,9 +1126,20 @@ A prefix argument N is translated to <fn> key"
 (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook 'append)
 
 
+(eval-after-load "magit"
+  ;; `magit-commit-reshelve' and `magit-reshelve-since' are available
+  ;; only if transient-default-level is equal or higher than 6.
+  ;;
+  ;; See https://emacs.stackexchange.com/questions/58283/how-do-i-modify-magits-behavior-to-use-the-date-that-i-finalize-the-commit-and-n
+  (setq transient-default-level 6))
 
-(setq joplin-curl-args '("--proxy" "http://172.22.144.1:8080"))
-(with-eval-after-load "markdown-mode"
+(use-package joplin-mode
+  :load-path "~/src/joplin-mode"
+  :requires markdown-mode
+  :config
+  (when (wsl-p)
+    (setq joplin-curl-args '("--proxy" "http://172.22.144.1:8080")
+          joplin-url-proxy '(("http" . "172.22.144.1:8080"))))
   (add-to-list 'markdown-mode-hook 'joplin-note-mode))
 
 ;;; Local Variables:

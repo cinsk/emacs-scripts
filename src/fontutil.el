@@ -70,16 +70,26 @@ New height will be calculated by (* FACTOR old-face-height)"
   (setq fontutil/fontconfig (fontutil/remove-unavailable
                              fontutil/default-fontconfig)))
 
-(defun fontutil/remove-unavailable (specs)
+(defun fontutil/remove-unavailable (specs &optional verbose)
   "Remove unavailable font specification from the SPECS.
 
-See `fontutil/fontconfig' for the definition of SPECS."
+If optional VERBOSE is non-nil, it prints messages if the font
+not found.  See `fontutil/fontconfig' for the definition of
+SPECS."
   (mapcan (lambda (elt)
             (let ((fc (car (cdr elt))))
               (unless (listp fc)
                 (setq fc (list fc)))
               (if (find-font (apply 'font-spec (car fc)))
-                  (list elt))))
+                  (progn
+                    (when verbose
+                      (dolist (s (cdr fc))
+                        (if (not (find-font (apply 'font-spec (cdr s))))
+                            (message "warning: font-spec %S not found" s))))
+                    (list elt))
+                (when verbose
+                  (message "error: font-spec %S not found" (car fc))
+                  nil))))
           specs))
 
 ;;
@@ -89,16 +99,19 @@ See `fontutil/fontconfig' for the definition of SPECS."
 ;;
 ;;
 (defvar fontutil/default-fontconfig
-  '((scodepro-14 . (((:family "SourceCodePro" :size 14)
+  '((scodepro-14 . (((:family "SourceCodePro" :size 14 :weight normal)
                      (hangul :family "NanumGothicCoding" :size 16)
                      (symbol :family "Symbola" :size 17))))
-    (scodepro-15 . (((:family "SourceCodePro" :size 15)
+    (scodepro-15 . (((:family "SourceCodePro" :size 15 :weight normal)
                      (hangul :family "NanumGothicCoding" :size 18)
                      (symbol :family "Symbola" :size 20))))
-    (scodepro-16 . (((:family "SourceCodePro" :size 16)
+    (scodepro-16 . (((:family "SourceCodePro" :size 16 :weight normal)
                      (hangul :family "NanumGothicCoding" :size 20)
                      (symbol :family "Symbola" :size 22))))
-    (scodepro-18 . (((:family "SourceCodePro" :size 18)
+    (scodepro-18 . (((:family "SourceCodePro" :size 18 :weight normal)
+                     (hangul :family "NanumGothicCoding" :size 22)
+                     (symbol :family "Symbola" :size 24))))
+    (scodepro-20 . (((:family "SourceCodePro" :size 20 :weight normal)
                      (hangul :family "NanumGothicCoding" :size 22)
                      (symbol :family "Symbola" :size 24))))
     (scodepro-14 . (((:family "Source_Code_Pro" :size 14)

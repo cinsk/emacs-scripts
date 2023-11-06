@@ -97,6 +97,8 @@
   "List display resolution of darwin.
 
 Each element has the form (WIDTH . HEIGHT) in pixel."
+  ;; I'm not sure why I wrote this instead of `display-pixel-width' and
+  ;; `display-pixel-height'.
   (let (result)
     (with-temp-buffer
       (shell-command "system_profiler SPDisplaysDataType | grep -i resolution"

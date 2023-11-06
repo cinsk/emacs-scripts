@@ -202,7 +202,7 @@ created file buffer."
   "\n"
   _)
 
-(auto-insert-mode 1)
+;;(auto-insert-mode 1)
 
 (add-to-list 'auto-insert-alist
              '(("\\.h\\'" . "C header")

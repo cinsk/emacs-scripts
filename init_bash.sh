@@ -1,1 +1,1 @@
-source ~/.emacs.d/bashrc.sh;
+. ~/.emacs.d/bashrc.sh

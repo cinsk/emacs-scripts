@@ -170,7 +170,7 @@ supplied one, a warning message is generated."
       (switch-to-buffer buf)
       (dired-revert)
       (dired-goto-file (or file dir)))))
-(advice-add 'dired-jump :around #'cinsk/dired-jump)
+;;(advice-add 'dired-jump :around #'cinsk/dired-jump)
 
 
 ;; Search filenames (e.g. C-s or C-M-s) only when the point is in the

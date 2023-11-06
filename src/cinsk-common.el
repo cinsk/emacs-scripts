@@ -33,6 +33,7 @@ in case that file does not provide any feature."
     (declare (indent 1) (debug t))
     `(eval-after-load ,file (lambda () ,@body))))
 
+
 (defun cinsk/priortize-auto-mode (mode)
   "Sort(prepend) `auto-mode-alist' entries that has MODE in them."
   (setq auto-mode-alist
@@ -227,6 +228,33 @@ starting number."
         (while (progn
                  (fill-paragraph nil)
                  (eq (forward-line) 0)))))))
+
+(defun cinsk/unfill-paragraph (&optional arg)
+  (interactive "P")
+  (let ((fill-column (point-max)))
+    (fill-paragraph arg t)))
+
+
+
+(defmacro with-popup-buffer-window (&rest body)
+  "Pop up new window at bottom and evaulate BODY.
+
+This function will create a window at bottom, showing temporary
+empty buffer.  The buffer will be the current buffer while excuting
+BODY.   Then it will ask the user to press <RET> to destroy the window
+and the buffer, returns the last expression of the BODY."
+  (declare (indent 0) (debug t))
+  `(with-current-buffer-window (generate-new-buffer " *popup*")
+       '(display-buffer-at-bottom . ((dedicated . t)
+                                     (window-height . fit-window-to-buffer)))
+       (lambda (w v)
+         (with-selected-window w
+           (unwind-protect
+               (progn (read-from-minibuffer "Press <RET> to continue...")
+                      v)
+             (when (window-live-p w)
+               (quit-restore-window w 'kill)))))
+     ,@body))
 
 
 ;;

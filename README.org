@@ -58,8 +58,9 @@
 
 *** Tramp    
 
-    =ssh= may not work on Darwin.  Use =sshx=, which is the default
-    tramp method.
+    =ssh= may not work on Darwin.  I suspect it may be related to the
+    =ksh(1)=, or the prompt at least, but I have not had enough time
+    to figure it out.  Use =sshx=, which is the default tramp method.
 
 #+BEGIN_VERBATIM
 /-:host:/path/to/file
@@ -90,6 +91,12 @@
 
     - To select none (to return =""=), Use =C-RET= or =M-RET=.
 
+*** Dired
+
+    - =0 w= copy the absulte file name into the kill ring.
+    - =% d= flag files for deletion with the regular expression
+    - =% m= mark files with the regular expression
+
 * Features I added/modified
 *** remove all whitespaces
     zap-to-nonspace, [[file:init/delete.el::delete-chars-forward-with-syntax][delete-chars-forward-with-syntax]] can delete
@@ -119,6 +126,11 @@
     buffers.  For example, if there was a word "EmaCS" available in
     current (or anyother) buffer, it will use it as one of candidates.
 
+*** Unfill paragraph
+    Select the region, then pressing =M-Q= will change the paragraph
+    to a single line.  This is useful to create for example, Github
+    friendly markdown text.
+
 *** Shell
     =M-x shell= will behave like a login shell.
 
@@ -133,10 +145,20 @@
 *** Graphical display
 
 ***** Fonts
-      
-      - Install NanumGothicCoding font on your system if you need Korean font.
-      - Install Symbola font on your system for symbolic fonts
 
+      - Install [[https://github.com/adobe-fonts/source-code-pro/releases][SourceCodePro]] font.
+      - Install NanumGothicCoding font on your system if you need Korean font.
+      - Install [[https://zhm.github.io/symbola/][Symbola]] font on your system for symbolic fonts
+
+      To see if you have some fonts, run following elisp code.  Hint.
+      Turn off read-only this buffer (=C-x C-q=), evaluate the code block
+      by =C-c C-c=.   If you don't see any line, no font is available.
+      Update =fontutil/default-fontconfig= in [[file:src/fontutil.el][fontutil.el]].  Make sure you
+      undo by =C-_=.  (Or =C-c C-v k=).
+
+#+BEGIN_SRC emacs-lisp
+(fontutil/remove-unavailable fontutil/default-fontconfig t)
+#+END_SRC
 
 
 

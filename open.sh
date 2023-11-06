@@ -10,14 +10,16 @@ fi
 
 if [ -z "$WSL" ]; then
     for f in "$@"; do
-        nohup xdg-open "$f" &
+        nohup xdg-open "$f" </dev/null >/dev/null 2>&1 &
+        disown
     done
 else
     for f in "$@"; do
-        nohup cmd.exe /c start $(wslpath -w "$f") &
+        nohup cmd.exe /c start $(wslpath -w "$f") </dev/null >/dev/null 2>&1 &
+        disown
     done
 fi
 
 # why 1 second? perhaps 0.5 would be better? -- cinsk
-sleep 1
+sleep 0.2
 

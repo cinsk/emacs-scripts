@@ -10,7 +10,7 @@
   (require 'ediff-ptch))
 
 ;;
-;; Whenever I had tried to modified ediff-make-wide-dispaly, I always
+;; Whenever I had tried to modified ediff-make-wide-display, I always
 ;; forgot how it works.  Currently, ediff uses its function,
 ;; `ediff-toggle-wide-display' to toggle wide mode.  (A) Assuming that
 ;; currently in no wide mode, it will call function stored in the
@@ -55,9 +55,6 @@
 ;; should be set before loading `ediff, ediff customization should be
 ;; placed in the first place. -- cinsk
 (setq-default ediff-make-wide-display-function 'cinsk/ediff-make-wide-display)
-
-;; (require 'ediff)
-;; (require 'ediff-ptch)
 
 (let ((kmap (make-sparse-keymap)))
   (define-key kmap [?f]

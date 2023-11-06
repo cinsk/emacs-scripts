@@ -50,8 +50,6 @@ and to remove trailing whitespaces")
   ;; `before-save-hook' anyway.
   nil)
 
-(add-hook 'before-save-hook 'untabify-remove-trailing-spaces-on-write)
-
 
 (provide 'untabify)
 ;;; untabify.el ends here
