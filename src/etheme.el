@@ -23,9 +23,6 @@
 ;;; $Id$
 ;;;
 
-(eval-when-compile
-  (require 'cl))
-
 (defgroup etheme nil
   "Provide alternative theme-style face color configuration"
   :version "22.0"
@@ -40,8 +37,8 @@
   "Hook function called before applying any theme.")
 
 (defvar etheme-alist
-  '(("cinsk" 1) 
-    ("vim" 2) 
+  '(("cinsk" 1)
+    ("vim" 2)
     ("elflord" 3)
     ("morning" 4)
     ("canyon" 5)
@@ -53,7 +50,7 @@
 
 ;;;
 ;;; Default values of White on Black
-;;; 
+;;;
 ;;; modeline black on grey75
 ;;; modeline-inactive grey80 on grey30
 ;;; isearch brown4 on palevioletred2
@@ -65,11 +62,11 @@
 ;;; font-lock-preprocessor-face unspecified on unspecified
 ;;; font-lock-string-face LightSalmon on unspecified
 ;;; font-lock-keyword-face Cyan1 on unspecified
-;;; 
+;;;
 
 ;;;
 ;;; Default values of Black on White
-;;; 
+;;;
 ;;; modeline black on grey75
 ;;; modeline-inactive grey20 on grey90
 ;;; isearch lightskyblue1 on magenta2
@@ -81,7 +78,7 @@
 ;;; font-lock-preprocessor-face unspecified on unspecified
 ;;; font-lock-string-face RosyBrown on unspecified
 ;;; font-lock-keyword-face Purple on unspecified
-;;; 
+;;;
 
 ;;;
 ;;; DO NOT SET ANY ATTRIBUTE ON THESE FACES.
@@ -94,7 +91,7 @@
 ;;;  font-lock-warning-face Red1 on unspecified
 
 (defvar etheme-saved-face-list
-  '(modeline 
+  '(modeline
     modeline-inactive
     isearch
     font-lock-builtin-face
@@ -109,7 +106,7 @@
   "List of face names which will be stored between theme change."
   )
 
-	     
+
 (defvar etheme-cinsk-faces
   '((default :foreground "powder blue" :background "black")
     (modeline :foreground "white" :background "IndianRed4")
@@ -273,9 +270,9 @@
 (defun etheme-set-faces (theme)
   "Set the given face attribute set THEME"
   (mapcar #'(lambda (arg)
-	    (apply #'set-face-attribute
-		   (append (list (car arg) nil) (cdr arg))))
-	theme))
+            (apply #'set-face-attribute
+                   (append (list (car arg) nil) (cdr arg))))
+        theme))
 
 (defun etheme-run-hook (theme-name)
   "Run THEME-NAME hook"
@@ -291,10 +288,10 @@
   "Set the current theme to THEME-NAME"
   (if (stringp theme-name)
       (let ((faces (eval (intern (concat "etheme-" theme-name "-faces")))))
-	(setq etheme-current-theme theme-name)
-	(etheme-run-hook theme-name)
-	(etheme-set-faces faces)
-	)))
+        (setq etheme-current-theme theme-name)
+        (etheme-run-hook theme-name)
+        (etheme-set-faces faces)
+        )))
 
 (defun etheme-set-theme (theme-name)
   "Set the current theme to THEME-NAME"
@@ -302,11 +299,11 @@
   (global-font-lock-mode 1)
   (let ((name theme-name))
     (if (stringp name)
-	(etheme-apply-theme name)
-      (progn (etheme-apply-theme 
-	      (setq name (completing-read "theme name: "
-					  etheme-alist nil t "")))
-	     (message "etheme: %s selected" name)))))
+        (etheme-apply-theme name)
+      (progn (etheme-apply-theme
+              (setq name (completing-read "theme name: "
+                                          etheme-alist nil t "")))
+             (message "etheme: %s selected" name)))))
 
 (etheme-add-hook "vim" 'menu-bar-right-scroll-bar)
 (etheme-add-hook "vim" '(lambda () (tool-bar-mode 1)))
@@ -349,4 +346,3 @@
 (etheme-add-hook "desert" '(lambda () (set-mouse-color "yellow")))
 
 (provide 'etheme)
-
