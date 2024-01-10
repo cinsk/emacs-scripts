@@ -623,8 +623,11 @@ Examples:
   ;; scroll up/down.
   (when (or (memq 'scale (image-transforms-p))
             (image-type-available-p 'imagemagick))
-    (setq markdown-max-image-size (joplin-max-image-size))
-    ))
+    (let ((h (* 20 (line-pixel-height)))
+          (w (floor (* (frame-inner-width) 0.7))))
+      (and (<= h 0) (setq h 400))
+      (and (<= w 0) (setq w 400))
+      (setq markdown-max-image-size (cons w h)))))
 
 
 ;;;
@@ -1135,8 +1138,11 @@ A prefix argument N is translated to <fn> key"
   :requires markdown-mode
   :config
   (when (wsl-p)
-    (setq joplin-curl-args '("--proxy" "http://172.22.144.1:8080")
-          joplin-url-proxy '(("http" . "172.22.144.1:8080"))))
+    (let* ((hostip (wsl-host-address))
+           (endp (concat hostip ":8080")))
+      (setq joplin-curl-args (list "--proxy"
+                                   (concat "http://" endp))
+            joplin-url-proxy (list (cons "http" endp)))))
   (add-to-list 'markdown-mode-hook 'joplin-note-mode))
 
 ;;; Local Variables:

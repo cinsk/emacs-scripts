@@ -30,7 +30,7 @@
                               (point-min) (point-max))))
       uri)))
 
-(defun wsl-open (uri)
+(defun wsl-open (uri &optional _new-window)
   "Open a file using Windows cmd.exe, similar to xdg-open(1).
 
 The optional argument NEW-WINDOW is not used.  This function
@@ -42,6 +42,14 @@ can be used for `browse-url-browser-function'."
                    "/c"
                    "start"
                    path)))
+
+(defun wsl-host-address ()
+  ;; https://learn.microsoft.com/en-us/windows/wsl/networking
+  (with-temp-buffer
+    (insert-file-contents "/etc/resolv.conf")
+    (when (re-search-forward "^nameserver\\s-\\([a-z0-9A-Z.:/]+\\)$" nil t)
+      (match-string 1))))
+
 
 (eval-when-compile
   (require 'browse-url))
@@ -95,8 +103,8 @@ can be used for `browse-url-browser-function'."
                '("View" "/mnt/c/Windows/explorer.exe %o"
                  TeX-run-discard-or-function t t :help "Run Viewer")))
 
-(setq browse-url-generic-program wsl-open-program
-      browse-url-browser-function #'browse-url-generic)
+(setq ;; browse-url-generic-program wsl-open-program
+      browse-url-browser-function #'wsl-open)
 
 
 (with-eval-after-load "dired-x"
