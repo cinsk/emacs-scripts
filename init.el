@@ -303,6 +303,9 @@ Examples:
 ;;; Helpers for TAGS manipulation
 (setq tags-add-tables 't)               ; do not ask to add new tags table.
 
+;;; Try completes if the line is already indented
+(setq tab-always-indent 'complete)
+
 
 ;;; Set up the keyboard so the delete key on both the regular keyboard
 ;;; and the keypad delete the character under the cursor and to the right
@@ -845,10 +848,11 @@ Examples:
 (uinit/load "ruby"
   (locate-library "ruby-mode"))
 
-(uinit/load "_python"
-  ;; remember that Aquamacs provides its own version of python-mode
-  ;; which may not the one you're looking for.
-  (locate-library "python-mode"))
+(if (locate-library "python-mode")
+    ;; remember that Aquamacs provides its own version of python-mode
+    ;; which may not the one you're looking for.
+    (uinit/load "_python" t)
+  (uinit/load "_py" t))
 
 
 (uinit/load "_js" 'js)
