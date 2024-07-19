@@ -45,10 +45,14 @@ can be used for `browse-url-browser-function'."
 
 (defun wsl-host-address ()
   ;; https://learn.microsoft.com/en-us/windows/wsl/networking
+  ;; (with-temp-buffer
+  ;;   (insert-file-contents "/etc/resolv.conf")
+  ;;   (when (re-search-forward "^nameserver\\s-\\([a-z0-9A-Z.:/]+\\)$" nil t)
+  ;;     (match-string 1)))
   (with-temp-buffer
-    (insert-file-contents "/etc/resolv.conf")
-    (when (re-search-forward "^nameserver\\s-\\([a-z0-9A-Z.:/]+\\)$" nil t)
-      (match-string 1))))
+    (shell-command "ip route show" (current-buffer))
+    (when (re-search-forward "^default via \\([^ ]+\\)")
+      (match-string-no-properties 1))))
 
 
 (eval-when-compile
