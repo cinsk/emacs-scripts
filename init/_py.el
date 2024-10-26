@@ -33,5 +33,10 @@ SNAKE should be a string in absolute path."
 (with-eval-after-load "python"
   (add-to-list 'python-mode-hook 'pyenv-mode)
 
+
   (define-key python-mode-map [(control ?c) ?\!] 'run-python)
+
+  ;; By default, python.el set "C-c C-c" to python-shell-send-buffer,
+  ;; which overlapped with my personal config. (comment-region).
+  (define-key python-mode-map [(control ?c) (control ?c)] nil)
   (define-key python-mode-map [(control ?c) (control ?b)] 'python-shell-send-buffer))

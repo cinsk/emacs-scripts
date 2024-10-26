@@ -265,8 +265,11 @@ Examples:
 (uinit/load "wsl"
   (wsl-p))
 
-(uinit/load "darwin"
-  (eq system-type 'darwin))
+(when (eq system-type 'darwin)
+  (use-package exec-path-from-shell
+    :config
+    (exec-path-from-shell-initialize))
+  (uinit/load "darwin" 'darwin))
 
 
 (uinit/load "X"
@@ -751,7 +754,23 @@ Examples:
 
 ;;(split-window-horizontally)
 
+
 ;;(uinit/load "mail" 'mail-news-gnus)
+;;(file-exists-p "~/.authinfo.gpg")
+
+(setq send-mail-function 'smtpmail-send-it
+      smtpmail-smtp-service 587
+      smtpmail-smtp-server "smtp.gmail.com")
+
+(setq user-mail-address "cinsky@gmail.com"
+      mail-default-headers (format "Comment: sent from emacs-%s@%s\n"
+                                   emacs-version
+                                   (system-name)))
+
+(when (file-exists-p "~/.emacs.d/secrets/.authinfo.gpg")
+  (setq auth-sources
+        '((:source "~/.emacs.d/secrets/.authinfo.gpg"))))
+
 
 
 ;;;
@@ -845,6 +864,9 @@ Examples:
 
 
 
+;; Try to complete the thing at point if the current line is already indented.
+(setq tab-always-indent 'complete)
+
 (uinit/load "ruby"
   (locate-library "ruby-mode"))
 

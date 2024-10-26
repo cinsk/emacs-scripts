@@ -24,6 +24,17 @@
     For additional bindings, look at the corresponding init files in
     [[file:init/]]
 
+*** Python
+
+    Historically I've used 3rd party mode, =python-mode.el= where the
+    built-in =python.el= was not good enough.  Now =python.el= looks
+    mature enough, and 3rd parties to support virtual environment
+    seems to support =python.el= only, I switched to the vanilla
+    =python.el=.
+
+    I'm using [[https://github.com/pyenv/pyenv][pyenv]] with =pyenv-mode.el=.  Before launching Python
+    shell (=C-c !=), select the right Python version using =C-c C-p=.
+    
 * Version Control System support
 
   =<f12>= or =M-x vc/dir= will launch version control system (VCS)
@@ -55,6 +66,11 @@
 *** Force inserting characters
     - =C-q <tab>= to insert a =<tab>= character.
     - =C-q C-j= t= insert a newline (useful when query-replace)
+
+*** Removing lines with a pattern
+
+    Select a region (e.g. =C-x h= for whole buffer), then =C-u M-|=
+    (=shell-command-on-region=) to execute =grep -v PATTERN=.
 
 *** Tramp    
 

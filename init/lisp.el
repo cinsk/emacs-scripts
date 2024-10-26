@@ -185,6 +185,32 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 
 
+
+(with-eval-after-load "racket-mode"
+  (defun cinsk/racket-mode-switch-to-repl (&optional arg)
+    (interactive "P")
+    (if arg
+        (racket-run-and-switch-to-repl)
+      (let ((sessionp (and (get-buffer racket-repl-buffer-name)
+                           (with-current-buffer (get-buffer racket-repl-buffer-name)
+                             (racket--repl-session-id)))))
+        (if sessionp
+            (racket-edit-switch-to-repl)
+          (racket-run-and-switch-to-repl)))))
+
+  ;; TODO: `racket-run' or `racket-repl'?
+  (define-key racket-mode-map [(control ?c) ?\!] 'cinsk/racket-mode-switch-to-repl)
+  ;; keep `C-c C-c' for `comment-region'.
+  (cinsk/move-key racket-mode-map [(control ?c) (control ?c)]
+                  [(control ?c) (control ?C)])
+
+  ;; geiser forces to use scheme-mode for ".rkt" files. force to use
+  ;; `racket-mode'.
+  ;;
+  ;; (cinsk/priortize-auto-mode 'racket-mode)
+  )
+
+(when nil
 (when (locate-library "geiser")
   (when (locate-library "racket-mode")
     (add-hook 'racket-mode-hook #'(lambda () (geiser-mode 1)))
@@ -204,3 +230,4 @@ Prefix argument means switch to the Lisp buffer afterwards."
 (with-eval-after-load "geiser-mode"
   (define-key geiser-mode-map [(control ?c) ?\!] 'geiser-mode-switch-to-repl)
   (cinsk/move-key geiser-mode-map [(control ?c) (control ?c)] [(control ?c) (control ?C)]))
+)

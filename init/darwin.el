@@ -157,8 +157,8 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
       (if (or (> (length displays) 1)
               (not (null (cl-find-if (lambda (x) (>= (car x) 3000))
                                      displays))))
-          (fontutil/set-font "pt-16")
-        (fontutil/set-font "pt-14")))))
+          (fontutil/set-font "scodepro-18")
+        (fontutil/set-font "scodepro-16")))))
 
 
 (setq default-frame-alist (append default-frame-alist
@@ -259,6 +259,12 @@ then try to use a word at point."
 ;; echoing, this is required.
 (when (string-equal (file-name-nondirectory shell-file-name) "zsh")
   (add-hook 'comint-mode-hook #'(lambda () (setq comint-process-echoes t))))
+
+;; I prefer use the latest version of bash instead of zsh(1)
+;; Homebrew installed bash is located in /usr/local/bin/bash
+(let ((bpath "/usr/local/bin/bash"))
+  (when (file-executable-p bpath)
+    (setq explicit-shell-file-name bpath)))
 
 ;; Darwin (MacOS Ventura) uses Control-Meta-D for dictionary lookup,
 ;; which is not able to override at the moment.  it is used for
