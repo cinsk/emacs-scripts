@@ -270,3 +270,10 @@ then try to use a word at point."
 ;; which is not able to override at the moment.  it is used for
 ;; `isearch-del-char', so we can use Option key instead of C-M-d.
 (define-key isearch-mode-map (kbd "A-C-d") 'isearch-del-char)
+
+
+;; `M-x man' in Emacs 30.1 causes sed(1) error.   Override to use GNU sed(1)
+;; will resolve this.
+(when (executable-find "gsed")
+  ;; This should be set before loading man.el
+  (setq Man-sed-command "gsed"))
