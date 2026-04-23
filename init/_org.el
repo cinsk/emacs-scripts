@@ -42,13 +42,19 @@
 (setq org-confirm-babel-evaluate nil)
 
 ;;
+;; Disable safe link check
+;;
+(put 'orglink/url-man 'org-link-abbrev-safe t)
+
+;;
 ;; generate link description automatically
 ;;
 (setq org-link-abbrev-alist
       '(("google" . "http://www.google.com/search?q=%s")
         ("rfc" . "http://www.rfc-editor.org/rfc/rfc%s.txt")
         ("man" . "%(orglink/url-man)")
-        ("java" . "%(orglink/url-java)")))
+        ;; ("java" . "%(orglink/url-java)")
+        ))
 
 (defvar org-link-javadoc-root-alist
       '(("org.springframework.boot." . "http://docs.spring.io/spring-boot/docs/current/api/")
@@ -281,7 +287,7 @@ not NOT-THIS-COMMAND"
    'org-babel-load-languages
    `((emacs-lisp . t)
      ; (R . t)
-     ; (python . t)
+     (python . t)
      ; (ruby . t)
      (dot . t)
      ; ,(when (locate-library "ob-go") '(go . t))
@@ -441,14 +447,56 @@ not NOT-THIS-COMMAND"
 (global-set-key [(control c) ?l] 'org-store-link)
 (global-set-key [(control c) ?b] 'org-iswitchb)
 (global-set-key [(control c) ?\"] 'org-capture)
+;; org-mode uses C-\" for its own function.  Use C-\" \" for the
+;; alternative key
+(define-key org-mode-map [(control ?c) ?\" ?\"] 'org-capture)
 
 ;;(org-remember-insinuate)
 (global-set-key [f8] 'org-capture)
 
+(defvar my-org-directory nil
+  "Directory for storing org files.
+
+This will control how `org-directory' would set.
+
+First, use the directory in ORG_PATH environment variable, if exists.
+Second, use the vaule of `my-org-directory' if not nil.
+Finally, \"~/agenda\" will be used.")
+
+(defvar my-org-agenda-exclude-regexp '("conflicted copy [0-9-:]*)\\.org$"
+                                       "충돌하는 사본 [0-9-:]*)\\.org$"
+                                       "\\.sync-conflict-.*\\.org$")
+  "A list of regular expressions to exclude org files for `org-agenda-files'")
+
+(setq org-capture-templates
+      `(("w" "Work-related TODO" entry
+         (file+headline ,(path-join org-directory "work.org")
+                        "Tasks")
+         "* TODO %? %T\n  %i\n  %a")
+        ("f" "Finance Journal" entry
+         (file+headline ,(path-join org-directory "fjournal.org")
+                        "Journal")
+         "* %?%t\n  %i\n")
+        ("p" "Personal Project-related TODO" entry
+         (file+headline ,(path-join org-directory "pproject.org")
+                        "Tasks")
+         "* TODO %? %T\n  %i\n  %a")
+        ;; ("P" "Personal TODO" entry
+        ;;  (file+headline ,(path-join org-directory "personal.org")
+        ;;                 "Tasks")
+        ;;  "* TODO %? %T\n  %i\n  %a")
+        ("e" "Emacs Tips" entry
+         (file+headline ,(path-join user-emacs-directory "emacs-tips.org")
+                        "Tips")
+         "* TODO %? %T\n  %i\n  %a")
+        ("j" "Personal Journal (date based)" entry
+         (file+datetree ,(path-join org-directory "personal.org"))
+         "* %?\n  Entered on %U\n  %i\n  %a")))
+
 (defun cinsk/org-refresh-agenda-files (&optional directory)
   "Refresh `org-agenda-files' to the ORG files in DIRECTORY.
 
-Filenames that matches Dropbox conflict will not be included."
+Filenames that matches Dropbox conflict will not be included"
   (let ((dir (or directory org-directory)))
     (when (file-accessible-directory-p dir)
       (setq org-agenda-files
@@ -463,67 +511,83 @@ Filenames that matches Dropbox conflict will not be included."
                                  nil
                                filename)) files)))))))
 
-(let* ((org-path (getenv "ORG_PATH"))
-       (my-org-directory (if org-path
-                             org-path
-                           (expand-file-name "~/agenda"))))
-  ;; All of my org agena files are located in `my-org-directory'.
-  (and (not (file-accessible-directory-p my-org-directory))
-       (make-directory my-org-directory t))
 
-  (when (string-prefix-p (file-truename "~/Dropbox")
-                         (file-truename my-org-directory))
-    ;; If `my-org-directory' is linked to a subdirectory of Dropbox
+(defun my-org-agenda-files (&optional directory)
+  "Return a list of .org files in DIRECTORY."
+  (cl-labels ((chk3 (file excludes)
+               (if (null excludes)
+                   file
+                 (if (string-match (car excludes) file)
+                     nil
+                   (chk3 file (cdr excludes))))))
+    (let ((dir (or directory org-directory)))
+      (when (file-accessible-directory-p dir)
+        (let ((files (directory-files dir nil
+                                      "\\`[^.#].*\\.org\\'"))
+              retval)
+          (dolist (fn files (nreverse retval))
+            (let ((f (chk3 fn my-org-agenda-exclude-regexp)))
+              (if f
+                  (setq retval (cons (concat (file-name-as-directory dir) f)
+                                     retval))))))))))
+
+(defun my-create-empty-files (files &optional directory)
+  "Create empty file(s) if not exists in DIRECTORY."
+  (if (stringp files)
+      (setq files (list files)))
+  (if (not (null directory))
+      (setq directory (file-name-as-directory directory)))
+  (dolist (f files)
+    (if (and (null (file-name-directory f))
+             (not (null directory)))
+        (setq f (concat directory f)))
+    (unless (file-exists-p f)
+      (make-empty-file f))))
+
+(defun my-init-org ()
+  (let ((org-path (or (getenv "ORG_PATH")
+                      (and my-org-directory (expand-file-name my-org-directory))
+                      (expand-file-name "~/agenda"))))
+    (and (not (file-accessible-directory-p org-path))
+         (make-directory org-path t))
+
+    (unless (file-accessible-directory-p org-path)
+      (lwarn '(dot-emacs) :warning
+             (format "cannot access org files in %s." org-path)))
+
+    ;; If `org-path' is linked to a subdirectory of Dropbox
     ;; directory, then make the auto-save directory to be placed in
     ;; /tmp/.
     (add-to-list 'auto-save-file-name-transforms
                  (list
                   (concat "\\`"
-                          (file-name-as-directory my-org-directory)
+                          (file-name-as-directory org-path)
                           "\\([^/]*/\\)*\\([^/]*\\)\\'")
                   (concat (file-name-as-directory temporary-file-directory)
                           "\\2")
-                  t)))
+                  t))
 
-  (if (file-accessible-directory-p my-org-directory)
-      (let ((notefile (path-join my-org-directory "notes.org")))
-        ;; Install all .org files in `my-org-directory' if exists
-        ;;
-        ;; Currently `my-org-directory' is maintained by Dropbox.
-        ;; I don't know what causes this, but Dropbox leaves some conflicted
-        ;; copy in the form of "sample (XXX's conflicted copy 2009-10-15).org"
-        ;; or "sample (XXX와(과) 충돌하는 사본 2013-02-22).org" in Korean.
-        ;;
-        ;; Thus, I'll add non-conflicted filenames into `org-agenda-files'.
-        (cinsk/org-refresh-agenda-files my-org-directory)
+    (my-create-empty-files
+     '("work.org" "pproject.org" "personal.org" "emacs-tips.org" "notes.org")
+     org-path)
 
-        (setq org-default-notes-file notefile)
-        (setq org-directory my-org-directory))
-    (lwarn '(dot-emacs) :warning
-           (format "cannot access org files in %s." my-org-directory))))
+    (setq org-default-notes-file (concat (file-name-as-directory org-path) "notes.org"))
 
-(setq org-capture-templates
-      '(("w" "Work-related TODO" entry
-         (file+headline (path-join org-directory "work.org")
-                        "Tasks")
-         "* TODO %? %T\n  %i\n  %a")
-        ("p" "Personal Project-related TODO" entry
-         (file+headline (path-join org-directory "pproject.org")
-                        "Tasks")
-         "* TODO %? %T\n  %i\n  %a")
-        ("P" "Personal TODO" entry
-         (file+headline (path-join org-directory "personal.org")
-                        "Tasks")
-         "* TODO %? %T\n  %i\n  %a")
-        ("e" "Emacs Tips" entry
-         (file+headline (path-join user-emacs-directory "emacs-tips.org")
-                        "Tips")
-         "* TODO %? %T\n  %i\n  %a")
-        ("j" "Personal Journal (date based)" entry
-         (file+datetree (path-join org-directory "personal.org"))
-         "* %?\n  Entered on %U\n  %i\n  %a")))
+    ;; Install all .org files in `org-path' if exists
+    ;;
+    ;; Currently `org-path' is maintained by Dropbox.
+    ;; I don't know what causes this, but Dropbox leaves some conflicted
+    ;; copy in the form of "sample (XXX's conflicted copy 2009-10-15).org"
+    ;; or "sample (XXX와(과) 충돌하는 사본 2013-02-22).org" in Korean.
+    ;;
+    ;; Thus, I'll add non-conflicted filenames into `org-agenda-files'.
 
-;; (add-to-list 'org-agenda-files "~/.emacs.d/personal.org")
+    ;; (cinsk/org-refresh-agenda-files org-path)
+    (setq org-agenda-files (my-org-agenda-files org-path))
+
+    (setq org-directory org-path)))
+
+(my-init-org)
 
 (defvar org-table-convert-last-nrows    3
   "Default number of columns per row.  This is changed if user used
