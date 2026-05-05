@@ -42,7 +42,7 @@ supplied one, a warning message is generated."
             ;; Bind dired-x-find-file.
             (setq dired-x-hands-off-my-keys nil)
             ;; Make sure our binding preference is invoked.
-            (dired-x-bind-find-file)
+            ;; (dired-x-bind-find-file)
             ))
 
 (add-hook 'dired-mode-hook
@@ -79,12 +79,12 @@ supplied one, a warning message is generated."
   ;; Modifying `dired-listing-switches' to use GNU ls(1) specific
   ;; options will prevent TRAMP working on Darwin as it uses BSD
   ;; ls(1).
-(when (string-match "\\bgnu\\b" (symbol-name system-type))
-  ;; If the operating system is gnu or gnu/linux,
-  ;; we'll use GNU ls(1) --time-style option
-  (setq dired-listing-switches
-        (concat dired-listing-switches
-                "--group-directories-first --time-style=long-iso"))))
+  (when (string-match "\\bgnu\\b" (symbol-name system-type))
+    ;; If the operating system is gnu or gnu/linux,
+    ;; we'll use GNU ls(1) --time-style option
+    (setq dired-listing-switches
+          (concat dired-listing-switches
+                  "--group-directories-first --time-style=long-iso"))))
 
 (setq-if-equal dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$"
                (concat dired-omit-files
@@ -95,7 +95,7 @@ supplied one, a warning message is generated."
                        ;; Omit dot files
                        "\\|^\\..+\\'"
                        ;; Omit .o, .lo, .Po, .Plo, .a, .la files
-                       "\\|.+\\.\\(o\\|lo\\|Po\\|Plo\\|a\\|la\\)\\'"))
+                       "\\|.+\\.\\(o\\|lo\\|Po\\|Plo\\|a\\|la\\)\\'")))
 
 (when nil
   ;; I want to delete all files that look like ".#gbd.tex.1.22", or

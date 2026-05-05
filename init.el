@@ -718,7 +718,7 @@ Examples:
       (locate-library "rng-auto")))
 
 
-(uinit/load "dired"
+(uinit/load "_dired"
   'dired)
 
 (global-set-key [(meta ?F) ?d return] 'find-dired)
