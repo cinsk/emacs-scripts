@@ -92,6 +92,8 @@
    ((executable-find "/usr/local/bin/ls")
     (setq insert-directory-program "/usr/local/bin/ls"))))
 
+(when (executable-find "gtar")
+  (setq dired-guess-shell-gnutar "gtar"))
 
 (defun darwin/display-list ()
   "List display resolution of darwin.

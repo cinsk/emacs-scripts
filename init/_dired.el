@@ -5,6 +5,7 @@
 ;;;
 
 (with-eval-after-load "dired"
+  (setq dired-x-hands-off-my-keys nil)
   (require 'dired-x)
 
   (define-key dired-mode-map [(control return)] 'dired-find-file-other-frame)
@@ -34,16 +35,6 @@ supplied one, a warning message is generated."
                            (symbol-name ',symbol) ,symbol)
                   ,old-value)))))
 
-
-(add-hook 'dired-load-hook
-          (lambda ()
-            ;; Set dired-x global variables here.  For example:
-            ;; (setq dired-guess-shell-gnutar "gtar")
-            ;; Bind dired-x-find-file.
-            (setq dired-x-hands-off-my-keys nil)
-            ;; Make sure our binding preference is invoked.
-            ;; (dired-x-bind-find-file)
-            ))
 
 (add-hook 'dired-mode-hook
           (lambda ()
@@ -86,16 +77,18 @@ supplied one, a warning message is generated."
           (concat dired-listing-switches
                   "--group-directories-first --time-style=long-iso"))))
 
-(setq-if-equal dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$"
-               (concat dired-omit-files
-                       ;; Omit RCS files
-                       "\\|^RCS$\\|,v\\'"
-                       ;; Omit CVS and Bitkeeper files
-                       "\\|^CVS$\\|^BitKeeper\\'"
-                       ;; Omit dot files
-                       "\\|^\\..+\\'"
-                       ;; Omit .o, .lo, .Po, .Plo, .a, .la files
-                       "\\|.+\\.\\(o\\|lo\\|Po\\|Plo\\|a\\|la\\)\\'")))
+(setq dired-omit-files
+      (concat ""
+              ;; lockfiles
+              "^\\.?#"
+              ;; Omit RCS files
+              "\\|^RCS$\\|,v\\'"
+              ;; Omit CVS and Bitkeeper files
+              "\\|^CVS$\\|^BitKeeper\\'"
+              ;; Omit dot files (except "." and "..")
+              "\\|^\\.[^.]+.*\\'"
+              ;; Omit .o, .lo, .Po, .Plo, .a, .la files
+              "\\|.+\\.\\(o\\|lo\\|Po\\|Plo\\|a\\|la\\)\\'"))
 
 (when nil
   ;; I want to delete all files that look like ".#gbd.tex.1.22", or
