@@ -344,7 +344,7 @@ not NOT-THIS-COMMAND"
   (define-key org-mode-map [(control c) (control ?\;)]
     '(lambda ()
        (interactive)
-       (ucs-insert #x2060)))
+       (insert-char #x2060)))
   ;; unicode: zero width space
   ;;
   ;; To mark-up certain text (e.g. ="hello"=), place 'zero width space'
@@ -353,7 +353,7 @@ not NOT-THIS-COMMAND"
   (define-key org-mode-map [(control c) (control ?\')]
     '(lambda ()
        (interactive)
-       (ucs-insert #x200B)))
+       (insert-char #x200B)))
 
   ;;(add-to-list 'org-mode-hook (lambda ()
   ;; (org-wordjoin-mode 1)))
