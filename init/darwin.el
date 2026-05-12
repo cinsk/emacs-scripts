@@ -277,3 +277,7 @@ then try to use a word at point."
 (when (executable-find "gsed")
   ;; This should be set before loading man.el
   (setq Man-sed-command "gsed"))
+
+(when (executable-find "gman")
+  ;; This should be set before loading man.el
+  (setq manual-program "gman"))
