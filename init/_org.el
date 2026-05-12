@@ -118,6 +118,19 @@ For example, add following line in your org file:
       (format "http://man7.org/linux/man-pages/man%s/%s.%s.html"
               sect name sect))))
 
+
+(defun my-create-empty-files (files &optional directory)
+  "Create empty file(s) if not exists in DIRECTORY."
+  (if (stringp files)
+      (setq files (list files)))
+  (if (not (null directory))
+      (setq directory (file-name-as-directory directory)))
+  (dolist (f files)
+    (if (and (null (file-name-directory f))
+             (not (null directory)))
+        (setq f (concat directory f)))
+    (unless (file-exists-p f)
+      (make-empty-file f))))
 
 
 (defvar orglink/link-desc-alist
@@ -468,49 +481,6 @@ Finally, \"~/agenda\" will be used.")
                                        "\\.sync-conflict-.*\\.org$")
   "A list of regular expressions to exclude org files for `org-agenda-files'")
 
-(setq org-capture-templates
-      `(("w" "Work-related TODO" entry
-         (file+headline ,(path-join org-directory "work.org")
-                        "Tasks")
-         "* TODO %? %T\n  %i\n  %a")
-        ("f" "Finance Journal" entry
-         (file+headline ,(path-join org-directory "fjournal.org")
-                        "Journal")
-         "* %?%t\n  %i\n")
-        ("p" "Personal Project-related TODO" entry
-         (file+headline ,(path-join org-directory "pproject.org")
-                        "Tasks")
-         "* TODO %? %T\n  %i\n  %a")
-        ;; ("P" "Personal TODO" entry
-        ;;  (file+headline ,(path-join org-directory "personal.org")
-        ;;                 "Tasks")
-        ;;  "* TODO %? %T\n  %i\n  %a")
-        ("e" "Emacs Tips" entry
-         (file+headline ,(path-join user-emacs-directory "emacs-tips.org")
-                        "Tips")
-         "* TODO %? %T\n  %i\n  %a")
-        ("j" "Personal Journal (date based)" entry
-         (file+datetree ,(path-join org-directory "personal.org"))
-         "* %?\n  Entered on %U\n  %i\n  %a")))
-
-(defun cinsk/org-refresh-agenda-files (&optional directory)
-  "Refresh `org-agenda-files' to the ORG files in DIRECTORY.
-
-Filenames that matches Dropbox conflict will not be included"
-  (let ((dir (or directory org-directory)))
-    (when (file-accessible-directory-p dir)
-      (setq org-agenda-files
-            (let ((files (directory-files dir t
-                                          "\\`[^.#].*\\.org\\'"))
-                  (conflict-regexp
-                   "(.*?[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}).org$"))
-              (delete nil (mapcar
-                           (lambda (filename)
-                             (if (string-match conflict-regexp
-                                               filename)
-                                 nil
-                               filename)) files)))))))
-
 
 (defun my-org-agenda-files (&optional directory)
   "Return a list of .org files in DIRECTORY."
@@ -531,18 +501,6 @@ Filenames that matches Dropbox conflict will not be included"
                   (setq retval (cons (concat (file-name-as-directory dir) f)
                                      retval))))))))))
 
-(defun my-create-empty-files (files &optional directory)
-  "Create empty file(s) if not exists in DIRECTORY."
-  (if (stringp files)
-      (setq files (list files)))
-  (if (not (null directory))
-      (setq directory (file-name-as-directory directory)))
-  (dolist (f files)
-    (if (and (null (file-name-directory f))
-             (not (null directory)))
-        (setq f (concat directory f)))
-    (unless (file-exists-p f)
-      (make-empty-file f))))
 
 (defun my-init-org ()
   (let ((org-path (or (getenv "ORG_PATH")
@@ -588,6 +546,50 @@ Filenames that matches Dropbox conflict will not be included"
     (setq org-directory org-path)))
 
 (my-init-org)
+
+(setq org-capture-templates
+      `(("w" "Work-related TODO" entry
+         (file+headline ,(path-join org-directory "work.org")
+                        "Tasks")
+         "* TODO %? %T\n  %i\n  %a")
+        ("f" "Finance Journal" entry
+         (file+headline ,(path-join org-directory "fjournal.org")
+                        "Journal")
+         "* %?%t\n  %i\n")
+        ("p" "Personal Project-related TODO" entry
+         (file+headline ,(path-join org-directory "pproject.org")
+                        "Tasks")
+         "* TODO %? %T\n  %i\n  %a")
+        ;; ("P" "Personal TODO" entry
+        ;;  (file+headline ,(path-join org-directory "personal.org")
+        ;;                 "Tasks")
+        ;;  "* TODO %? %T\n  %i\n  %a")
+        ("e" "Emacs Tips" entry
+         (file+headline ,(path-join user-emacs-directory "emacs-tips.org")
+                        "Tips")
+         "* TODO %? %T\n  %i\n  %a")
+        ("j" "Personal Journal (date based)" entry
+         (file+datetree ,(path-join org-directory "personal.org"))
+         "* %?\n  Entered on %U\n  %i\n  %a")))
+
+(defun cinsk/org-refresh-agenda-files (&optional directory)
+  "Refresh `org-agenda-files' to the ORG files in DIRECTORY.
+
+Filenames that matches Dropbox conflict will not be included"
+  (let ((dir (or directory org-directory)))
+    (when (file-accessible-directory-p dir)
+      (setq org-agenda-files
+            (let ((files (directory-files dir t
+                                          "\\`[^.#].*\\.org\\'"))
+                  (conflict-regexp
+                   "(.*?[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}).org$"))
+              (delete nil (mapcar
+                           (lambda (filename)
+                             (if (string-match conflict-regexp
+                                               filename)
+                                 nil
+                               filename)) files)))))))
+
 
 (defvar org-table-convert-last-nrows    3
   "Default number of columns per row.  This is changed if user used
