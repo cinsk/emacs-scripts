@@ -34,6 +34,12 @@
 
     I'm using [[https://github.com/pyenv/pyenv][pyenv]] with =pyenv-mode.el=.  Before launching Python
     shell (=C-c !=), select the right Python version using =C-c C-p=.
+
+    For block indent, use =C-c <= or =C-c >= after marking the region.
+
+    For /pandas/, if you want to adjust the display width option
+    matched with the actual width of the inferior Python shell window,
+    use =C-c C-q=.
     
 * Version Control System support
 
@@ -91,6 +97,10 @@
     =C-x (= to start a macro, =C-x )= to end the recording, =C-x e= to replay.
     See [[info:Emacs#Keyboard Macros]]
 
+*** Rectangle Mark Mode
+    To select rectangular region, press =C-x SPC=.  Then you can do
+    =C-w= or =M-w= as usual.
+    
 *** Lisp Code in query
 
     When you do M-x replace-regexp, you could insert =\,(LISP...CODE)=.
@@ -112,6 +122,44 @@
     - =0 w= copy the absulte file name into the kill ring.
     - =% d= flag files for deletion with the regular expression
     - =% m= mark files with the regular expression
+
+    - =* c= change existing mark to another
+    - =M <DEL>= remove specific mark
+      
+    =dired-omit-mode= is turned on, which means uninteresting files
+    are not visible by default (e.g. backup files).  To make it
+    visible, press =C-x M-o= (toggle dired-omit-mode).  To mark
+    omitted files, press =* O=.
+
+*** Org mode
+    
+***** Insert Word Joiner or Zero-Width Space
+      To mark up word with Korean postposition, since it is attached
+      with the words, Org mark up will not detect them.  Insert
+      word-joiner character using =C-c C-;=.  If the text contains
+      quotation, and Emacs couldn't detect the text correctly, use
+      =​C-c C-'​= to insert zero-width space character.  Here's the
+      example where you need to insert the special character (marked
+      at =<!>=):
+    
+#+BEGIN_EXAMPLE
+      =foo=<!>는              # word-joiner
+      =<!>C-c C-'<!>=         # zero-width space
+#+END_EXAMPLE
+
+***** Agenda: Browse TODO items
+      Use =C-c a t=.
+
+***** Sync Agenda files
+      My org agenda files are stored in =~/agenda/=, which is synced with
+      other system via syncthing(1)
+
+***** Capture: journal
+      Save the TODO items or leave logs on capture files.   Use =​C-c "​=
+      on regular buffer, or =​C-c " "​= on org buffer.
+
+***** TODO Math
+      Look at the [[~/agenda/math.org][math.org]] for some examples.  (Use =C-c C-o= on the link.)
 
 * Features I added/modified
 *** remove all whitespaces
@@ -176,8 +224,15 @@
 (fontutil/remove-unavailable fontutil/default-fontconfig t)
 #+END_SRC
 
+*** man pages on MacOs (darwin)
+      
+    On Mac, =man(1)= does not support cached index which makes completion
+    on man pages extremely slow (e.g. in /helm/ or /ivy-mode/).
 
-
+    Installing =man-db= with Homebrew and updating the index via
+    =mandb(1)= will improve the performance.  However, it has too many
+    dependencies which makes me not comforable due to limited space on
+    my Mac.
 
 # Local Variables:
 # eval: (view-mode)
