@@ -29,11 +29,14 @@ SNAKE should be a string in absolute path."
          (width (window-body-width win))
          (header "
 if 'pd' in globals():
-  globals()['__EMACS_PD__'] = pd
-elif 'pandas' in globals():
-  globals()['__EMACS_PD__'] = pd
+  if hasattr(pd, 'DataFrame'):
+    globals()['__EMACS_PD__'] = pd
+  else:
+    import pandas
+    globals()['__EMACS_PD__'] = pandas
 else:
-  raise Exception('Pandas module not found')
+  import pandas as pd
+  globals()['__EMACS_PD__'] = pd
 ")
          (footer "del __EMACS_PD__\n")
          (code (format "pd.options.display.width = %d\n" width)))
