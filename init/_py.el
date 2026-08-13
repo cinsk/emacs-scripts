@@ -21,30 +21,6 @@ SNAKE should be a string in absolute path."
     (not (not (string-match-p (concat "^" (regexp-quote out))
                               snake)))))
 
-
-(defun pandas-set-display (&optional arg)
-  "Adjust the display configuration of Pandas module."
-  (interactive "P")
-  (let* ((win (selected-window))
-         (width (window-body-width win))
-         (header "
-if 'pd' in globals():
-  if hasattr(pd, 'DataFrame'):
-    globals()['__EMACS_PD__'] = pd
-  else:
-    import pandas
-    globals()['__EMACS_PD__'] = pandas
-else:
-  import pandas as pd
-  globals()['__EMACS_PD__'] = pd
-")
-         (footer "del __EMACS_PD__\n")
-         (code (format "pd.options.display.width = %d\n" width)))
-    (if arg
-        (setq code (concat code "__EMACS_PD__.options.display.max_columns = None\n__EMACS_PD__.options.display.max_rows = None\n")))
-    (python-shell-send-string (concat header code footer))))
-
-
 (with-eval-after-load "pyenv-mode"
   ;; pyenv uses "C-c C-s" for `pyenv-mode-set', which overlapped with
   ;; python.el's "C-c C-s", `python-shell-send-string'.
@@ -53,6 +29,16 @@ else:
 
 (when (pyenv-check-executable (executable-find "python"))
   (require 'pyenv-mode))
+
+(setq python-shell-setup-codes '("\
+import os
+_fname = os.path.expanduser('~/.emacs.d/init.py')
+if os.access(_fname, os.R_OK):
+  exec(open(_fname).read())
+  print(f'loaded: {_fname}')
+del _fname"))
+
+(require 'pandas)
 
 (with-eval-after-load "python"
   (add-to-list 'python-mode-hook 'pyenv-mode)
@@ -63,11 +49,14 @@ else:
   ;; By default, python.el set "C-c C-c" to python-shell-send-buffer,
   ;; which overlapped with my personal config. (comment-region).
   (define-key python-mode-map [(control ?c) (control ?c)] nil)
-  (define-key python-mode-map [(control ?c) (control ?b)] 'python-shell-send-buffer)
+  (define-key python-mode-map [(control ?c) (control ?b)] #'python-shell-send-buffer)
 
   ;; From Python 3.11, it supports terminal capability which is not
   ;; compatible with Emacs.  This forces Python to use legacy REPL, to
   ;; remove the 'pyrepl' warning.
   (setenv "PYTHON_BASIC_REPL" "1")
 
-  (define-key inferior-python-mode-map [(control ?c) (control ?q)] 'pandas-set-display))
+  (define-key inferior-python-mode-map [(control ?c) (control ?q)] #'pd-set-display)
+  (define-key inferior-python-mode-map [(control ?c) (control ?f) (control ?p)] #'pd-dataframe-from-clipboard)
+  (define-key inferior-python-mode-map [(control ?c) (control ?f) (control ?o)] #'pd-dataframe-from-orgtable)
+  )
