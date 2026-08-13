@@ -14,6 +14,10 @@
 (global-set-key [(control ?x) (control ?b)] 'ibuffer)
 (autoload 'ibuffer "ibuffer" "List buffers." t)
 
+;; I want ibuffer shows all buffer including internal one as I use
+;; ibuffer mostly for debugging.
+(setq ibuffer-maybe-show-predicates nil)
+
 (setq ibuffer-saved-filter-groups
       '(("default"
          ("dired" (mode . dired-mode))
@@ -33,9 +37,12 @@
                   (name . "\\`\\*Server\\*\\'")
                   (name . "\\`\\*Article .*\\*\\'")
                   (name . "\\`\\*Summary .*\\*\\'")))
-         ("internal" (or
+         ("private" (or
                       (name . "^TAGS$")
-                      (name . "^\\*.*\\*$"))))))
+                      (name . "^\\*.*\\*$")))
+         ("internal" (or
+                      (name . "^ .*$")))
+         )))
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()
