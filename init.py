@@ -3,7 +3,7 @@ from pprint import pprint as pp
 from importlib import reload
 
 def to_numeric(data, columns = None):
-    "Convert DataFrame values to numeric type.
+    """Convert DataFrame values to numeric type.
 
 It tries to remove any prefix or suffix of the string such as '$12,345' into '12345'.
 # Convert all string-typed columns into numeric columns
@@ -11,7 +11,7 @@ It tries to remove any prefix or suffix of the string such as '$12,345' into '12
 
 # convert value and price columns only
 >>> to_numeric(df, columns = ['value', 'price'])
-"
+"""
     if columns is None:
         columns = data.select_dtypes(include=['string']).columns
     data = data.copy()
@@ -26,11 +26,11 @@ It tries to remove any prefix or suffix of the string such as '$12,345' into '12
 
 
 def describe_columns(df, outliers=0.0, columns=None):
-    "Call describe() on columns after removing outliers
+    """Call describe() on columns after removing outliers
 
 # call describe() for values between 5% and 95% percentile.
 >>> describe_columns(df, outliers=0.05)
-"
+"""
     if columns is None:
         columns = df.columns
 
