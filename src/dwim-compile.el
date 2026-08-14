@@ -370,9 +370,9 @@ With two prefix arguments (C-u C-u), it will just call `compile' command."
   (when (and (eq system-type 'darwin)
              (executable-find "say"))
     (cond ((string/starts-with status "finished")
-           (shell-command "say -v Vicki done"))
+           (shell-command "say done"))
           (t
-           (shell-command "say -v Agnes oops")))))
+           (shell-command "say oops")))))
 
 (add-hook 'compilation-finish-functions 'compilation-finished-notification)
 
