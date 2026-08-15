@@ -231,3 +231,9 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (define-key geiser-mode-map [(control ?c) ?\!] 'geiser-mode-switch-to-repl)
   (cinsk/move-key geiser-mode-map [(control ?c) (control ?c)] [(control ?c) (control ?C)]))
 )
+
+(defun pop-to-scratch-buffer ()
+  (interactive)
+  (pop-to-buffer (get-buffer "*scratch*") nil 'norecord))
+
+(global-set-key [(control ?x) ?w ?s] #'pop-to-scratch-buffer)

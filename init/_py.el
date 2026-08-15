@@ -59,4 +59,6 @@ del _fname"))
   (define-key inferior-python-mode-map [(control ?c) (control ?q)] #'pd-set-display)
   (define-key inferior-python-mode-map [(control ?c) (control ?f) (control ?p)] #'pd-dataframe-from-clipboard)
   (define-key inferior-python-mode-map [(control ?c) (control ?f) (control ?o)] #'pd-dataframe-from-orgtable)
+
+  (global-set-key [(control ?x) ?w ?p] 'python-shell-switch-to-shell)
   )

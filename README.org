@@ -37,9 +37,17 @@
 
     For block indent, use =C-c <= or =C-c >= after marking the region.
 
-    For /pandas/, if you want to adjust the display width option
-    matched with the actual width of the inferior Python shell window,
-    use =C-c C-q=.
+***** Pandas
+
+      For /pandas/, if you want to adjust the display width option
+      matched with the actual width of the inferior Python shell
+      window, use =C-c C-q=.
+
+      Pressing =C-c C-f C-p= to parse the tabular data into DataFrame,
+      and evaulate in the inferior Python buffer.
+
+      =C-c C-f C-o= to parse the org table at the point, and evaluate
+      it.
     
 * Version Control System support
 
@@ -66,6 +74,13 @@
 
 #+BEGIN_SRC bash :results output verbatim
   find . -path "./elpa" -prune -o \( -name '*.el' -a -type f \) -print | xargs grep global-set-key
+#+END_SRC
+
+*** Window / Buffer navigation.
+
+#+BEGIN_SRC
+  C-x w p       switch to inferior Python interpreter (*Python*)
+  C-x w s       switch to *scratch* buffer
 #+END_SRC
 
 * Emacs features that I forgot frequently
