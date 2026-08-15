@@ -10,7 +10,7 @@
  "Like `with-temp-buffer`, but respects `*my-keep-temp-buffers*`."
   (declare (indent 0) (debug t))
   (let ((temp-buffer (gensym "temp-")))
-    `(let ((,temp-buffer (get-buffer-create ,pd-code-buffer)))
+    `(let ((,temp-buffer (get-buffer-create pd-code-buffer)))
        (with-current-buffer ,temp-buffer
          (erase-buffer)
          (unwind-protect
@@ -204,7 +204,13 @@ if '_PD' not in globals():
       (insert code))))
 
 (defun pd-set-display (&optional arg)
-  "Adjust the display configuration of Pandas module."
+  "Adjust the display configuration of Pandas module.
+
+Set pandas.option.display.width to the character width of the current window.
+Also set pandas.options.display.max_columns to None.
+
+If with a prefix arg, set mac_columns value to zero (autodetect),
+"
   (interactive "P")
   (let* ((win (selected-window))
          (width (window-body-width win)))

@@ -35,7 +35,7 @@
     `(let* ((,sname ,snippet)
             (,absname (if (file-name-absolute-p ,sname)
                           ,sname
-                       (concat (expand-file-name ,uinit/init-directory)
+                       (concat (expand-file-name uinit/init-directory)
                                "/" ,sname))))
        (unless (member ,absname uinit/loaded-init-files)
          (let ((pred (progn ,@body)))
@@ -51,6 +51,7 @@
 
 (defmacro uinit/require (feature &optional filename noerror)
   "If feature FEATURE is not loaded, load it from FILENAME."
+  (declare (indent 1) (debug t))
   (let ((absname (make-symbol "ABSNAME"))
         (began (make-symbol "BEGAN"))
         (place (make-symbol "PLACE"))

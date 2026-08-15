@@ -27,13 +27,19 @@ It compare the old value with OLD-VALUE using `equal' then
 set it to NEW-VALUE if the old value matched.
 If NOWARN is nil, and the old value is not matched with the
 supplied one, a warning message is generated."
-  `(progn
-     (if (equal ,symbol ,old-value)
-         (setq ,symbol ,new-value)
-       (if (not ,nowarn)
-           (progn (message "%s has unexpected value `%S'"
-                           (symbol-name ',symbol) ,symbol)
-                  ,old-value)))))
+  (declare (debug t))
+  (let ((old-val (gensym "old-val-"))
+        (new-val (gensym "new-val-"))
+        (warn-p (gensym "warn-p-")))
+    `(let ((,old-val ,old-value)
+           (,new-val ,new-value)
+           (,warn-p ,nowarn))
+       (if (equal ,symbol ,old-val)
+           (setq ,symbol ,new-val)
+         (unless ,warn-p
+           (message "%s has unexpected value `%S'"
+                    (symbol-name ',symbol) ,symbol)
+           ,old-val)))))
 
 
 (add-hook 'dired-mode-hook

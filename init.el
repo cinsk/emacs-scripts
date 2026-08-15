@@ -52,11 +52,16 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
 (defmacro save-font-excursion (face &rest body)
   "Save the :font property of given FACE during the execution of BODY."
   (declare (indent 1) (debug t))
-  `(let ((oldfont (face-attribute ,face :font)) ret)
-     (setq ret (progn ,@body))
-     (or (string= oldfont (face-attribute ,face :font))
-         (set-face-attribute ,face nil :font oldfont))
-     ret))
+  (let ((face-sym (gensym "face-"))
+        (oldfont (gensym "oldfont-"))
+        (ret (gensym "ret-")))
+    `(let* ((,face-sym ,face)
+            (,oldfont (face-attribute ,face-sym :font))
+            ,ret)
+       (setq ,ret (progn ,@body))
+       (or (string= ,oldfont (face-attribute ,face-sym :font))
+           (set-face-attribute ,face-sym nil :font ,oldfont))
+       ,ret)))
 
 (defmacro enable-minor-mode (major-mode-file major-mode-hook feature minor-mode &rest condition)
   "Enable MINOR-MODE on a major mode based on the CONDITION.
@@ -88,7 +93,8 @@ Examples:
        (add-to-list (quote ,major-mode-hook)
                     (lambda ()
                       (when ,(cond ((null condition) t)
-                                   ((and (eq (length condition) 1) (stringp (car condition))) `(string-match ,@condition (buffer-file-name nil)))
+                                   ((and (eq (length condition) 1) (stringp (car condition)))
+                                    `(and (buffer-file-name) (string-match ,@condition (buffer-file-name))))
                                    (t `(progn ,@condition)))
                         (,minor-mode)))))))
 

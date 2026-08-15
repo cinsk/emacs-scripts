@@ -28,11 +28,14 @@
 (defmacro a/with-current-environment (envname &rest body)
   "This may be not good idea..."
   (declare (indent 1) (debug t))
-  (let ((savedenv (gensym))
-        (savedret (gensym)))
-    `(let ((,savedenv (getenv ,envname)))
+  (let ((envname-sym (gensym "envname-"))
+        (savedenv (gensym "savedenv-"))
+        (savedret (gensym "savedret-")))
+    `(let* ((,envname-sym ,envname)
+            (,savedenv (getenv ,envname-sym))
+            ,savedret)
        (setq ,savedret (ignore-errors ,@body))
-       (setenv ,envname ,savedenv)
+       (setenv ,envname-sym ,savedenv)
        ,savedret)))
 
 
