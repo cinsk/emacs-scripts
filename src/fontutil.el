@@ -267,6 +267,41 @@ SPECS."
                  (hangul :family "Noto Sans Mono CJK KR" :size 24)
                  (symbol :family "Noto Sans Symbols" :size 18))))
 
+    (noto-14 . (((:family "Noto Sans Mono" :size 14)
+                 (symbol :family "Noto Sans Symbols" :size 16))))
+    (noto-16 . (((:family "Noto Sans Mono" :size 16)
+                 (symbol :family "Noto Sans Symbols" :size 16))))
+    (noto-18 . (((:family "Noto Sans Mono" :size 18)
+                 (symbol :family "Noto Sans Symbols" :size 18))))
+
+    ;; Ubuntu WSL
+    ;; Noto Latin from Google font
+    ;; Noto CJK from https://github.com/notofonts/noto-cjk/tree/main/Sans/Mono
+    (noto-14 . (((:family "NotoSansMono" :size 14 :weight normal)
+                 (hangul :family "NotoSansMonoCJKkr" :size 17 :wegiht normal)
+                 )))
+    (noto-16 . (((:family "NotoSansMono" :size 16 :weight normal)
+                 (hangul :family "NotoSansMonoCJKkr" :size 22 :wegiht normal))))
+    (noto-18 . (((:family "NotoSansMono" :size 18 :weight normal)
+                 (hangul :family "NotoSansMonoCJKkr" :size 24 :wegiht normal))))
+    (noto-20 . (((:family "NotoSansMono" :size 20 :weight normal)
+                 (hangul :family "NotoSansMonoCJKkr" :size 26 :wegiht normal))))
+
+    ;; Ubuntu WSL
+    ;; CascadiaCode: https://github.com/microsoft/cascadia-code/releases
+    (cascadia-14 . (((:family "CascadiaCode" :size 14)
+                  (hangul :family "NanumGothicCoding" :size 16)
+                  (symbol :family "Symbola" :size 20))))
+    (cascadia-16 . (((:family "CascadiaCode" :size 16)
+                  (hangul :family "NanumGothicCoding" :size 18)
+                  (symbol :family "Symbola" :size 20))))
+    (cascadia-18 . (((:family "CascadiaCode" :size 18)
+                  (hangul :family "NanumGothicCoding" :size 22)
+                  (symbol :family "Symbola" :size 20))))
+    (cascadia-20 . (((:family "CascadiaCode" :size 20)
+                  (hangul :family "NanumGothicCoding" :size 24)
+                  (symbol :family "Symbola" :size 20))))
+
     (firacode-14 . (((:family "Fira Code" :size 14)
                      (hangul :family "NanumGothicCoding" :size 16)
                      (symbol :family "Symbola" :size 20))))
