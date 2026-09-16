@@ -91,3 +91,12 @@
  helm-scroll-amount 8
 
  helm-ff-file-name-history-use-recentf t)
+
+
+;; base16-theme-3.2 causes helm's completing-read failed: stringp or
+;; nil I can't figure it out why it failed; it seems that
+;; `custom-available-themes' generate invalid value for the
+;; `completing-read', but when I tried manually, there is nothing
+;; wrong about it.  Since I don't call `load-theme' frequently, I'm
+;; removing it from the helm.
+(add-to-list 'helm-completing-read-handlers-alist '(load-theme . nil))

@@ -62,3 +62,6 @@ del _fname"))
 
   (global-set-key [(control ?x) ?w ?p] 'python-shell-switch-to-shell)
   )
+
+(use-package uv-mode
+  :hook (python-mode . uv-mode-auto-activate-hook))

@@ -164,7 +164,7 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
 
 
 (setq default-frame-alist (append default-frame-alist
-                                  '((width . 80) (height . 45)
+                                  '((width . 100) (height . 45)
                                     ;;(line-spacing . 2)
                                     (alpha . (100 . 90)))))
 

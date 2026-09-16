@@ -1,3 +1,7 @@
+#
+# This file is automatically evaluated whenever inferior Python interpreter is spawned.
+# See ./init/_py.el for more.
+#
 import pandas as pd
 from pprint import pprint as pp
 from importlib import reload
@@ -44,3 +48,40 @@ def describe_columns(df, outliers=0.0, columns=None):
             rs.append(df[c].describe())
     return pd.concat(rs, axis=1)
 
+def remove_outliers(df, outliers=0.0):
+    fs = []
+    for cn in df.columns:
+        f = df.loc[df[cn].between(df[cn].quantile(outliers),
+                                  df[cn].quantile(1.0 - outliers)), [cn]]
+        fs.append(f)
+    return pd.concat(fs, axis=1)
+        
+def plot_columns(df, outliers=0.0, title=None, ylabel=None):
+    import seaborn as sns
+    
+    sns.violinplot(data=df, inner=None, color="lightgray")
+
+    for i, c in enumerate(df.columns):
+        dc = df.loc[df[c].between(df[c].quantile(outliers),
+                                  df[c].quantile(1.0 - outliers)), [c]]
+        cmin = dc.min()
+        cmax = dc.max()
+        cavg = dc.mean()
+        cdev = dc.std()
+        # x-coordinate for the current violin column is i
+        # Mark Min and Max (Red triangles)
+        plt.scatter([i, i], [cmin, cmax], color='red', marker='^', zorder=3, label='Min/Max' if i == 0 else "")
+
+        # Mark Mean (Blue circle)
+        plt.scatter(i, cavg, color='blue', marker='o', s=50, zorder=3, label='Mean' if i == 0 else "")
+
+        # Mark Standard Deviation range (Green vertical line: Mean +/- 1 StdDev)
+        plt.vlines(i, cavg - cdev, cavg + cdev, color='green', linewidth=4, zorder=2, label='1 StdDev' if i == 0 else "")
+
+    if title:
+        plt.title(title)
+    if ylabel:
+        plt.ylabel(ylabel)
+
+    plt.legend(loc='lower left')
+    
