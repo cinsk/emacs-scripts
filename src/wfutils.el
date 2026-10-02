@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;;; wfutils.el --- Window/Frame convenience utility
 
 ;; Copyright (C) 2013  Seong-Kook Shin

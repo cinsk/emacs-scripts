@@ -1,4 +1,4 @@
-;; -*-emacs-lisp-*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 ;;;
 ;;; Configuration for cc-mode (i.e. C, C++, Objective-C, Java, Pike,

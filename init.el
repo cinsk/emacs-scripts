@@ -1,4 +1,4 @@
-;; -*-emacs-lisp-*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 ;;;
 ;;; Seong-Kook Shin's .emacs initialization file.
@@ -1166,6 +1166,7 @@ A prefix argument N is translated to <fn> key"
   (setq transient-default-level 6))
 
 (use-package joplin-mode
+  :ensure nil
   :load-path "~/src/joplin-mode"
   :requires markdown-mode
   :config

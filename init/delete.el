@@ -1,4 +1,4 @@
-;; -*-emacs-lisp-*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 ;;;
 ;;; text deleting-related configuration

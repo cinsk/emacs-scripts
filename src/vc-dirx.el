@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;;; vc-dirx.el ---
 
 ;; Copyright (C) 2015  Seong-Kook Shin

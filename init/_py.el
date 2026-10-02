@@ -1,4 +1,4 @@
-;; -*-emacs-lisp-*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 ;;;
 ;;; python mode configuration (python.el from vanilla Emacs)
@@ -64,4 +64,6 @@ del _fname"))
   )
 
 (use-package uv-mode
+  :ensure nil
+  :if (locate-library "uv-mode")
   :hook (python-mode . uv-mode-auto-activate-hook))

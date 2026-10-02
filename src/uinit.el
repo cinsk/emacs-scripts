@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 (defvar uinit/time-started (current-time)
   "The time that Emacs start to load init files")
 

@@ -1,4 +1,4 @@
-;; -*-emacs-lisp-*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 ;;;
 ;;; Dired and dired-x setting

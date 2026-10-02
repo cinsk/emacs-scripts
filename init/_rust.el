@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 
 (when (and (executable-find "racer")
            (locate-library "racer")

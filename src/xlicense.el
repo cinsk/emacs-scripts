@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;;; xlicense.el --- Insert a pre-defined license text
 
 ;; Copyright (C) 2010  Seong-Kook Shin

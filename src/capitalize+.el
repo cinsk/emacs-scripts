@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;;; capitalize+.el --- Capitalize current word with several strategies
 
 ;; Copyright (C) 2014  Seong-Kook Shin

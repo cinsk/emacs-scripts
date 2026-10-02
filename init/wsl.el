@@ -1,4 +1,4 @@
-;; -*-emacs-lisp-*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 ;;;
 ;;; WSL customization
@@ -134,3 +134,42 @@ can be used for `browse-url-browser-function'."
                   ;;("\\.e?ps\\.g?z\\'" "gunzip -qc * | open -a Preview -f")
                   ;;("\\.e?ps\\.Z\\'" "zcat * | open -a Preview -f")
                   ))))
+
+;; to interact clipboard of Windows
+(when nil
+  (setq select-active-regions nil
+        select-enable-clipboard 't
+        select-enable-primary nil
+        interprogram-cut-function #'gui-select-text)
+  )
+
+(when (and (getenv "WSL_DISTRO_NAME")
+           ;; (not (display-graphic-p))
+           )
+  (if (getenv "WAYLAND_DISPLAY")
+      ;; WSLg available: use wl-clipboard
+      (progn
+        (setq interprogram-cut-function
+              (lambda (text)
+                (let ((p (make-process :name "wl-copy" :buffer nil
+                                       :command '("wl-copy" "-n")
+                                       :connection-type 'pipe)))
+                  (process-send-string p text)
+                  (process-send-eof p))))
+        (setq interprogram-paste-function
+              (lambda ()
+                (let ((s (shell-command-to-string "wl-paste -n 2>/dev/null | tr -d '\\r'")))
+                  (unless (string-empty-p s) s)))))
+    ;; No WSLg: talk to Windows directly
+    (setq interprogram-cut-function
+          (lambda (text)
+            (let ((p (make-process :name "clip" :buffer nil
+                                   :command '("clip.exe")
+                                   :connection-type 'pipe)))
+              (process-send-string p text)
+              (process-send-eof p))))
+    (setq interprogram-paste-function
+          (lambda ()
+            (let ((s (shell-command-to-string
+                      "powershell.exe -NoProfile -Command Get-Clipboard 2>/dev/null | tr -d '\\r'")))
+              (unless (string-empty-p s) (string-trim-right s)))))))

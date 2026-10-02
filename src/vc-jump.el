@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;;; vc-jump.el --- jump to status buffer for the current VC
 
 ;; Copyright (C) 2011  Seong-Kook Shin
