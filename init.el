@@ -39,65 +39,6 @@
              (cdr args))
     path))
 
-(defmacro time-loop (n &rest body)
-  "Return time before and after N iteration of BODY.
-
-DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
-  (declare (indent 1) (debug t))
-  `(let ((t1 (current-time)))
-     (dotimes (i ,n)
-       ,@body)
-     (time-subtract (current-time) t1)))
-
-(defmacro save-font-excursion (face &rest body)
-  "Save the :font property of given FACE during the execution of BODY."
-  (declare (indent 1) (debug t))
-  (let ((face-sym (gensym "face-"))
-        (oldfont (gensym "oldfont-"))
-        (ret (gensym "ret-")))
-    `(let* ((,face-sym ,face)
-            (,oldfont (face-attribute ,face-sym :font))
-            ,ret)
-       (setq ,ret (progn ,@body))
-       (or (string= ,oldfont (face-attribute ,face-sym :font))
-           (set-face-attribute ,face-sym nil :font ,oldfont))
-       ,ret)))
-
-(defmacro enable-minor-mode (major-mode-file major-mode-hook feature minor-mode &rest condition)
-  "Enable MINOR-MODE on a major mode based on the CONDITION.
-
-This macro will register a function which enables MINOR-MODE
-based on CONDITION to the hook, MAJOR-MODE-HOOK.  Since
-MAJOR-MODE-HOOK might not available by the time this macro
-called, the whole code will be body of `with-eval-after-load'
-using MAJOR-MODE-FILE.
-
-If CONDITION is omitted, MODE will be enabled always. If
-CONDITION is a string, it will be treated as a regular expression
-pattern and if it matches to the buffer-file-name, MODE will be
-enabled.  Otherwise, CONDITION is treated as a form and MODE will
-be enabled if CONDITION evaluated as true.
-
-Examples:
-
-  (enable-minor-mode \"js2-mode\" js2-mode-hook skewer-mode skewer-mode)
-  (enable-minor-mode \"js2-mode\" js2-mode-hook skewer-mode skewer-mode \"/d3/.*\\\\.js\\\\'\")
-  (enable-minor-mode \"js2-mode\" js2-mode-hook skewer-mode skewer-mode
-  ;; ...
-  t)
-"
-  (declare (indent 4))
-  `(when (locate-library ,major-mode-file)
-     (with-eval-after-load ,major-mode-file
-       (require (quote ,feature))
-       (add-to-list (quote ,major-mode-hook)
-                    (lambda ()
-                      (when ,(cond ((null condition) t)
-                                   ((and (eq (length condition) 1) (stringp (car condition)))
-                                    `(and (buffer-file-name) (string-match ,@condition (buffer-file-name))))
-                                   (t `(progn ,@condition)))
-                        (,minor-mode)))))))
-
 
 
 (when (string-equal (getenv "SHELL") "/bin/false")
@@ -184,12 +125,8 @@ Examples:
 ;;(unless (locate-library "s")
 ;;  (package-install 's))
 
-;;(add-to-list 'load-path (expand-file-name "~/.emacs.d/skewer-mode"))
-;;(require 'skewer-mode)
-
-
 ;; I will install packages that is not managed by packages.el in
-;; "$HOME/.emacs.d/site-lisp".
+;; "$HOME/.emacs.d/local".
 ;;
 ;; Note that packages in this directory has higher priority than others.
 (defvar user-custom-packages-directory
@@ -208,12 +145,14 @@ Examples:
   (add-to-list 'load-path srcpath)
   )
 
-(setq uinit/init-directory "~/.emacs.d/init"
-      uinit/use-byte-compile nil)
+(setq uinit-init-directory "~/.emacs.d/init"
+      uinit-byte-compile-on-load nil)
 
 ;; (byte-recompile-directory package-user-dir nil 'force)
 
 (require 'uinit)
+
+(use-package enable-mmode)
 
 (use-package cinsk-common
   :config
@@ -268,28 +207,26 @@ Examples:
            (string-match "[mM]icrosoft" system-uname))
       t))
 
-(uinit/load "wsl"
-  (wsl-p))
+(uinit "wsl" :when (wsl-p))
 
 (when (eq system-type 'darwin)
   (use-package exec-path-from-shell
     :config
     (exec-path-from-shell-initialize))
-  (uinit/load "darwin" 'darwin))
+  (uinit "darwin" :when 'darwin))
 
 
-(uinit/load "X"
-  (eq window-system 'x))
+(uinit "X" :when (eq window-system 'x))
 
 
 
-(uinit/load "_ediff"
+(uinit "_ediff"
   ;; Note that some external packages loads 'ediff by themselves, such
   ;; as magit and color-theme.  Since
   ;; `ediff-make-wide-display-function' should be set before loading
   ;; `ediff, ediff customization should be placed in the first
   ;; place. -- cinsk
-  'ediff)
+  :when 'ediff)
 
 
 (use-package fontutil
@@ -325,8 +262,7 @@ Examples:
 
 
 
-(uinit/load "_cc-mode"
-  'cc-mode)
+(uinit "_cc-mode" :when 'cc-mode)
 
 
 
@@ -343,8 +279,7 @@ Examples:
   (tool-bar-mode -1)                   ; -1 to hide, 1 to show
   )
 
-(uinit/load "korean"
-  enable-multibyte-characters)
+(uinit "korean" :when enable-multibyte-characters)
 
 
 ;;;
@@ -375,11 +310,9 @@ Examples:
 
 
 
-(uinit/load "_shell"
-  'shell)
+(uinit "_shell" :when 'shell)
 
-(uinit/load "buffer-menu"
-  'buffer-menu)
+(uinit "buffer-menu" :when 'buffer-menu)
 
 
 ;;; When a user paste clipboard content in Emacs using mouse button 2,
@@ -390,7 +323,7 @@ Examples:
 ;; browse-kill-ring: interactive kill-ring navigation
 ;; disabled in favor of `helm-show-kill-ring'
 ;;
-;; (when (uinit/require 'browse-kill-ring)
+;; (when (uinit-require 'browse-kill-ring)
 ;;   (when (fboundp 'browse-kill-ring)
 ;;     (global-set-key [(control ?c) (control ?k)] 'browse-kill-ring)))
 
@@ -403,8 +336,7 @@ Examples:
 ;;(global-set-key [C-h] 'backward-delete-char)
 
 (global-set-key "\C-cc" 'compile)
-(when (uinit/require 'dwim-compile)
-  (require 'dwim-compile)
+(when (uinit-require 'dwim-compile nil 'noerror)
   (global-set-key [(control ?c) ?c] 'dwim-c/compile))
 
 
@@ -511,7 +443,7 @@ Examples:
 ;; 'icomplete-mode.
 ;(icomplete-mode 1)
 ;(with-eval-after-load "icomplete"
-;  (uinit/require 'icomplete+ nil 'noerror))
+;  (uinit-require 'icomplete+ nil 'noerror))
 
 (when (> emacs-major-version 23)
   ;; diable completion cycling
@@ -521,7 +453,7 @@ Examples:
 ;; `helm-find-files', sometimes it freezes.  I believe this is related
 ;; to the garbage collection. See the comment in the beginning of the
 ;; file for `garbage-collection-messages'.
-(uinit/load "_helm" (locate-library "helm"))
+(uinit "_helm" :when (locate-library "helm"))
 
 
 
@@ -562,8 +494,7 @@ Examples:
   (add-hook 'before-save-hook 'untabify-remove-trailing-spaces-on-write))
 
 
-(uinit/load "delete"
-  'delete)
+(uinit "delete" :when 'delete)
 
 ;;;
 ;;; Colors
@@ -643,8 +574,7 @@ instead of the next window."
 
 
 
-(uinit/load "window-frame"
-                    'window-frame)
+(uinit "window-frame" :when 'window-frame)
 
 ;;;
 ;;; Markdown mode
@@ -675,8 +605,7 @@ instead of the next window."
       (add-hook 'find-file-hook 'vim-modeline/do))))
 
 
-(uinit/load "vcs"
-  'version-control-system)
+(uinit "vcs" :when 'version-control-system)
 
 
 (use-package cmake-mode
@@ -720,33 +649,30 @@ instead of the next window."
   )
 
 
-(uinit/load "_paren.el" (or (locate-library "paredit")
-                            (locate-library "smartparens")))
+(uinit "_paren.el" :when (or (locate-library "paredit")
+                             (locate-library "smartparens")))
 
-(uinit/load "lisp"
-  'lisp)
+(uinit "lisp" :when 'lisp)
 
-(uinit/load "_clojure"
-  (and (locate-library "clojure-mode") (locate-library "cider-mode")))
+(uinit "_clojure"
+  :when (and (locate-library "clojure-mode") (locate-library "cider-mode")))
 
 
-(uinit/load "_latex"
-  'latex-mode)
+(uinit "_latex" :when 'latex-mode)
 
 
 
-(uinit/load "_mmm" 'deferred)
+(uinit "_mmm" :when 'deferred)
 
 
 
-(uinit/load "_nxml"
-  (or (locate-library "nxml-mode")
-      ;; For legacy nxml-mode which does not use `provide' for nxml-mode.
-      (locate-library "rng-auto")))
+(uinit "_nxml"
+  :when (or (locate-library "nxml-mode")
+            ;; For legacy nxml-mode which does not use `provide' for nxml-mode.
+            (locate-library "rng-auto")))
 
 
-(uinit/load "_dired"
-  'dired)
+(uinit "_dired" :when 'dired)
 
 (global-set-key [(meta ?F) ?d return] 'find-dired)
 (global-set-key [(meta ?F) ?g ?d] 'find-grep-dired)
@@ -782,7 +708,7 @@ instead of the next window."
 ;;(split-window-horizontally)
 
 
-;;(uinit/load "mail" 'mail-news-gnus)
+;;(uinit "mail" :when 'mail-news-gnus)
 ;;(file-exists-p "~/.authinfo.gpg")
 
 (setq send-mail-function 'smtpmail-send-it
@@ -862,7 +788,15 @@ instead of the next window."
   :requires amz-common)
 
 
-(uinit/load "_org" (locate-library "org"))
+(uinit "_org" :when (locate-library "org"))
+
+(use-package org-bookmarks
+  :ensure nil
+  :if (locate-library "org-bookmarks")
+  :custom ((org-bookmarks-file "~/agenda/bookmarks.org")
+           (org-bookmarks-add-org-capture-template t))
+  :commands (org-bookmarks)
+  :init (org-bookmarks-add-org-capture-template))
 
 
 ;;;
@@ -894,27 +828,27 @@ instead of the next window."
 ;; Try to complete the thing at point if the current line is already indented.
 (setq tab-always-indent 'complete)
 
-(uinit/load "ruby"
-  (locate-library "ruby-mode"))
+(uinit "ruby" :when (locate-library "ruby-mode"))
 
 (if (locate-library "python-mode")
     ;; remember that Aquamacs provides its own version of python-mode
     ;; which may not the one you're looking for.
-    (uinit/load "_python" t)
-  (uinit/load "_py" t))
+    (uinit "_python" :when t)
+  (uinit "_py" :when t))
 
 
-(uinit/load "_js" 'js)
+;;(add-to-list 'load-path (expand-file-name "~/.emacs.d/skewer-mode"))
+;;(require 'skewer-mode)
+
+(uinit "_js" :when 'js)
 
 
-(uinit/load "_rust"
-  (locate-library "rust-mode"))
+(uinit "_rust" :when (locate-library "rust-mode"))
 
 
-(uinit/load "maven" 'maven)
+(uinit "maven" :when 'maven)
 
-(uinit/load "_browse-url"
-  (locate-library "browse-url"))
+(uinit "_browse-url" :when (locate-library "browse-url"))
 
 
 ;;;
@@ -931,7 +865,7 @@ instead of the next window."
 ;;;
 ;;; go lang
 ;;;
-(uinit/load "_go" (locate-library "go-mode"))
+(uinit "_go" :when (locate-library "go-mode"))
 
 (unless (locate-library "go-mode")
   (let* ((godir "/usr/local/go")
@@ -946,10 +880,11 @@ instead of the next window."
 ;;;
 ;;; lua
 ;;;
-(uinit/load "_lua"
-  (when (locate-library "lua-mode")
-    (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
-    (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode))))
+(uinit "_lua"
+  :when (locate-library "lua-mode")
+  :init
+  (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
+  (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode)))
 
 
 ;;;
@@ -1014,19 +949,17 @@ in any of directory in `yas-snippet-dirs'."
   )
 
 
-(uinit/load "scala" t)
+(uinit "scala" :when t)
 
 
 
 ;;;
 ;;; ESS(Emacs Speaks Statistics) setting for R.
 ;;;
-(uinit/load "_ess"
-  (locate-library "ess-site"))
+(uinit "_ess" :when (locate-library "ess-site"))
 
 
-(uinit/load "_sunrise"
-  (locate-library "sunrise-commander"))
+(uinit "_sunrise" :when (locate-library "sunrise-commander"))
 
 
 ;;; To save & load Emacs session, following lines should be the last
@@ -1064,15 +997,14 @@ in any of directory in `yas-snippet-dirs'."
 (global-set-key [f10] 'calc)
 (global-set-key [(control f10)] 'quick-calc-dwim)
 
-(defun quick-calc-dwim (arg)
+(defun quick-calc-dwim (&optional arg)
   "Call `calc-eval-region' if there is active region, otherwise
 call `quick-calc'"
   (interactive "P")
-  (let ((prefix (prefix-numeric-value arg)))
-    (let ((current-prefix-arg prefix))
-      (if (use-region-p)
-          (call-interactively 'calc-eval-region)
-        (call-interactively 'quick-calc)))))
+  (let ((current-prefix-arg arg))
+    (if (use-region-p)
+        (call-interactively 'calc-eval-region)
+      (call-interactively 'quick-calc))))
 
 (defun calc-eval-region (arg beg end)
   "Calculate the region and display the result in the echo area.
@@ -1104,7 +1036,7 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
 ;; (let ((dir (expand-file-name "~/.emacs.d/emacs-gradle-mode")))
 ;;   (when (file-exists-p dir)
 ;;     (add-to-list 'load-path dir))
-;;   (uinit/require 'gradle-mode))
+;;   (uinit-require 'gradle-mode))
 
 
 
@@ -1162,7 +1094,8 @@ A prefix argument N is translated to <fn> key"
   (global-unset-key (kbd "M-[")))
 
 
-(uinit/summarize)
+;; Run `M-x uinit-report' (or see `emacs-init-time') for a breakdown
+;; of what got loaded above and how long it took.
 
 
 ;;
@@ -1187,7 +1120,6 @@ A prefix argument N is translated to <fn> key"
   (setq transient-default-level 6))
 
 (use-package joplin-mode
-  :ensure nil
   :load-path "~/src/joplin-mode"
   :requires markdown-mode
   :config
@@ -1198,6 +1130,32 @@ A prefix argument N is translated to <fn> key"
                                    (concat "http://" endp))
             joplin-url-proxy (list (cons "http" endp)))))
   (add-to-list 'markdown-mode-hook 'joplin-note-mode))
+
+;; install required inheritenv dependency:
+(use-package inheritenv
+  :vc (:url "https://github.com/purcell/inheritenv" :rev :newest))
+
+;; for eat terminal backend:
+(use-package eat :ensure t)
+
+;; install claude-code.el
+(use-package claude-code :ensure t
+  :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
+  :config
+  ;; optional IDE integration with Monet
+  (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
+  (monet-mode 1)
+
+  (claude-code-mode)
+  :bind-keymap ("C-c ;" . claude-code-command-map)
+
+  ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
+  :bind
+  (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
+
+(use-package base16-theme
+  :config
+  (load-theme 'base16-gruvbox-light-hard t))
 
 ;;; Local Variables:
 ;;; coding: utf-8

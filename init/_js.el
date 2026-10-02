@@ -46,8 +46,10 @@
     (define-key js-mode-map [(control ?c) (control ?b)] 'js-send-buffer-and-go)))
 
 
-(enable-minor-mode "js2-mode" js2-mode-hook skewer-mode skewer-mode
-  (string-prefix-p (expand-file-name "~/src/js/d3/") buffer-file-name))
+(enable-minor-mode skewer-mode
+  :major-mode js2-mode
+  :when (and buffer-file-name
+             (string-prefix-p (expand-file-name "~/src/js/d3/") buffer-file-name)))
 
 
 (with-eval-after-load "skewer-mode"
