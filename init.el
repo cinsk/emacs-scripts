@@ -599,8 +599,29 @@ Examples:
 ;;(global-set-key [up]   '(lambda () (interactive) (scroll-down 1)))
 ;;(global-set-key [down] '(lambda () (interactive) (scroll-up 1)))
 
-(fset 'scroll-other-frame "\C-xo\C-v\C-xo")      ; C-x o C-v C-x o
-(fset 'scroll-other-frame-down "\C-xo\366\C-xo") ; C-x o M-v C-x o
+(defun scroll-other-frame (&optional arg)
+  "Scroll the selected window in the next frame.
+Analogous to `scroll-other-window', but targets the next frame instead
+of the next window."
+  (interactive "P")
+  (let* ((target-frame (next-frame))
+         (target-window (frame-selected-window target-frame)))
+    (if (window-live-p target-window)
+        (with-selected-window target-window
+          (scroll-up arg))
+      (user-error "No valid window found in the next frame"))))
+
+(defun scroll-other-frame-down (&optional arg)
+  "Scroll the selected window in the next frame downwards.
+Analogous to `scroll-other-window-down', but targets the next frame
+instead of the next window."
+  (interactive "P")
+  (let* ((target-frame (next-frame))
+         (target-window (frame-selected-window target-frame)))
+    (if (window-live-p target-window)
+        (with-selected-window target-window
+          (scroll-down arg))
+      (user-error "No valid window found in the next frame"))))
 
 (global-set-key [(meta shift prior)] 'scroll-other-frame-down)
 (global-set-key [(meta shift next)] 'scroll-other-frame)
