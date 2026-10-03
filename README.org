@@ -176,6 +176,36 @@
 ***** TODO Math
       Look at the [[~/agenda/math.org][math.org]] for some examples.  (Use =C-c C-o= on the link.)
 
+*** Calc
+
+    =s t=  Assign top-most value to a variable and pop it.
+    =s s=  Assign top-most value to a variable
+
+***** Formula and Variables
+
+#+BEGIN_EXAMPLE
+'(F - 32) * 5 / 9
+<RET>                        # duplicate the top-most item
+100 <RET>
+s t F                        # store 100 into a variable F
+=                            # evaulate
+<TAB>                        # exchange top two items
+<RET>                        # duplicate
+80 <RET>
+s t F
+=
+<TAB>
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+'C * 9 / 5 + 32 = F
+<RET>
+'[0, 20, 35, 100]
+s t C
+=
+v u                          # vector to values
+#+END_EXAMPLE
+
 * Features I added/modified
 *** remove all whitespaces
     zap-to-nonspace, [[file:init/delete.el::delete-chars-forward-with-syntax][delete-chars-forward-with-syntax]] can delete
