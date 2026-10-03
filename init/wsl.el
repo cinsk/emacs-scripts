@@ -143,21 +143,20 @@ can be used for `browse-url-browser-function'."
         interprogram-cut-function #'gui-select-text)
   )
 
-(when (and (getenv "WSL_DISTRO_NAME")
-           ;; (not (display-graphic-p))
-           )
+(when (getenv "WSL_DISTRO_NAME")
   (if (getenv "WAYLAND_DISPLAY")
       ;; WSLg available: use wl-clipboard
       (progn
         (setq interprogram-cut-function
               (lambda (text)
                 (let ((p (make-process :name "wl-copy" :buffer nil
-                                       :command '("wl-copy" "-n")
+                                       :command '("wl-copy")   ; no -n here
                                        :connection-type 'pipe)))
                   (process-send-string p text)
                   (process-send-eof p))))
         (setq interprogram-paste-function
               (lambda ()
+                ;; -n here is right: it only suppresses wl-paste's own added newline
                 (let ((s (shell-command-to-string "wl-paste -n 2>/dev/null | tr -d '\\r'")))
                   (unless (string-empty-p s) s)))))
     ;; No WSLg: talk to Windows directly
@@ -171,5 +170,7 @@ can be used for `browse-url-browser-function'."
     (setq interprogram-paste-function
           (lambda ()
             (let ((s (shell-command-to-string
-                      "powershell.exe -NoProfile -Command Get-Clipboard 2>/dev/null | tr -d '\\r'")))
-              (unless (string-empty-p s) (string-trim-right s)))))))
+                      "powershell.exe -NoProfile -Command Get-Clipboard -Raw 2>/dev/null | tr -d '\\r'")))
+              ;; PowerShell appends exactly one newline; remove just that one
+              (setq s (string-remove-suffix "\n" s))
+              (unless (string-empty-p s) s))))))
