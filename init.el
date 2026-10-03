@@ -837,9 +837,6 @@ instead of the next window."
   (uinit "_py" :when t))
 
 
-;;(add-to-list 'load-path (expand-file-name "~/.emacs.d/skewer-mode"))
-;;(require 'skewer-mode)
-
 (uinit "_js" :when 'js)
 
 
