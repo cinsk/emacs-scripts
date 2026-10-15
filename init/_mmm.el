@@ -4,7 +4,7 @@
 ;;; MMM mode configuration
 ;;;
 (let ((mmm-dir (expand-file-name
-                (path-join user-emacs-directory "mmm-mode"))))
+                (file-name-concat user-emacs-directory "mmm-mode"))))
   ;; If MMM mode is installed in $HOME/.emacs.d/mmm-mode/
   (when (file-accessible-directory-p mmm-dir)
     (add-to-list 'load-path mmm-dir)

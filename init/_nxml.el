@@ -107,13 +107,13 @@
     ;;
     ;; html5 related setting
     ;;
-    (let ((html5-el (expand-file-name (path-join user-emacs-directory
+    (let ((html5-el (expand-file-name (file-name-concat user-emacs-directory
                                                  "html5-el")))
-          (schema (expand-file-name (path-join user-emacs-directory
+          (schema (expand-file-name (file-name-concat user-emacs-directory
                                                "schema/relaxng/xhtml5.rnc")))
-          (schema-file (expand-file-name (path-join user-emacs-directory
+          (schema-file (expand-file-name (file-name-concat user-emacs-directory
                                                     "schema/schemas-html5.xml")))
-          (oldschema-file (expand-file-name (path-join user-emacs-directory
+          (oldschema-file (expand-file-name (file-name-concat user-emacs-directory
                                                        "schema/schemas.xml"))))
 
       (when (locate-library "rng-loc")
@@ -140,7 +140,7 @@
           (add-to-list 'rng-schema-locating-files "schemas.xml"))))
 
     ;; Adding .emacs.d/schema/schemas.xml for schema searching path
-    (let ((schema-file (expand-file-name (path-join user-emacs-directory
+    (let ((schema-file (expand-file-name (file-name-concat user-emacs-directory
                                                     "schema/schemas.xml"))))
       (when (and (file-readable-p schema-file)
                  (not (member schema-file rng-schema-locating-files)))

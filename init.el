@@ -16,30 +16,43 @@
 ;;; The default value of `gc-cons-threshold' is set to 800000 on
 ;;; 64-bit system.
 
+;;; ==================================================================
+;;; Base Initialization Configuration (directories, mandatory packages)
+;;; ==================================================================
+
 (defvar cinsk/gc-cons-threshold (* 10 gc-cons-threshold))
 (setq gc-cons-threshold cinsk/gc-cons-threshold)
 ;;(setq garbage-collection-messages t)
 
-;;;
+
+(defun system--uname ()
+  "Return system information."
+  (let ((cmd (cond ((or (eq system-type 'gnu/linux)
+                        (eq system-type 'darwin))
+                    "uname -a")
+                   ((eq system-type 'windows-nt)
+                    "ver")
+                   (t
+                    nil))))
+    (if cmd
+        (string-trim (shell-command-to-string cmd))
+      "")))
+
+(defvar system-uname (system--uname)
+  "system information")
+
+(defun wsl-p ()
+  (if (and (eq system-type 'gnu/linux)
+           (string-match "[mM]icrosoft" system-uname))
+      t))
+
 ;;; Load custom configuration -- Emacs's customizable variables will
 ;;; update this file if `custom-file' is nil which is not preferrable.
 (setq custom-file "~/.emacs.d/my-custom.el")
 (when (file-readable-p custom-file)
   (load custom-file))
 
-;;;
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
-;;;
-
-(defun path-join (path &rest args)
-  "Join all parameters to build a pathname."
-  (if args
-      (apply 'path-join
-             (concat (file-name-as-directory path) (car args))
-             (cdr args))
-    path))
-
-
 
 (when (string-equal (getenv "SHELL") "/bin/false")
   ;; "$SHELL" is set to "/bin/false" in darwin under Amazon User
@@ -63,13 +76,11 @@
 
 
 
-;;;
-;;; package
-;;;
+;;; ---- package system initialization ----
 
 ;;;
-;;; Whenever major upgrade for Emacs, try to execute below sexp to recompile
-;;; everything in elpa/ directory.
+;;; Whenever major upgrade for Emacs, try to execute below sexp to
+;;; recompile everything in elpa/ directory.
 ;;;
 ;;;   (byte-recompile-directory package-user-dir nil 'force)
 ;;;
@@ -86,7 +97,7 @@
   ;;    (url-copy-file "https://www.google.com/" "google.txt")
   (add-to-list 'tls-program "gnutls-cli -p %p %h"))
 
-(let ((pkgdir (path-join user-emacs-directory "package")))
+(let ((pkgdir (file-name-concat user-emacs-directory "package")))
   ;; PKGDIR will contains the last emacs-23 compatible package.el from
   ;; https://github.com/technomancy/package.el
   (when (and (file-readable-p pkgdir)
@@ -130,18 +141,11 @@
 ;;
 ;; Note that packages in this directory has higher priority than others.
 (defvar user-custom-packages-directory
-  (path-join user-emacs-directory "local")
+  (file-name-concat user-emacs-directory "local")
   "Manually installed packages are in this directory")
 
-
-;;
-;; No bell (beep)
-;;
-(setq ring-bell-function 'ignore)
 
-
-
-(let ((srcpath (expand-file-name (path-join user-emacs-directory "src"))))
+(let ((srcpath (expand-file-name (file-name-concat user-emacs-directory "src"))))
   (add-to-list 'load-path srcpath)
   )
 
@@ -154,6 +158,11 @@
 
 (use-package enable-mmode)
 
+
+;;; ==================================================================
+;;; Packages Configuration
+;;; ==================================================================
+
 (use-package cinsk-common
   :config
   (global-set-key [(control ?c) ?n] #'cinsk/line-numbers-on-region)
@@ -162,12 +171,6 @@
   ;;(cinsk/add-site-lisp-directories "/usr/local/share/emacs/site-lisp")
   ;;(cinsk/add-site-lisp-directories user-custom-packages-directory)
   )
-
-
-
-
-(when (file-directory-p "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp")
-  (add-to-list 'load-path "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp"))
 
 (use-package amz-common
   :disabled
@@ -179,44 +182,179 @@
           c-default-style (delq (assoc 'c-mode c-default-style)
                                 c-default-style))))
 
-
+(use-package amazon-util
+  :disabled
+  :requires amz-common)
+
+(when (file-directory-p "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp")
+  (add-to-list 'load-path "/apollo/env/EmacsAmazonLibs/share/emacs/site-lisp"))
+
+
 (use-package capitalize+
   :config
   (substitute-key-definition 'capitalize-word 'capitalize-word+
                              (current-global-map)))
 
+(use-package fontutil
+  :config
+  ;; FYI, changing UI components (fonts, colors), place the config in postinit.el
+  (fontutil/install-mouse-wheel))
+
+(use-package xskel)
+
+(use-package hippie-exp
+  ;; Use hippie expansion for dynamic abbreviation
+  :config
+  (global-set-key [(meta ?/)] 'hippie-expand)
+  (setq hippie-expand-try-functions-list
+        '(try-complete-file-name-partially
+          try-complete-file-name
+          try-expand-all-abbrevs
+          try-expand-line
+          try-expand-dabbrev
+          try-expand-dabbrev-all-buffers
+          try-expand-dabbrev-from-kill
+          try-expand-list
+          try-complete-lisp-symbol-partially
+          try-complete-lisp-symbol)))
+
+
+(use-package untabify
+  :config
+  (setq-default indent-tabs-mode nil)     ; do not insert tab character.
+  (add-hook 'before-save-hook 'untabify-remove-trailing-spaces-on-write))
+
+
+;;;
+;;; Markdown mode
+;;;
+(use-package markdown-mode
+  :config
+  (add-to-list 'markdown-css-paths
+               "http://thomasf.github.io/solarized-css/solarized-light.min.css")
+  ;; On Emacs 27.1, if a displayed image is too tall, it prevent Emacs
+  ;; scroll up/down.
+  (when (or (memq 'scale (image-transforms-p))
+            (image-type-available-p 'imagemagick))
+    (let ((h (* 20 (line-pixel-height)))
+          (w (floor (* (frame-inner-width) 0.7))))
+      (and (<= h 0) (setq h 400))
+      (and (<= w 0) (setq w 400))
+      (setq markdown-max-image-size (cons w h)))))
+
+(use-package cmake-mode
+  :disabled
+  :config
+  (setq auto-mode-alist
+        (append '(("CMakeLists\\.txt\\'" . cmake-mode)
+                  ("\\.cmake\\'" . cmake-mode))
+                auto-mode-alist)))
+
+(use-package winner
+  ;; A history manager for window configuration.
+  :config
+  ;; `C-c left' for undo, `C-c right' for redo
+  (winner-mode 1))
+
+(use-package windmove
+  :disabled
+  :config
+  ;; Select a window by pressing arrow keys.
+  ;; The default modifier is 'shift which is not suitable for me since
+  ;; I use `shift-left' and `shift-right' bindings in org-mode.
+  ;;
+  ;; Since my keyboard (HHK) has separate Alt key (apart from Meta
+  ;; key), I use the 'alt instead of 'shift -- cinsk
+  (windmove-default-keybindings 'alt))
+
+;;;
+;;; YAML mode
+;;;
+(use-package yaml-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode)))
+
+;;;
+;;; CSS mode
+;;;
+(use-package css-mode
+  :mode "\\.css\\'"
+  :config
+  (setq cssm-indent-function #'cssm-c-style-indenter))
+
+;;;
+;;; htmlize
+;;;
+(use-package htmlize
+  :disabled
+  :config
+  (setq htmlize-convert-nonascii-to-entities nil))
+
+
+(use-package org-bookmarks
+  :ensure nil
+  :if (locate-library "org-bookmarks")
+  :custom ((org-bookmarks-file "~/agenda/bookmarks.org")
+           (org-bookmarks-add-org-capture-template t))
+  :commands (org-bookmarks)
+  :init (org-bookmarks-add-org-capture-template))
+
+;;;
+;;; gnuplot
+;;;
+(use-package gnuplot
+  :if (locate-library "gnuplot")
+  :commands (gnuplot-mode gnuplot-make-buffer)
+  :mode ("\\.gp\\'" . gnuplot-mode))
+
+
 
-(defun system--uname ()
-  "Return system information."
-  (let ((cmd (cond ((or (eq system-type 'gnu/linux)
-                        (eq system-type 'darwin))
-                    "uname -a")
-                   ((eq system-type 'windows-nt)
-                    "ver")
-                   (t
-                    nil))))
-    (if cmd
-        (string-trim (shell-command-to-string cmd))
-      "")))
+;;;
+;;; go lang
+;;;
+(uinit "_go" :when (locate-library "go-mode"))
 
-(defvar system-uname (system--uname)
-  "system information")
+(use-package go-mode
+  :if (locate-library "go-mode")
+  :mode "\\.go\\'")
 
-(defun wsl-p ()
-  (if (and (eq system-type 'gnu/linux)
-           (string-match "[mM]icrosoft" system-uname))
-      t))
 
-(uinit "wsl" :when (wsl-p))
+;;;
+;;; YASnippet -- http://code.google.com/p/yasnippet/
+;;;
+(use-package yasnippet
+  :ensure t
+  :hook (after-init . yas-global-mode)
+  :bind ("C-x C-/" . yas-insert-snippet)
+  :mode ("/\\.emacs\\.d/snippets/.*/[^./][^/]*\\'" . snippet-mode)
+  :custom
+  (yas-snippet-dirs '("~/.emacs.d/snippets"))
+  (yas-prompt-functions '(yas-completing-prompt
+                          yas-dropdown-prompt
+                          yas-no-prompt)))
 
-(when (eq system-type 'darwin)
-  (use-package exec-path-from-shell
-    :config
-    (exec-path-from-shell-initialize))
-  (uinit "darwin" :when 'darwin))
+(use-package joplin-mode
+  :load-path "~/src/joplin-mode"
+  :requires markdown-mode
+  :config
+  (when (wsl-p)
+    (let* ((hostip (wsl-host-address))
+           (endp (concat hostip ":8080")))
+      (setq joplin-curl-args (list "--proxy"
+                                   (concat "http://" endp))
+            joplin-url-proxy (list (cons "http" endp)))))
+  (add-to-list 'markdown-mode-hook 'joplin-note-mode))
 
 
-(uinit "X" :when (eq window-system 'x))
+;;
+;; No bell (beep)
+;;
+(setq ring-bell-function 'ignore)
+
+
+
+
+
 
 
 
@@ -229,13 +367,6 @@
   :when 'ediff)
 
 
-(use-package fontutil
-  :config
-  ;; For the actual fontset selection, see init/X.el or init/darwim.el
-  (fontutil/install-mouse-wheel))
-
-
-
 ;;; Sometimes, Emacs asks for the confirmation of a command such as
 ;;; killing a buffer.  In that case, user should type "yes" or "no"
 ;;; directly.
@@ -247,15 +378,15 @@
 
 
 ;;; Helpers for TAGS manipulation
-(setq tags-add-tables 't)               ; do not ask to add new tags table.
+(setq tags-add-tables 't)          ; do not ask to add new tags table.
 
 ;;; Try completes if the line is already indented
 (setq tab-always-indent 'complete)
 
 
 ;;; Set up the keyboard so the delete key on both the regular keyboard
-;;; and the keypad delete the character under the cursor and to the right
-;;; under X, instead of the default, backspace behavior.
+;;; and the keypad delete the character under the cursor and to the
+;;; right under X, instead of the default, backspace behavior.
 ;;;
 ;; (global-set-key [delete] 'delete-char)
 ;; (global-set-key [kp-delete] 'delete-char)
@@ -290,7 +421,8 @@
 
 (progn
   ;; The default key binding M-% and C-M-% are too difficult to type.
-  ;; Since M-# and C-M-# are not used by official bindings, I'll use them.
+  ;; Since M-# and C-M-# are not used by official bindings, I'll use
+  ;; them.
   (global-set-key [(meta ?#)] 'query-replace)
   (global-set-key [(control meta ?#)] 'query-replace-regexp)
 
@@ -339,6 +471,14 @@
 (when (uinit-require 'dwim-compile nil 'noerror)
   (global-set-key [(control ?c) ?c] 'dwim-c/compile))
 
+;; See http://stackoverflow.com/questions/13397737/ansi-coloring-in-compilation-mode
+(ignore-errors
+  (require 'ansi-color)
+  (defun my-colorize-compilation-buffer ()
+    (when (eq major-mode 'compilation-mode)
+      (ansi-color-apply-on-region compilation-filter-start (point-max))))
+  (add-hook 'compilation-filter-hook 'my-colorize-compilation-buffer))
+
 
 
 (global-set-key [(control ?c) (control ?c)] 'comment-region)
@@ -361,12 +501,10 @@
 (add-to-list 'auto-mode-alist '(".*\\.ice$" . java-mode))
 
 ;;;
-;;; Abbrev mode, skeletons, and autoload settings
+;;; Abbrev mode and autoload settings
 ;;;
-(use-package xskel)
-
 (let ((abb_default "~/.abbrev_defs")
-      (abb_correct (path-join user-emacs-directory "abbrev_defs")))
+      (abb_correct (file-name-concat user-emacs-directory "abbrev_defs")))
   ;; Prefer "~/.emacs.d/abbrev_defs" to "~/.abbrev_defs"
   (setq abbrev-file-name
         (if (file-readable-p abb_correct)
@@ -375,24 +513,6 @@
               abb_default
             abb_correct))))
 
-
-;;;
-;;; Use hippie expansion for dynamic abbreviation
-;;;
-(use-package hippie-exp
-  :config
-  (global-set-key [(meta ?/)] 'hippie-expand)
-  (setq hippie-expand-try-functions-list
-        '(try-complete-file-name-partially
-          try-complete-file-name
-          try-expand-all-abbrevs
-          try-expand-line
-          try-expand-dabbrev
-          try-expand-dabbrev-all-buffers
-          try-expand-dabbrev-from-kill
-          try-expand-list
-          try-complete-lisp-symbol-partially
-          try-complete-lisp-symbol)))
 
 ;;;
 ;;; Switching between buffers using iswitchb/ido
@@ -488,12 +608,6 @@
 ;;(ffap-bindings)                         ; context-sensitive find-file
 
 
-(use-package untabify
-  :config
-  (setq-default indent-tabs-mode nil)     ; do not insert tab character.
-  (add-hook 'before-save-hook 'untabify-remove-trailing-spaces-on-write))
-
-
 (uinit "delete" :when 'delete)
 
 ;;;
@@ -575,29 +689,14 @@ instead of the next window."
 
 
 (uinit "window-frame" :when 'window-frame)
-
-;;;
-;;; Markdown mode
-;;;
-(use-package markdown-mode
-  :config
-  (add-to-list 'markdown-css-paths "http://thomasf.github.io/solarized-css/solarized-light.min.css")
-  ;; On Emacs 27.1, if a displayed image is too tall, it prevent Emacs
-  ;; scroll up/down.
-  (when (or (memq 'scale (image-transforms-p))
-            (image-type-available-p 'imagemagick))
-    (let ((h (* 20 (line-pixel-height)))
-          (w (floor (* (frame-inner-width) 0.7))))
-      (and (<= h 0) (setq h 400))
-      (and (<= w 0) (setq w 400))
-      (setq markdown-max-image-size (cons w h)))))
 
 
 ;;;
 ;;; vim-modeline
 ;;;
 (let ((vim-modeline-path (expand-file-name
-                          (path-join user-emacs-directory "vim-modeline"))))
+                          (file-name-concat user-emacs-directory
+                                            "vim-modeline"))))
   (when (file-accessible-directory-p vim-modeline-path)
     (add-to-list 'load-path vim-modeline-path)
     (when (locate-library "vim-modeline")
@@ -607,34 +706,6 @@ instead of the next window."
 
 (uinit "vcs" :when 'version-control-system)
 
-
-(use-package cmake-mode
-  :disabled
-  :config
-  (setq auto-mode-alist
-        (append '(("CMakeLists\\.txt\\'" . cmake-mode)
-                  ("\\.cmake\\'" . cmake-mode))
-                auto-mode-alist)))
-
-
-(use-package winner
-  :config
-  ;; A history manager for window configuration.
-  ;; `C-c left' for undo, `C-c right' for redo
-  (winner-mode 1))
-
-(use-package windmove
-  :disabled
-  :config
-  ;; Select a window by pressing arrow keys.
-  ;; The default modifier is 'shift which is not suitable for me since
-  ;; I use `shift-left' and `shift-right' bindings in org-mode.
-  ;;
-  ;; Since my keyboard (HHK) has separate Alt key (apart from Meta
-  ;; key), I use the 'alt instead of 'shift -- cinsk
-  (windmove-default-keybindings 'alt))
-
-
 
 
 ;;
@@ -666,10 +737,7 @@ instead of the next window."
 
 
 
-(uinit "_nxml"
-  :when (or (locate-library "nxml-mode")
-            ;; For legacy nxml-mode which does not use `provide' for nxml-mode.
-            (locate-library "rng-auto")))
+(uinit "_nxml" :when (locate-library "nxml-mode"))
 
 
 (uinit "_dired" :when 'dired)
@@ -727,39 +795,13 @@ instead of the next window."
 
 
 ;;;
-;;; YAML mode
-;;;
-(use-package yaml-mode
-  :config
-  (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode)))
-
-
-;;;
-;;; CSS mode
-;;;
-(with-eval-after-load "css-mode"
-  (setq cssm-indent-function #'cssm-c-style-indenter))
-(autoload 'css-mode "css-mode" "CSS editing major mode" t)
-(add-to-list 'auto-mode-alist '("\\.css\\'" . css-mode))
-
-
-;;;
-;;; htmlize
-;;;
-(use-package htmlize
-  :disabled
-  :config
-  (setq htmlize-convert-nonascii-to-entities nil))
-
-
-;;;
 ;;; Calender
 ;;;
 (require 'calendar)
 
 (global-set-key [(control f12)] 'calendar)
 
-(let ((my-diary-file (path-join user-emacs-directory "diary")))
+(let ((my-diary-file (file-name-concat user-emacs-directory "diary")))
   (if (file-readable-p my-diary-file)
       (setq diary-file my-diary-file)))
 
@@ -775,7 +817,7 @@ instead of the next window."
       '((holiday-fixed 11 1 "삼성전자 창립일")))
 
 (let ((cal-korea-path (expand-file-name
-                       (path-join user-emacs-directory "cal-korea-x"))))
+                       (file-name-concat user-emacs-directory "cal-korea-x"))))
   (when (file-accessible-directory-p cal-korea-path)
     (add-to-list 'load-path cal-korea-path)
     (when (locate-library "cal-korea-x")
@@ -783,20 +825,7 @@ instead of the next window."
       (setq holiday-general-holidays cal-korea-x-korean-holidays))))
 
 
-(use-package amazon-util
-  :disabled
-  :requires amz-common)
-
-
 (uinit "_org" :when (locate-library "org"))
-
-(use-package org-bookmarks
-  :ensure nil
-  :if (locate-library "org-bookmarks")
-  :custom ((org-bookmarks-file "~/agenda/bookmarks.org")
-           (org-bookmarks-add-org-capture-template t))
-  :commands (org-bookmarks)
-  :init (org-bookmarks-add-org-capture-template))
 
 
 ;;;
@@ -837,6 +866,9 @@ instead of the next window."
   (uinit "_py" :when t))
 
 
+;;(add-to-list 'load-path (expand-file-name "~/.emacs.d/skewer-mode"))
+;;(require 'skewer-mode)
+
 (uinit "_js" :when 'js)
 
 
@@ -846,31 +878,6 @@ instead of the next window."
 (uinit "maven" :when 'maven)
 
 (uinit "_browse-url" :when (locate-library "browse-url"))
-
-
-;;;
-;;; gnuplot
-;;;
-(when (locate-library "gnuplot")
-  (autoload 'gnuplot-mode "gnuplot" "gnuplot major mode" t)
-  (autoload 'gnuplot-make-buffer "gnuplot" "open a buffer in gnuplot-mode" t)
-
-  (setq auto-mode-alist (append '(("\\.gp$" . gnuplot-mode))
-                                auto-mode-alist)))
-
-
-;;;
-;;; go lang
-;;;
-(uinit "_go" :when (locate-library "go-mode"))
-
-(unless (locate-library "go-mode")
-  (let* ((godir "/usr/local/go")
-         (gldir (path-join godir "misc/emacs")))
-    (when (file-accessible-directory-p gldir)
-      (add-to-list 'load-path gldir 'append)
-      (when (locate-library "go-mode-load")
-        (require 'go-mode-load)))))
 
 
 
@@ -883,67 +890,6 @@ instead of the next window."
   (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
   (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode)))
 
-
-;;;
-;;; YASnippet -- http://code.google.com/p/yasnippet/
-;;;
-(use-package yasnippet
-  :config
-  ;; tested with yasnippet 0.8.0 (beta)
-
-  ;; The official document describes the snippets directory in
-  ;; "~/.emacs.d/plugins/yasnippet-x.y.z/snippets", whereas Gentoo
-  ;; yasnippet package installed them in
-  ;; "/usr/share/emacs/etc/yasnippet/snippets".
-  (setq yas-snippet-dirs (cinsk/accessible-directories
-                          "~/.emacs.d/snippets"))
-
-                          ;; (concat (file-name-directory
-                          ;;          (locate-library "yasnippet"))
-                          ;;         "snippets")
-                          ;; "/usr/share/emacs/etc/yasnippet/snippets"))
-  (yas-global-mode 1)
-
-  (global-set-key [(control ?x) (control ?/)] 'yas-insert-snippet)
-
-  (setq yas/prompt-functions '(yas-ido-prompt
-                               yas-dropdown-prompt
-                               yas-completing-prompt
-                               yas-no-prompt))
-  (unless (eq system-type 'darwin)
-    (add-to-list 'yas/prompt-functions 'yas-x-prompt))
-
-  (defun apply-snippet-mode ()
-    "Change major-mode to `snippet-mode' if the current file is
-in any of directory in `yas-snippet-dirs'."
-    (when (buffer-file-name)
-      (let ((fullname (expand-file-name (buffer-file-name)))
-            (filename (file-name-nondirectory (buffer-file-name))))
-        (when (and (not (string-prefix-p "." filename))
-                   (< 0 (apply '+
-                               (mapcar (lambda (dir)
-                                         (let ((absdir (expand-file-name dir)))
-                                           (if (string-prefix-p absdir fullname)
-                                               1
-                                             0)))
-                                       yas-snippet-dirs))))
-          (snippet-mode)))))
-
-  (add-to-list 'find-file-hook 'apply-snippet-mode)
-
-  (when nil
-    ;; While old version (e.g. 0.6.1b) uses `yas/root-directory', and
-    ;; provides `yas/reload-all', new version uses `yas-snippets-dirs'
-    ;; and provides `yas-reload-all'.
-    (if (not (fboundp 'yas-reload-all))
-        (progn
-          (setq yas/root-directory yas-snippet-dirs)
-          (and (fboundp 'yas/reload-all)
-               (yas/reload-all)))
-      ;; Otherwise, use the new interface.
-      (and (fboundp 'yas-reload-all)
-           (yas-reload-all))))
-  )
 
 
 (uinit "scala" :when t)
@@ -1005,7 +951,8 @@ call `quick-calc'"
 
 (defun calc-eval-region (arg beg end)
   "Calculate the region and display the result in the echo area.
-With a prefix ARG non-nil, replace the region with the result. With two prefix ARGs, insert the result at the end of region."
+With a prefix ARG non-nil, replace the region with the result. With two
+prefix ARGs, insert the result at the end of region."
   (interactive "p\nr")
   (let* ((expr (buffer-substring-no-properties beg end))
          (result (calc-eval expr)))
@@ -1022,7 +969,7 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
 
 
 
-(let ((dir (expand-file-name (path-join user-emacs-directory "backups"))))
+(let ((dir (expand-file-name (file-name-concat user-emacs-directory "backups"))))
   (when (file-directory-p dir)
     (add-to-list 'tramp-backup-directory-alist (cons "." dir))))
 
@@ -1048,21 +995,6 @@ With a prefix ARG non-nil, replace the region with the result. With two prefix A
   ;; `graphviz-dot-preview to "C-c P"
 
   (define-key graphviz-dot-mode-map [(control ?c) ?P] 'graphviz-dot-preview))
-
-
-;; See http://stackoverflow.com/questions/13397737/ansi-coloring-in-compilation-mode
-(ignore-errors
-  (require 'ansi-color)
-  (defun my-colorize-compilation-buffer ()
-    (when (eq major-mode 'compilation-mode)
-      (ansi-color-apply-on-region compilation-filter-start (point-max))))
-  (add-hook 'compilation-filter-hook 'my-colorize-compilation-buffer))
-
-
-
-(when (locate-library "irfc")
-  (add-to-list 'auto-mode-alist '("[rR][fF][cC].*\\.txt" . irfc-mode)))
-
 
 
 (defun fkey (arg)
@@ -1116,17 +1048,6 @@ A prefix argument N is translated to <fn> key"
   ;; See https://emacs.stackexchange.com/questions/58283/how-do-i-modify-magits-behavior-to-use-the-date-that-i-finalize-the-commit-and-n
   (setq transient-default-level 6))
 
-(use-package joplin-mode
-  :load-path "~/src/joplin-mode"
-  :requires markdown-mode
-  :config
-  (when (wsl-p)
-    (let* ((hostip (wsl-host-address))
-           (endp (concat hostip ":8080")))
-      (setq joplin-curl-args (list "--proxy"
-                                   (concat "http://" endp))
-            joplin-url-proxy (list (cons "http" endp)))))
-  (add-to-list 'markdown-mode-hook 'joplin-note-mode))
 
 ;; install required inheritenv dependency:
 (use-package inheritenv
@@ -1150,9 +1071,22 @@ A prefix argument N is translated to <fn> key"
   :bind
   (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
 
-(use-package base16-theme
-  :config
-  (load-theme 'base16-gruvbox-light-hard t))
+
+;;; ====================================================================
+;;; System Specific Configuration
+;;; ====================================================================
+(uinit "wsl" :when (wsl-p))
+
+(use-package exec-path-from-shell
+  :when (eq system-type 'darwin)
+  :ensure t
+  :config (exec-path-from-shell-initialize))
+
+(uinit "darwin" :when (eq system-type 'darwin))
+
+
+(uinit "X" :when (eq window-system 'x))
+
 
 ;;; Local Variables:
 ;;; coding: utf-8

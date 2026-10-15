@@ -30,7 +30,7 @@
 (when nil
   (require 'autoinsert)
 
-  (let ((aid_correct (path-join user-emacs-directory "insert"))
+  (let ((aid_correct (file-name-concat user-emacs-directory "insert"))
         (aid_default (if (boundp 'auto-insert-directory)
                          auto-insert-directory
                        "~/insert")))

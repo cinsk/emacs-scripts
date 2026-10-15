@@ -59,7 +59,7 @@ contains .el file."
       (dolist (dir (cl-remove-if-not
                     (lambda (dir)
                       (let ((files (file-expand-wildcards
-                                    (path-join dir "*.el"))))
+                                    (file-name-concat dir "*.el"))))
                         (> (length files) 0)))
                     (directory-files basedir 'full-name "^[^.]")))
         (add-to-list 'load-path dir)))))

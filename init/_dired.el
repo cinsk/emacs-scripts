@@ -52,7 +52,7 @@ supplied one, a warning message is generated."
                             auto-mode-alist))
 
 (defvar dired-desktop-open-program
-  (let ((open-sh (path-join user-emacs-directory "open.sh")))
+  (let ((open-sh (file-name-concat user-emacs-directory "open.sh")))
     (cond ((eq system-type 'darwin) "open")
           ((let ((tstr (symbol-name system-type)))
              (and (>= (length tstr) 3)

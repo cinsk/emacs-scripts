@@ -49,7 +49,7 @@ insert the character the user typed by calling `self-insert-command'."
 
 (add-hook 'emacs-lisp-mode-hook
           #'(lambda ()
-             (cinsk/visit-tags-table (path-join user-emacs-directory
+             (cinsk/visit-tags-table (file-name-concat user-emacs-directory
                                                "TAGS.emacs") t)))
 
 (with-eval-after-load "lisp-mode"

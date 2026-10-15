@@ -24,3 +24,11 @@ DO NOT USE THIS MACRO.  INSTEAD, USE `benchmark'."
        (or (string= ,oldfont (face-attribute ,face-sym :font))
            (set-face-attribute ,face-sym nil :font ,oldfont))
        ,ret)))
+
+
+(defun path-join (path &rest args)
+  "Join all parameters to build a pathname."
+  (if args
+      (apply 'path-join
+             (concat (file-name-as-directory path) (car args))
+             (cdr args))

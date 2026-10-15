@@ -32,12 +32,12 @@
 (with-eval-after-load "cc-mode"
   (add-hook 'c-mode-hook
             #'(lambda ()
-                (cinsk/visit-tags-table (path-join user-emacs-directory
+                (cinsk/visit-tags-table (file-name-concat user-emacs-directory
                                                    "TAGS.sys") t)))
 
   (add-hook 'c++-mode-hook
             #'(lambda ()
-                (cinsk/visit-tags-table (path-join user-emacs-directory
+                (cinsk/visit-tags-table (file-name-concat user-emacs-directory
                                                    "TAGS.sys") t)))
 
   (add-hook 'c-mode-hook (function (lambda nil (abbrev-mode 1))))

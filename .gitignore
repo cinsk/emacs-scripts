@@ -13,10 +13,15 @@ auto-save-list/
 # all schemas
 /schema
 
+# Emacs native compliation cache
+/eln-cache
+
 # packages installed by package.el
-elpa
+/elpa
+
 # packages installed manually
-site-lisp
+/site-lisp
+
 *~
 *.elc
 /unmaintained

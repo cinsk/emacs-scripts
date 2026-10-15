@@ -65,7 +65,7 @@
   ;; /opt/scala
   (when (not (locate-library "scala-mode-auto"))
     (let* ((scala-mode-path "/opt/scala/misc/scala-tool-support/emacs")
-           (scala-file (path-join scala-mode-path "scala-mode-auto.el")))
+           (scala-file (file-name-concat scala-mode-path "scala-mode-auto.el")))
       (if (file-exists-p scala-file)
           (add-to-list 'load-path scala-mode-path))))
 

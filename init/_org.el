@@ -548,27 +548,27 @@ Finally, \"~/agenda\" will be used.")
 
 (setq org-capture-templates
       `(("w" "Work-related TODO" entry
-         (file+headline ,(path-join org-directory "work.org")
+         (file+headline ,(file-name-concat org-directory "work.org")
                         "Tasks")
          "* TODO %? %T\n  %i\n  %a")
         ("f" "Finance Journal" entry
-         (file+headline ,(path-join org-directory "fjournal.org")
+         (file+headline ,(file-name-concat org-directory "fjournal.org")
                         "Journal")
          "* %?%t\n  %i\n")
         ("p" "Personal Project-related TODO" entry
-         (file+headline ,(path-join org-directory "pproject.org")
+         (file+headline ,(file-name-concat org-directory "pproject.org")
                         "Tasks")
          "* TODO %? %T\n  %i\n  %a")
         ;; ("P" "Personal TODO" entry
-        ;;  (file+headline ,(path-join org-directory "personal.org")
+        ;;  (file+headline ,(file-name-concat org-directory "personal.org")
         ;;                 "Tasks")
         ;;  "* TODO %? %T\n  %i\n  %a")
         ("e" "Emacs Tips" entry
-         (file+headline ,(path-join user-emacs-directory "emacs-tips.org")
+         (file+headline ,(file-name-concat user-emacs-directory "emacs-tips.org")
                         "Tips")
          "* TODO %? %T\n  %i\n  %a")
         ("j" "Personal Journal (date based)" entry
-         (file+datetree ,(path-join org-directory "personal.org"))
+         (file+datetree ,(file-name-concat org-directory "personal.org"))
          "* %?\n  Entered on %U\n  %i\n  %a")))
 
 (defun cinsk/org-refresh-agenda-files (&optional directory)

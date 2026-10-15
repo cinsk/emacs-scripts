@@ -49,7 +49,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
        (define-key magit-mode-map [(control tab)] nil)))
 
 (when nil
-  (let ((magit-git-dir (path-join user-emacs-directory "magit")))
+  (let ((magit-git-dir (file-name-concat user-emacs-directory "magit")))
     (when (file-accessible-directory-p magit-git-dir)
       (add-to-list 'load-path magit-git-dir)
       (add-to-list 'Info-directory-list magit-git-dir))
@@ -74,7 +74,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
 
 (when nil
   ;; I do not use egg anymore.
-  (let ((egg-dir (path-join user-emacs-directory "egg")))
+  (let ((egg-dir (file-name-concat user-emacs-directory "egg")))
     (if (file-accessible-directory-p egg-dir)
         (progn
           (add-to-list 'load-path egg-dir)
