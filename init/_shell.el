@@ -1,11 +1,7 @@
 ;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
-;;;
-;;; Shell configuration
-;;;
-(eval-when-compile
-  (require 'eshell)
-  (require 'term))
+(require 'transient)
+(require 'cinsk-common)
 
 ;;
 ;; Make the inferior shell a login shell.
@@ -30,118 +26,8 @@ appropriately."
 ;;
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
-;;
-;; `term/shell' is similar to `shell' based on `ansi-term' code.
-;;
-(defun term/shell (program &optional new-buffer-name)
-  "Start a terminal-emulator in a new buffer.
-
-With a prefix argument, it prompts the user for the shell
-executable.
-
-If there is already existing buffer with the same name, switch to
-that buffer, otherwise it creates new buffer.
-
-Like `shell', it loads `~/.emacs_SHELLNAME' if exists, or
-`~/.emacs.d/init_SHELLNAME.sh'.
-
-The shell file name (sans directories) is used to make a symbol
-name such as `explicit-bash-args'.  If that symbol is a variable,
-its value is used as a list of arguments when invoking the
-shell."
-  (interactive (let ((default-prog (or explicit-shell-file-name
-                                       (getenv "ESHELL")
-                                       shell-file-name
-                                       (getenv "SHELL")
-                                       "/bin/sh")))
-                 (list (if (or (null default-prog)
-                               current-prefix-arg)
-                           (read-from-minibuffer "Run program: " default-prog)
-                         default-prog))))
-
-  (require 'term)
-  ;; Pick the name of the new buffer.
-  (setq term-ansi-buffer-name
-        (if new-buffer-name
-            new-buffer-name
-          (if term-ansi-buffer-base-name
-              (if (eq term-ansi-buffer-base-name t)
-                  (file-name-nondirectory program)
-                term-ansi-buffer-base-name)
-            "shell/term")))
-
-  (setq term-ansi-buffer-name (concat "*" term-ansi-buffer-name "*"))
-
-  ;; In order to have more than one term active at a time
-  ;; I'd like to have the term names have the *term-ansi-term<?>* form,
-  ;; for now they have the *term-ansi-term*<?> form but we'll see...
-  (when current-prefix-arg
-    (setq term-ansi-buffer-name
-          (generate-new-buffer-name term-ansi-buffer-name)))
-
-  (let* ((name (file-name-nondirectory program))
-         (startfile (concat "~/.emacs_" name))
-         (xargs-name (intern-soft (concat "explicit-" name "-args"))))
-    (unless (file-exists-p startfile)
-      (setq startfile (concat user-emacs-directory "init_" name ".sh")))
-
-    (setq term-ansi-buffer-name
-          (apply 'term-ansi-make-term term-ansi-buffer-name program
-                 (if (file-exists-p startfile) startfile)
-                 (if (and xargs-name (boundp xargs-name))
-                     ;; `term' does need readline support.
-                     (remove "--noediting" (symbol-value xargs-name))
-                   '("-i")))))
-
-  (set-buffer term-ansi-buffer-name)
-  (term-mode)
-  (term-char-mode)
-
-  ;; I wanna have find-file on C-x C-f -mm
-  ;; your mileage may definitely vary, maybe it's better to put this in your
-  ;; .emacs ...
-
-  (term-set-escape-char ?\C-x)
-
-  (switch-to-buffer term-ansi-buffer-name))
 
 (global-set-key "\C-cd" 'shell)
-
-;; TODO: implement generic function to send arbitrary command to eshell.
-;; (require 'eshell)
-
-(defun eshell-cd (&optional dir)
-  "Switch to eshell and cd to DIR.
-
-If DIR is nil or called interactively, `default-directory' will
-be used.  If a prefix argument given, it will prompt for the
-directory it will use.
-
-This function is stealed from `helm-ff-switch-to-eshell'."
-  (interactive (list (if current-prefix-arg
-                         (read-directory-name "dir: ")
-                       nil)))
-  (or dir (setq dir default-directory))
-  (let ((cd-eshell #'(lambda ()
-                       (eshell-kill-input)
-                       (goto-char (point-max))
-                       (insert
-                        (format "cd '%s'" dir))
-                       (eshell-send-input))))
-    (if (get-buffer "*eshell*")
-        ;; pop-to-buffer?
-        ;; (switch-to-buffer "*eshell*")
-        (pop-to-buffer "*eshell*")
-      (call-interactively 'eshell))
-    (unless (get-buffer-process (current-buffer))
-      (funcall cd-eshell))))
-
-;; (global-set-key [(control meta ?\!)] 'eshell-cd)
-
-;;(require 'eshell)
-;;(require 'em-term)
-(with-eval-after-load "em-term"
-    (add-to-list 'eshell-visual-commands "vim"))
 
 
 ;; (require 'em-smart)
@@ -166,5 +52,116 @@ This function is stealed from `helm-ff-switch-to-eshell'."
 (with-eval-after-load "sh-script"
   ;; sh-mode uses C-c C-o and C-c C-c for its own purpose, which
   ;; prevents me to use them for a global binding.
-  (cinsk/move-key sh-mode-map [(control ?c) (control ?o)] [(control ?c) (control ?O)])
-  (cinsk/move-key sh-mode-map [(control ?c) (control ?c)] [(control ?c) (control ?C)]))
+  (my/move-key :keymap sh-mode-map :from "C-c C-o" :to "C-c C-S-o")
+  (my/move-key :keymap sh-mode-map :from "C-c C-c" :to "C-c C-S-c"))
+
+
+(defun my/ghostel-switch-to-last (&optional create)
+  "Switch to the most recently used ghostel buffer.
+
+If the current buffer is a ghostel buffer, skip it, so repeated
+calls bounce between the two most recent ons."
+  (interactive)
+  (let ((target (seq-find (lambda (buf)
+                            (and (not (eq buf (current-buffer)))
+                                 (provided-mode-derived-p (buffer-local-value 'major-mode buf)
+                                                          'ghostel-mode)))
+                          (buffer-list))))
+    (if target
+        (pop-to-buffer target
+                       (append display-buffer--same-window-action '((category . comint))))
+      (if create
+        (user-error "no other ghostel buffer")))))
+
+(defun my/ghostel-emacs-mode-and-scroll-down (&optional arg)
+"Switch to ghostel emacs mode, then scroll back like `M-v'."
+  (interactive "^P")
+  (ghostel-emacs-mode)
+  (scroll-down-command arg))
+
+(defun my/ghostel-new ()
+  (interactive)
+  (let ((current-prefix-arg '(4)))
+    (call-interactively #'ghostel)))
+
+(defvar-keymap my/ghostel-screen-map
+  :doc "tmux/screen style prefix map for ghostel buffers."
+  "\""  #'ghostel-list-buffers
+  "a"   #'ghostel-send-C-z
+  "A"   #'rename-buffer
+  "c"   #'my/ghostel-new
+  "C"   #'ghostel-project
+  "n"   #'ghostel-next
+  "p"   #'ghostel-previous
+  "C-z" #'my/ghostel-switch-to-last)
+
+
+(transient-define-prefix my/ghostel-menu ()
+  "Ghostel menu"
+  ["Actions"
+   [ ("\"" "List all buffers" ghostel-list-buffers)
+     ("n"  "Switch to Next shell" ghostel-next)
+     ("p"  "Switch to Previous shell" ghostel-previous)
+     ("C-z" "Switch to the last shell" my/ghostel-switch-to-last) ]
+   [ ("c"  "New shell" my/ghostel-new)
+     ("C"  "New shell for a project" ghostel-project) ]
+   [ ("a"  "Send escape code"  ghostel-send-C-z)
+     ("A"  "Rename buffer" rename-buffer) ]]))
+
+
+(use-package ghostel
+  :config
+  (my/move-key :from "C-x m" :to "C-x M" :with #'ghostel)
+  (when (not (eq system-type 'darwin))
+    ;; On macOS, ghostel seems to make the shell a login shell by default.
+    (setq ghostel-shell '("/bin/bash" "--login")))
+
+  (keymap-set ghostel-semi-char-mode-map "M-v" #'my/ghostel-emacs-mode-and-scroll-down)
+
+  ;; Free some key bindings in the semi-char-modes that would
+  ;; otherwise forward it to the terminal, so lookup falls through to
+  ;; ghostel-mode-map or the global map
+  (keymap-unset ghostel-semi-char-mode-map "C-z" t) ; my/ghostel-menu
+  (keymap-unset ghostel-semi-char-mode-map "C-<tab>" t)
+
+  ;; Below code will unset all key bindings that has function-key
+  ;; (e.g. "C-<f3>") in it.  The intension is to pass all function-key
+  ;; bindings to the parent map.
+  (map-keymap-internal
+   (lambda (e b)
+     (let ((kd (key-description (vector e))))
+       (when (and (string-match "<f[^>]*>" kd)
+                  (eq b 'ghostel--send-event))
+         (keymap-unset ghostel-semi-char-mode-map kd t))))
+   ghostel-semi-char-mode-map)
+
+  (dolist (map (list ghostel-semi-char-mode-map ghostel-char-mode-map))
+    (keymap-unset map "C-z" t))
+
+  (if (fboundp 'my/ghostel-menu)
+      (keymap-set ghostel-mode-map "C-z" #'my/ghostel-menu)
+    (keymap-set ghostel-mode-map "C-z" my/ghostel-screen-map))
+
+  ;; Whitelisted Emacs functions accessible from ghostel_cmd.  See
+  ;; ../ghostel.bash for more
+  (add-to-list 'ghostel-eval-cmds '("magit-status-setup-buffer" magit-status-setup-buffer))
+  (add-to-list 'ghostel-eval-cmds '("calc" calc))
+  )
+
+
+(use-package consult-ghostel
+  :if (locate-library "consult-ghostel")  ; skip entirely if not installed
+  :ensure nil                             ; only needed if always-ensure is on
+  :after ghostel
+  :demand t                               ; enable mode as soon as deps load
+  :config
+  (consult-ghostel-mode)
+  (if (fboundp 'my/ghostel-menu)
+      (transient-replace-suffix 'my/ghostel-menu "\""
+        '("\"" "List all buffers" consult-ghostel)))
+  :bind
+  (("C-x m" . consult-ghostel)
+   :map project-prefix-map
+   ("m" . consult-ghostel-project)
+   :map ghostel-semi-char-mode-map
+   ("C-c h" . consult-ghostel-history)))

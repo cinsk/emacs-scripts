@@ -49,8 +49,7 @@
 ;;; Load custom configuration -- Emacs's customizable variables will
 ;;; update this file if `custom-file' is nil which is not preferrable.
 (setq custom-file "~/.emacs.d/my-custom.el")
-(when (file-readable-p custom-file)
-  (load custom-file))
+(load custom-file t)
 
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 
@@ -402,10 +401,10 @@
 ;;;
 ;; (setq-default make-backup-files nil)
 
-;;;
-;;; Window-less system Configuration
-;;;
 (when (or window-system (daemonp))
+  ;; The reason of (daemonp) check is that sometimes, Emacs as daemon
+  ;; start up without GUI, but later the client will be attached with
+  ;; UI.
   (menu-bar-mode 1)                    ; -1 to hide, 1 to show
   (tool-bar-mode -1)                   ; -1 to hide, 1 to show
   )
@@ -460,15 +459,16 @@
 ;;     (global-set-key [(control ?c) (control ?k)] 'browse-kill-ring)))
 
 
-;;;
 ;;; If you are intended BS (backspace) key to work
 ;;; correctly on some terminals, uncomment one of below s-exp.
 ;;;                                                 -- cinsk
 ;;(global-set-key [C-?] 'backward-delete-char)
 ;;(global-set-key [C-h] 'backward-delete-char)
 
-(global-set-key "\C-cc" 'compile)
-(when (uinit-require 'dwim-compile nil 'noerror)
+(keymap-global-set "C-c c" #'compile)
+(use-package dwim-compile
+  :if (locate-library "dwim-compile")
+  :config
   (global-set-key [(control ?c) ?c] 'dwim-c/compile))
 
 ;; See http://stackoverflow.com/questions/13397737/ansi-coloring-in-compilation-mode
@@ -491,9 +491,7 @@
 
 (global-set-key [(f11)] 'toggle-case-fold-search)
 
-;;; Show matching parenthese
-(when (fboundp 'show-paren-mode)
-  (show-paren-mode 1))
+(show-paren-mode 1)                     ; show matching parenthese
 
 ;;;
 ;;; ICE setup
@@ -609,18 +607,6 @@
 
 
 (uinit "delete" :when 'delete)
-
-;;;
-;;; Colors
-;;;
-;;(set-background-color "rgb:0000/1500/8000")
-;;(set-foreground-color "white")
-;;(set-cursor-color "")
-;;(set-mouse-color "")
-;;(set-face-foreground 'highlight "white")
-;;(set-face-background 'highlight "slate blue")
-;;(set-face-background 'region "slate blue")
-;;(set-face-background 'secondary-selection "turquoise")
 
 ;;;
 ;;; emacs server
@@ -974,6 +960,14 @@ prefix ARGs, insert the result at the end of region."
     (add-to-list 'tramp-backup-directory-alist (cons "." dir))))
 
 (setq tramp-default-method "sshx")
+
+;; This tells TRAMP where to put autosafe files so it has nothing to
+;; ask about even if the directory is not writable.
+(setq tramp-auto-save-directory
+      (expand-file-name "emacs/tramp-autosave/" "~/.cache"))
+(unless (file-directory-p tramp-auto-save-directory)
+  (make-directory tramp-auto-save-directory t)
+  (set-file-modes tramp-auto-save-directory #o700))
 
 
 
