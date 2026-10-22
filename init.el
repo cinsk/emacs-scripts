@@ -53,13 +53,40 @@
 
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 
-(when (string-equal (getenv "SHELL") "/bin/false")
-  ;; "$SHELL" is set to "/bin/false" in darwin under Amazon User
-  ;; Cert. System. -- Hmm. this seems not true.
-;;  (let ((sh (or (executable-find "bash") "/bin/sh")))
-  (let ((sh (or (executable-find "zsh") "/bin/zsh")))
-    (setenv "SHELL" sh)
-    (setq shell-file-name sh)))
+(use-package exec-path-from-shell
+  ;; This package provides means to set some envirionment variables
+  ;; from the shell, even if emacs was launched from Spotlight or
+  ;; Dock.  In that case, the parent process of emacs is
+  ;; launchd(8). (pid == 1)
+  :when (eq system-type 'darwin)
+  :ensure t
+  :config
+  (let ((bash "/opt/homebrew/bin/bash"))
+    (when (and (file-executable-p bash)
+               (eq (alist-get 'ppid (process-attributes (emacs-pid))) 1))
+      ;; required for terminal / shell related packages
+      (setenv "SHELL" bash)
+
+      ;; Instruct `M-x shell' to use bash; Ideally, shell package will
+      ;; set it from the value of SHELL environment variable.
+      ;; However, I cannot guarantee when shell package initialization
+      ;; is happening.  Thus, I'll set `shell-file-name' to bash here,
+      ;; anyway.
+      (setq shell-file-name bash)
+
+      ;; Instruct exec-path-from-shell package to read from bash config
+      (setq exec-path-from-shell-shell-name bash)))
+
+  (exec-path-from-shell-initialize))
+
+(when nil
+  (when (string-equal (getenv "SHELL") "/bin/false")
+    ;; "$SHELL" is set to "/bin/false" in darwin under Amazon User
+    ;; Cert. System. -- Hmm. this seems not true.
+    ;;  (let ((sh (or (executable-find "bash") "/bin/sh")))
+    (let ((sh (or (executable-find "zsh") "/bin/zsh")))
+      (setenv "SHELL" sh)
+      (setq shell-file-name sh))))
 
 
 
@@ -440,7 +467,6 @@
   )
 
 
-
 (uinit "_shell" :when 'shell)
 
 (uinit "buffer-menu" :when 'buffer-menu)
@@ -1042,28 +1068,8 @@ A prefix argument N is translated to <fn> key"
   ;; See https://emacs.stackexchange.com/questions/58283/how-do-i-modify-magits-behavior-to-use-the-date-that-i-finalize-the-commit-and-n
   (setq transient-default-level 6))
 
+(uinit "_claude" :when (executable-find "claude"))
 
-;; install required inheritenv dependency:
-(use-package inheritenv
-  :vc (:url "https://github.com/purcell/inheritenv" :rev :newest))
-
-;; for eat terminal backend:
-(use-package eat :ensure t)
-
-;; install claude-code.el
-(use-package claude-code :ensure t
-  :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
-  :config
-  ;; optional IDE integration with Monet
-  (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
-  (monet-mode 1)
-
-  (claude-code-mode)
-  :bind-keymap ("C-c ;" . claude-code-command-map)
-
-  ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
-  :bind
-  (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
 
 
 ;;; ====================================================================
@@ -1071,15 +1077,13 @@ A prefix argument N is translated to <fn> key"
 ;;; ====================================================================
 (uinit "wsl" :when (wsl-p))
 
-(use-package exec-path-from-shell
-  :when (eq system-type 'darwin)
-  :ensure t
-  :config (exec-path-from-shell-initialize))
-
 (uinit "darwin" :when (eq system-type 'darwin))
 
-
 (uinit "X" :when (eq window-system 'x))
+
+
+
+(load (file-name-concat user-emacs-directory "postinit.el") t)
 
 
 ;;; Local Variables:
