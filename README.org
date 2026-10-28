@@ -83,11 +83,42 @@
   C-x w s       switch to *scratch* buffer
 #+END_SRC
 
+*** Terminal (Ghostel)
+
+    screen(1)/tmux(1) like terminal interface is available. (via [[https://github.com/dakra/ghostel][ghostel]])
+
+    =M-x ghostel= or =M-x ghostel-project= to create a terminal.
+    
+    Within the terminal, you can use:
+#+BEGIN_SRC
+  C-z "         list all terminal(ghostel) sessions
+  C-z C-z       switch to the other terminal (most recently used)
+  C-z a         send C-z to the terminal
+  C-z n         switch to the next terminal
+  C-z p         switch to the previous terminal
+  C-z c         create new terminal
+  C-z C         create new terminal for the current project
+#+END_SRC
+
+    Several shell functions are available for interacting Emacs.  See
+    [[./ghostel.bash]] for more.
+    
 * Emacs features that I forgot frequently
 *** Force inserting characters
     - =C-q <tab>= to insert a =<tab>= character.
     - =C-q C-j= t= insert a newline (useful when query-replace)
 
+*** isearch
+
+    - =C-w= pull next word or character into search string
+    - =M-C-w= pull next symbol or character into search string
+    - =M-C-d= delete a character from end of the search string
+    - =M-s e= edit search string
+    - =M-s c= toggle case fold
+    - =M-s r= toggle regexp
+    - =M-%= query-replace
+    - =C-M-%= query-replace-regexp
+      
 *** Removing lines with a pattern
 
     Select a region (e.g. =C-x h= for whole buffer), then =C-u M-|=
@@ -134,7 +165,7 @@
 
 *** Dired
 
-    - =0 w= copy the absulte file name into the kill ring.
+    - =0 w= copy the absolute file name into the kill ring.
     - =% d= flag files for deletion with the regular expression
     - =% m= mark files with the regular expression
 
