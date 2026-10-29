@@ -84,6 +84,45 @@ supplied one, a warning message is generated."
           (concat dired-listing-switches
                   "--group-directories-first --time-style=long-iso"))))
 
+;;
+;; Keep "." and ".." at the top of each directory listing.
+;;
+;; ls(1) sorts them like any other entry, so names that sort before
+;; "." in byte order (e.g. "#foo.el#", "-foo", "+foo") or a time sort
+;; (`-t') can push them down.  This moves just those two lines back
+;; to the top; the order of everything else is left to ls(1).
+;;
+(defun cinsk/dired-dot-dirs-first ()
+  "Move the \".\" and \"..\" lines to the top of the listing.
+Runs from `dired-after-readin-hook', where the buffer is narrowed
+to a single directory listing."
+  (let ((inhibit-read-only t)
+        (buffer-undo-list t)
+        (modified (buffer-modified-p))
+        top dot dotdot)
+    (save-excursion
+      (goto-char (point-min))
+      (while (not (eobp))
+        (let ((name (dired-get-filename 'no-dir t)))
+          (when (and name (not top))
+            ;; first file line, right after the header lines
+            (setq top (copy-marker (line-beginning-position))))
+          (if (not (member name '("." "..")))
+              (forward-line 1)
+            (let* ((beg (line-beginning-position))
+                   (end (min (point-max) (1+ (line-end-position))))
+                   ;; keeps the text properties dired put on the line
+                   (text (buffer-substring beg end)))
+              (if (equal name ".") (setq dot text) (setq dotdot text))
+              (delete-region beg end)))))
+      (when (and top (or dot dotdot))
+        (goto-char top)
+        (insert (or dot "") (or dotdot "")))
+      (when top (set-marker top nil)))
+    (set-buffer-modified-p modified)))
+
+(add-hook 'dired-after-readin-hook #'cinsk/dired-dot-dirs-first)
+
 (setq dired-omit-files
       (concat ""
               ;; lockfiles

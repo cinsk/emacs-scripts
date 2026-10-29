@@ -454,15 +454,16 @@
   ;; During isearch, M-% and C-M-% will also launching replace job
   ;; with the last search string.  Thus, I'll add M-% and C-M-% for
   ;; the consistence.
-  (define-key isearch-mode-map [(meta ?#)] 'isearch-query-replace)
-  (define-key isearch-mode-map [(control meta ?#)]
-    'isearch-query-replace-regexp)
+  (keymap-set isearch-mode-map "M-#" #'isearch-query-replace)
+  (keymap-set isearch-mode-map "C-M-#" #'isearch-query-replace-regexp)
 
   ;; During isearch, `M-s w' will toggle word search, which is
   ;; difficult to remember, so use `M-W' instead.
   ;;
   ;; Note that `M-w' works as original, `kill-ring-save'.
-  (define-key isearch-mode-map [(meta ?W)] 'isearch-toggle-word)
+  (keymap-set isearch-mode-map "M-W" #'isearch-toggle-word)
+
+  (keymap-set isearch-mode-map "M-/" #'isearch-complete)
   )
 
 

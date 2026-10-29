@@ -22,6 +22,8 @@ auto-save-list/
 # packages installed manually
 /site-lisp
 
+\#*\#
+.\#*
 *~
 *.elc
 /unmaintained

@@ -73,7 +73,7 @@
   (You need to exit read-only mode by =C-x C-q= first)
 
 #+BEGIN_SRC bash :results output verbatim
-  find . -path "./elpa" -prune -o \( -name '*.el' -a -type f \) -print | xargs grep global-set-key
+  find . -path "./elpa" -prune -o \( -name '*.el' -a -type f \) -print | xargs grep keymap-global-set
 #+END_SRC
 
 *** Window / Buffer navigation.
@@ -124,6 +124,12 @@
     Select a region (e.g. =C-x h= for whole buffer), then =C-u M-|=
     (=shell-command-on-region=) to execute =grep -v PATTERN=.
 
+*** Find File at point
+    =M-n= during =C-x C-f= fill the minibuffer with the path name at point.
+    Pressing =M-n= again fill the filename of the buffer.
+
+    =M-n= works similarily on =M-x query-replace= as well.
+    
 *** Tramp    
 
     =ssh= may not work on Darwin.  I suspect it may be related to the
