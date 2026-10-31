@@ -159,6 +159,27 @@
 (require 'use-package)
 (setq use-package-compute-statistics t)
 
+(defun my/missing-use-packages ()
+  "List `use-package' declarations whose library can't be found."
+  (interactive)
+  (let (missing)
+    (dolist (f (append (list user-init-file
+                             (expand-file-name "postinit.el" user-emacs-directory))
+                       (directory-files (expand-file-name "init" user-emacs-directory)
+                                        t "\\.el\\'")))
+      (when (file-readable-p f)
+        (with-temp-buffer
+          (insert-file-contents f)
+          (goto-char (point-min))
+          (while (re-search-forward
+                  "^[ \t]*(use-package[ \t\n]+\\([^ \t\n()]+\\)" nil t)
+            (let ((pkg (match-string 1)))
+              (unless (locate-library pkg)
+                (push (format "%s (%s)" pkg (file-name-nondirectory f))
+                      missing)))))))
+    (message "Missing: %s"
+             (if missing (string-join (nreverse missing) ", ") "none"))))
+
 ;;(unless (locate-library "s")
 ;;  (package-install 's))
 
