@@ -1,21 +1,3 @@
 [submodule "cal-korea-x"]
 	path = cal-korea-x
 	url = https://github.com/cinsk/cal-korea-x.git
-[submodule "vim-modeline"]
-	path = vim-modeline
-	url = https://github.com/cinsk/emacs-vim-modeline.git
-[submodule "filladapt"]
-	path = filladapt
-	url = https://github.com/cinsk/filladapt.git
-[submodule "package"]
-	path = package
-	url = https://github.com/technomancy/package.el
-[submodule "html5-el"]
-	path = html5-el
-	url = https://github.com/hober/html5-el.git
-[submodule "html5-syntax"]
-	path = html5-syntax
-	url = https://github.com/appden/html5-syntax.git
-[submodule "magit"]
-	path = magit
-	url = https://github.com/cinsk/magit.git
