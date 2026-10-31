@@ -74,23 +74,13 @@
 
 ;;(set-exec-path-from-shell-path)
 
-(when nil
-
-  ;; As homebrew provides a way to override default binaries using PATH,
-  ;; Below code no longer necessary.
-  (cond
-   ;; prefer GNU ls over the native one.
-   ;;
-   ;; GNU ls provides "--dired" for Emacs to provide special escape
-   ;; sequences for certain unusual file names.
-   ;;
-   ;; My system (Mountain Lion, Homebrew coreutils) provides
-   ;; "/usr/local/bin/gls" where the previous version provided
-   ;; "/usr/local/bin/ls".
-   ((executable-find "gls")
-    (setq insert-directory-program "gls"))
-   ((executable-find "/usr/local/bin/ls")
-    (setq insert-directory-program "/usr/local/bin/ls"))))
+;; Prefer GNU ls over the native BSD one.  Homebrew coreutils installs
+;; it as "gls" (plain "ls" only if its gnubin directory is put first
+;; in PATH).  GNU ls supports "--dired", which lets Emacs handle
+;; unusual file names, and "--group-directories-first" (see
+;; `cinsk/dired-group-directories-first' in _dired.el).
+(when (executable-find "gls")
+  (setq insert-directory-program "gls"))
 
 (when (executable-find "gtar")
   (setq dired-guess-shell-gnutar "gtar"))
