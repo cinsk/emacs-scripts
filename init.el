@@ -948,9 +948,6 @@ instead of the next window."
 (uinit "_ess" :when (locate-library "ess-site"))
 
 
-(uinit "_sunrise" :when (locate-library "sunrise-commander"))
-
-
 ;;; To save & load Emacs session, following lines should be the last
 ;;; line in this file.
 ;;;
@@ -1014,10 +1011,6 @@ prefix ARGs, insert the result at the end of region."
           (t (message "%s = %s" expr result)))))
 
 
-
-(let ((dir (expand-file-name (file-name-concat user-emacs-directory "backups"))))
-  (when (file-directory-p dir)
-    (add-to-list 'tramp-backup-directory-alist (cons "." dir))))
 
 (setq tramp-default-method "sshx")
 
