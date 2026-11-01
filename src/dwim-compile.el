@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 ;;; dwim-compile.el --- context-aware compile command
 

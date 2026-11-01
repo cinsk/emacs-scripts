@@ -1,3 +1,5 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+
 ;; As suggested in
 ;;  http://stackoverflow.com/questions/935723/find-tab-characters-in-emacs,
 ;;

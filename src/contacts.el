@@ -1,4 +1,5 @@
-;;; contacts.el ---                                  -*- lexical-binding: t; -*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+;;; contacts.el
 
 ;; Copyright (C) 2017  Seong-Kook Shin
 

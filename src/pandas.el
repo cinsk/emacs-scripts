@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 (defvar pd-code-buffer " *Pandas Code*")
 (defvar pd-data-buffer " *Pandas Data*")

@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 ;;; xskel.el --- Insert a pre-defined license text
 

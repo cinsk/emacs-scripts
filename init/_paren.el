@@ -1,3 +1,4 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 ;; C-c             Prefix Command
 ;; C-d             paredit-forward-delete

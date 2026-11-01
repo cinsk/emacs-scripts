@@ -1,4 +1,5 @@
-;;; uinit.el --- a use-package-like loader for personal init snippets -*- lexical-binding: t; -*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+;;; uinit.el --- a use-package-like loader for personal init snippets
 
 ;;; Commentary:
 ;;

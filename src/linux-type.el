@@ -1,3 +1,5 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+
 ;;; linuxtype.el --- Determine Linux Type and Version
 
 ;; Copyright (C) 2012  Seong-Kook Shin
@@ -20,7 +22,7 @@
 
 ;;; Commentary:
 
-;; 
+;;
 
 ;;; Code:
 
@@ -96,7 +98,7 @@ http://linuxmafia.com/faq/Admin/release-files.html")
 ;;; /etc/redhat-release:
 ;;;   CentOS Release 5.7 (final)
 
-  
+
 (when (eq system-type 'gnu/linux)
   (linux-type 'init-global))
 

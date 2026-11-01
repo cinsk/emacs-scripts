@@ -1,3 +1,5 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+
 ;;; cinsk-wood.el --- wood color theme for Emacs
 
 ;; Copyright (C) 2005  Seong-Kook Shin <cinsk at gmail dot com>
@@ -29,7 +31,7 @@
 (require 'color-theme)
 
 (add-to-list 'color-themes
-	     '(color-theme-cinsk-wood 
+             '(color-theme-cinsk-wood
                "Cinsk Wood"
                "Seong-Kook Shin <cinsk at gmail.com>"))
 
@@ -49,10 +51,10 @@
      (fringe ((t (:background "SaddleBrown"))))
      (menu ((t (:background "brown" :foreground "grey"))))
      (modeline ((t (:background "IndianRed3" :foreground "white"
-		    :box (:line-width 1 :style released-button)))))
+                    :box (:line-width 1 :style released-button)))))
      (mode-line-inactive ((t (:background "IndianRed4" :foreground "grey80"
                               :box (:line-width 1 :style released-button)))))
-     
+
      (minibuffer-prompt ((t (:foreground "OrangeRed3"))))
      (tool-bar ((t (:background "pink"
                     :box (:line-width 1 :style released-button)))))

@@ -1,3 +1,5 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+
 ;;; etheme.el --- Theme support in emacs
 
 ;;;

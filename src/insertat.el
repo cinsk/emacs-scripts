@@ -1,3 +1,4 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
 (defvar insertat-overlay-arrow-position
   nil)

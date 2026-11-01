@@ -1,4 +1,5 @@
-;;; cinsk-common.el ---                              -*- lexical-binding: t; -*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+;;; cinsk-common.el
 
 ;; Copyright (C) 2016  Seong-Kook Shin
 

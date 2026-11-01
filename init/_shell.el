@@ -2,6 +2,7 @@
 
 (require 'transient)
 (require 'cinsk-common)
+(require 'transient)
 
 ;;
 ;; Make the inferior shell a login shell.
@@ -95,7 +96,6 @@ calls bounce between the two most recent ons."
   "p"   #'ghostel-previous
   "C-z" #'my/ghostel-switch-to-last)
 
-
 (transient-define-prefix my/ghostel-menu ()
   "Ghostel menu"
   ["Actions"
@@ -108,8 +108,8 @@ calls bounce between the two most recent ons."
    [ ("a"  "Send escape code"  ghostel-send-C-z)
      ("A"  "Rename buffer" rename-buffer) ]])
 
-
 (use-package ghostel
+  :ensure t
   :config
   (my/move-key :from "C-x m" :to "C-x M" :with #'ghostel)
   (when (not (eq system-type 'darwin))
@@ -162,9 +162,8 @@ calls bounce between the two most recent ons."
   :demand t                               ; enable mode as soon as deps load
   :config
   (consult-ghostel-mode)
-  (if (fboundp 'my/ghostel-menu)
-      (transient-replace-suffix 'my/ghostel-menu "\""
-        '("\"" "List all buffers" consult-ghostel)))
+  (transient-replace-suffix 'my/ghostel-menu "\""
+    '("\"" "List all buffers" consult-ghostel))
   :bind
   (("C-x m" . consult-ghostel)
    :map project-prefix-map

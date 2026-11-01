@@ -53,42 +53,6 @@
 
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 
-(use-package exec-path-from-shell
-  ;; This package provides means to set some envirionment variables
-  ;; from the shell, even if emacs was launched from Spotlight or
-  ;; Dock.  In that case, the parent process of emacs is
-  ;; launchd(8). (pid == 1)
-  :when (eq system-type 'darwin)
-  :ensure t
-  :config
-  (let ((bash "/opt/homebrew/bin/bash"))
-    (when (and (file-executable-p bash)
-               (eq (alist-get 'ppid (process-attributes (emacs-pid))) 1))
-      ;; required for terminal / shell related packages
-      (setenv "SHELL" bash)
-
-      ;; Instruct `M-x shell' to use bash; Ideally, shell package will
-      ;; set it from the value of SHELL environment variable.
-      ;; However, I cannot guarantee when shell package initialization
-      ;; is happening.  Thus, I'll set `shell-file-name' to bash here,
-      ;; anyway.
-      (setq shell-file-name bash)
-
-      ;; Instruct exec-path-from-shell package to read from bash config
-      (setq exec-path-from-shell-shell-name bash)))
-
-  (exec-path-from-shell-initialize))
-
-(when nil
-  (when (string-equal (getenv "SHELL") "/bin/false")
-    ;; "$SHELL" is set to "/bin/false" in darwin under Amazon User
-    ;; Cert. System. -- Hmm. this seems not true.
-    ;;  (let ((sh (or (executable-find "bash") "/bin/sh")))
-    (let ((sh (or (executable-find "zsh") "/bin/zsh")))
-      (setenv "SHELL" sh)
-      (setq shell-file-name sh))))
-
-
 
 (setq user-emacs-directory "~/.emacs.d/")
 
@@ -179,6 +143,44 @@
                       missing)))))))
     (message "Missing: %s"
              (if missing (string-join (nreverse missing) ", ") "none"))))
+
+
+(use-package exec-path-from-shell
+  ;; This package provides means to set some envirionment variables
+  ;; from the shell, even if emacs was launched from Spotlight or
+  ;; Dock.  In that case, the parent process of emacs is
+  ;; launchd(8). (pid == 1)
+  :when (eq system-type 'darwin)
+  :ensure t
+  :config
+  (let ((bash "/opt/homebrew/bin/bash"))
+    (when (and (file-executable-p bash)
+               (eq (alist-get 'ppid (process-attributes (emacs-pid))) 1))
+      ;; required for terminal / shell related packages
+      (setenv "SHELL" bash)
+
+      ;; Instruct `M-x shell' to use bash; Ideally, shell package will
+      ;; set it from the value of SHELL environment variable.
+      ;; However, I cannot guarantee when shell package initialization
+      ;; is happening.  Thus, I'll set `shell-file-name' to bash here,
+      ;; anyway.
+      (setq shell-file-name bash)
+
+      ;; Instruct exec-path-from-shell package to read from bash config
+      (setq exec-path-from-shell-shell-name bash)))
+
+  (exec-path-from-shell-initialize))
+
+(when nil
+  (when (string-equal (getenv "SHELL") "/bin/false")
+    ;; "$SHELL" is set to "/bin/false" in darwin under Amazon User
+    ;; Cert. System. -- Hmm. this seems not true.
+    ;;  (let ((sh (or (executable-find "bash") "/bin/sh")))
+    (let ((sh (or (executable-find "zsh") "/bin/zsh")))
+      (setenv "SHELL" sh)
+      (setq shell-file-name sh))))
+
+
 
 ;;(unless (locate-library "s")
 ;;  (package-install 's))
@@ -317,6 +319,7 @@
 ;;; YAML mode
 ;;;
 (use-package yaml-mode
+  :if (locate-library "yaml-mode")
   :config
   (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode)))
 
@@ -381,6 +384,7 @@
 
 (use-package joplin-mode
   :load-path "~/src/joplin-mode"
+  :if (locate-library "joplin-mode")
   :requires markdown-mode
   :config
   (when (wsl-p)

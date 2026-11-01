@@ -1,3 +1,5 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+
 ;;; amazon-util.el --- Utility functions for Amazon working environment
 
 ;; Copyright (C) 2016  Seong-Kook Shin

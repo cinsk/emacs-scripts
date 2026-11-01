@@ -1,3 +1,5 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+
 ;;; ffap-java.el --- ffap Java binding
 
 ;; Copyright (C) 2013  Seong-Kook Shin

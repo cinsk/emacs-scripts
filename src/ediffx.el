@@ -1,3 +1,5 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+
 ;;; ediffx.el --- ediff goodies
 
 ;; Copyright (C) 2011  Seong-Kook Shin

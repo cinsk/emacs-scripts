@@ -1,6 +1,5 @@
-;; -*-emacs-lisp-*-
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
 
-
 ;;;
 ;;; Clojure configuration
 ;;;

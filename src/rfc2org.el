@@ -1,3 +1,5 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+
 ;;;
 ;;; rfc2org.el --- Convert text RFC document to ORG format.
 ;;;

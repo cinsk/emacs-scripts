@@ -1,3 +1,5 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+
 ;;; dirtree.el --- Directory Tree Viewer for Emacs
 
 ;; Copyright (C) 2007  Seong-Kook Shin <cinsk at gmail dot com>
