@@ -14,10 +14,10 @@ insert the character the user typed by calling `self-insert-command'."
                         [(listify-key-sequence (this-command-keys))])))
 
 (defun cinsk/register-syntactic-close-binding (map)
-  (define-key map [(?\))] 'syntactic-close-or-self-insert)
-  (define-key map [(?\])] 'syntactic-close-or-self-insert)
-  (define-key map [(?\})] 'syntactic-close-or-self-insert)
-  (define-key map [(?\>)] 'syntactic-close-or-self-insert))
+  (keymap-set map ")" #'syntactic-close-or-self-insert)
+  (keymap-set map "]" #'syntactic-close-or-self-insert)
+  (keymap-set map "}" #'syntactic-close-or-self-insert)
+  (keymap-set map ">" #'syntactic-close-or-self-insert))
 
 
 (when (locate-library "syntactic-close")
@@ -34,8 +34,8 @@ insert the character the user typed by calling `self-insert-command'."
     (cinsk/register-syntactic-close-binding clojure-mode-map)))
 
 (with-eval-after-load "lisp-mode"
-  (define-key emacs-lisp-mode-map [f5] 'eval-buffer)
-  (define-key emacs-lisp-mode-map [(control c) ?\|] 'eval-region))
+  (keymap-set emacs-lisp-mode-map "<f5>" #'eval-buffer)
+  (keymap-set emacs-lisp-mode-map "C-c |" #'eval-region))
 
 
 
@@ -53,8 +53,8 @@ insert the character the user typed by calling `self-insert-command'."
                                                "TAGS.emacs") t)))
 
 (with-eval-after-load "lisp-mode"
-  (define-key emacs-lisp-mode-map [f5] 'eval-buffer)
-  (define-key emacs-lisp-mode-map [(control c) ?\|] 'eval-region))
+  (keymap-set emacs-lisp-mode-map "<f5>" #'eval-buffer)
+  (keymap-set emacs-lisp-mode-map "C-c |" #'eval-region))
 
 
 ;;;
@@ -85,10 +85,10 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (lisp-macroexpand-region (point) (scan-sexps (point) 1) and-go))
 
 (with-eval-after-load "inf-lisp"
-  (define-key inferior-lisp-mode-map [(control ?x) (control ?m)]
-    'lisp-macro-expand-sexp))
+  (keymap-set inferior-lisp-mode-map "C-x RET"
+              'lisp-macro-expand-sexp))
 
-(define-key lisp-mode-map [(control ?x) (control ?m)] 'lisp-macro-expand-sexp)
+(keymap-set lisp-mode-map "C-x RET" #'lisp-macro-expand-sexp)
 
 
 ;;;
@@ -108,12 +108,12 @@ Prefix argument means switch to the Lisp buffer afterwards."
                     [(control meta ?\:)])
     ;; C-c v   slime-describe-symbol
     ;; C-c f   slime-describe
-    ;;(define-key slime-mode-map [(control ?c) ?v] 'slime-describe-symbol)
-    ;;(define-key slime-mode-map [(control ?c) ?f] 'slime-describe-function)
-    (define-key slime-mode-map [(control ?c) (control ?e)]
-      'slime-eval-last-expression)
-    (define-key slime-mode-map [(control ?c) (control ?b)]
-      'slime-eval-buffer))
+    ;;(keymap-set slime-mode-map "C-c v" #'slime-describe-symbol)
+    ;;(keymap-set slime-mode-map "C-c f" #'slime-describe-function)
+    (keymap-set slime-mode-map "C-c C-e"
+                #'slime-eval-last-expression)
+    (keymap-set slime-mode-map "C-c C-b"
+                #'slime-eval-buffer))
   (require 'slime-autoloads))
 
 
@@ -199,7 +199,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
           (racket-run-and-switch-to-repl)))))
 
   ;; TODO: `racket-run' or `racket-repl'?
-  (define-key racket-mode-map [(control ?c) ?\!] 'cinsk/racket-mode-switch-to-repl)
+  (keymap-set racket-mode-map "C-c !" #'cinsk/racket-mode-switch-to-repl)
   ;; keep `C-c C-c' for `comment-region'.
   (cinsk/move-key racket-mode-map [(control ?c) (control ?c)]
                   [(control ?c) (control ?C)])
@@ -225,10 +225,10 @@ Prefix argument means switch to the Lisp buffer afterwards."
     ;; are going to use geiser's `geiser-mode-switch-to-repl' to
     ;; create the REPL.  Also, I am used to use `C-c C-c' as
     ;; `comment-region'.
-    (define-key racket-mode-map [(control ?c) (control ?c)] nil)))
+    (keymap-set racket-mode-map "C-c C-c" nil)))
 
 (with-eval-after-load "geiser-mode"
-  (define-key geiser-mode-map [(control ?c) ?\!] 'geiser-mode-switch-to-repl)
+  (keymap-set geiser-mode-map "C-c !" #'geiser-mode-switch-to-repl)
   (cinsk/move-key geiser-mode-map [(control ?c) (control ?c)] [(control ?c) (control ?C)]))
 )
 
@@ -236,4 +236,4 @@ Prefix argument means switch to the Lisp buffer afterwards."
   (interactive)
   (pop-to-buffer (get-buffer "*scratch*") nil 'norecord))
 
-(global-set-key [(control ?x) ?w ?s] #'pop-to-scratch-buffer)
+(keymap-global-set "C-x w s" #'pop-to-scratch-buffer)

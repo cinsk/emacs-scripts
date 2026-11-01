@@ -149,8 +149,8 @@ capitalized, and all-uppercases."
 )
 
 
-;;(global-set-key [(meta ?C)] 'capitalize-word)
-;;(global-set-key [(meta ?c)] 'capitalize-word+)
+;;(keymap-global-set "M-C" #'capitalize-word)
+;;(keymap-global-set "M-c" #'capitalize-word+)
 
 
 (provide 'capitalize+)

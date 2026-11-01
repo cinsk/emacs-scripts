@@ -37,7 +37,7 @@
 ;; For example, add following snippets in your init file:
 ;;
 ;;    (require 'dwim-compile)
-;;    (global-set-key [(control ?c) ?c] 'dwim-c/compile)
+;;    (keymap-global-set "C-c c" #'dwim-c/compile)
 ;;
 ;; `dwim-c/compile' will try to determine the possible build tools
 ;; described in `dwim-c/build-tool-alist'.  If multiple tools are possible,

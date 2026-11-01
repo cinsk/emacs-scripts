@@ -21,12 +21,12 @@ If there is no ESS buffer, create one.  See `ess-switch-to-ESS' for EOB-P."
 
 (with-eval-after-load "ess-mode"
   (when (boundp 'ess-mode-map)
-    (define-key ess-mode-map [(control ?c) ?\!] 'ess-shell)
-    (define-key ess-mode-map [(control ?c) (control ?q)] 'ess-dev-off)
-    (define-key ess-mode-map [(control ?c) ?q] 'ess-quit))
+    (keymap-set ess-mode-map "C-c !" #'ess-shell)
+    (keymap-set ess-mode-map "C-c C-q" #'ess-dev-off)
+    (keymap-set ess-mode-map "C-c q" #'ess-quit))
   (when (boundp 'inferior-ess-mode-map)
-    (define-key ess-mode-map [(control ?c) (control ?q)] 'ess-dev-off)
-    (define-key ess-mode-map [(control ?c) ?q] 'ess-quit)))
+    (keymap-set ess-mode-map "C-c C-q" #'ess-dev-off)
+    (keymap-set ess-mode-map "C-c q" #'ess-quit)))
 
 
 

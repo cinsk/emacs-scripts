@@ -27,7 +27,7 @@ appropriately."
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 
-(global-set-key "\C-cd" 'shell)
+(keymap-global-set "C-c d" #'shell)
 
 
 ;; (require 'em-smart)
@@ -106,7 +106,7 @@ calls bounce between the two most recent ons."
    [ ("c"  "New shell" my/ghostel-new)
      ("C"  "New shell for a project" ghostel-project) ]
    [ ("a"  "Send escape code"  ghostel-send-C-z)
-     ("A"  "Rename buffer" rename-buffer) ]]))
+     ("A"  "Rename buffer" rename-buffer) ]])
 
 
 (use-package ghostel
@@ -135,7 +135,11 @@ calls bounce between the two most recent ons."
          (keymap-unset ghostel-semi-char-mode-map kd t))))
    ghostel-semi-char-mode-map)
 
+  ;; Free C-z in the modes that would otherwise forward it to the terminal,
+  ;; so lookup falls through to ghostel-mode-map.
   (dolist (map (list ghostel-semi-char-mode-map ghostel-char-mode-map))
+    (keymap-set map "M-v" #'my/ghostel-emacs-mode-and-scroll-down)
+    (keymap-unset map "C-<tab>" t)
     (keymap-unset map "C-z" t))
 
   (if (fboundp 'my/ghostel-menu)
@@ -146,6 +150,8 @@ calls bounce between the two most recent ons."
   ;; ../ghostel.bash for more
   (add-to-list 'ghostel-eval-cmds '("magit-status-setup-buffer" magit-status-setup-buffer))
   (add-to-list 'ghostel-eval-cmds '("calc" calc))
+  (add-to-list 'ghostel-eval-cmds '("ediff-files" ediff-files))
+  (add-to-list 'ghostel-eval-cmds '("ediff-files3" ediff-files3))
   )
 
 

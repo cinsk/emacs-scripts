@@ -225,10 +225,10 @@ not NOT-THIS-COMMAND"
 (when nil
   (defvar org-wordjoin-mode-map
     (let ((map (make-sparse-keymap)))
-      (define-key map [?\ ] 'org-insert-word-joiner-or-space)
-      (define-key map [(control ?j)] 'org-insert-word-joiner-or-space)
-      (define-key map [(control ?m)] 'org-insert-word-joiner-or-space)
-      (define-key map [(tab)] 'org-insert-word-joiner-or-space)
+      (keymap-set map "SPC" #'org-insert-word-joiner-or-space)
+      (keymap-set map "C-j" #'org-insert-word-joiner-or-space)
+      (keymap-set map "RET" #'org-insert-word-joiner-or-space)
+      (keymap-set map "<tab>" #'org-insert-word-joiner-or-space)
       map)
     "Keymap for `org-wordjoin-mode'"))
 
@@ -306,14 +306,14 @@ not NOT-THIS-COMMAND"
      ; (sh . t) -- ob-sh renamed to ob-shell
      (shell . t)))
 
-  (define-key outline-mode-map [(control down)]
-    'outline-next-visible-heading)
-  (define-key outline-mode-map [(control up)]
-    'outline-previous-visible-heading)
-  (define-key outline-mode-map [(control shift down)]
-    'outline-forward-same-level)
-  (define-key outline-mode-map [(control shift up)]
-    'outline-backward-same-level)
+  (keymap-set outline-mode-map "C-<down>"
+              'outline-next-visible-heading)
+  (keymap-set outline-mode-map "C-<up>"
+              'outline-previous-visible-heading)
+  (keymap-set outline-mode-map "C-S-<down>"
+              'outline-forward-same-level)
+  (keymap-set outline-mode-map "C-S-<up>"
+              'outline-backward-same-level)
 
   ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
   ;; since I use "C-<TAB>" for `smart-other-window'.
@@ -325,34 +325,34 @@ not NOT-THIS-COMMAND"
   (cinsk/move-key org-mode-map [(control ?c) (control ?d)]
                   [(control ?c) (control shift ?d)])
 
-  (define-key org-mode-map [(control c) (control ?\\)]
-    'org-table-convert-from-lines)
+  (keymap-set org-mode-map "C-c C-\\"
+              'org-table-convert-from-lines)
 
-  (define-key org-mode-map [(control c) ?t] 'org-todo)
+  (keymap-set org-mode-map "C-c t" #'org-todo)
 
-  (define-key org-mode-map [(control c) ?s] 'cinsk/org-sourcefy)
+  (keymap-set org-mode-map "C-c s" #'cinsk/org-sourcefy)
 
   ;; Shift + TAB in rdesktop, xmanager, emacs
-  (define-key org-mode-map [(shift kp-tab)] 'org-shifttab)
+  (keymap-set org-mode-map "S-<kp-tab>" #'org-shifttab)
 
   ;; unicode: word joiner
   ;;
   ;; To mark-up certain text (e.g. /"hello"/ga), place 'word joiner'
   ;; character in /"hello"/<!>ga, where <!> represents the position for the
   ;; word joiner.
-  (define-key org-mode-map [(control c) (control ?\;)]
-    '(lambda ()
-       (interactive)
-       (insert-char #x2060)))
+  (keymap-set org-mode-map "C-c C-;"
+              (lambda ()
+                (interactive)
+                (insert-char #x2060)))
   ;; unicode: zero width space
   ;;
   ;; To mark-up certain text (e.g. ="hello"=), place 'zero width space'
   ;; character in =<!>"hello"<!>=, where <!> represent the two position
   ;; for the zero width space character.
-  (define-key org-mode-map [(control c) (control ?\')]
-    '(lambda ()
-       (interactive)
-       (insert-char #x200B)))
+  (keymap-set org-mode-map "C-c C-'"
+              (lambda ()
+                (interactive)
+                (insert-char #x200B)))
 
   ;;(add-to-list 'org-mode-hook (lambda ()
   ;; (org-wordjoin-mode 1)))
@@ -455,16 +455,17 @@ not NOT-THIS-COMMAND"
   ;; From GNU Emacs version 22.2, ".org" extension use Org mode by default.
   (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode)))
 
-(global-set-key [(control c) ?a] 'org-agenda)
-(global-set-key [(control c) ?l] 'org-store-link)
-(global-set-key [(control c) ?b] 'org-iswitchb)
-(global-set-key [(control c) ?\"] 'org-capture)
+(keymap-global-set "C-c a" #'org-agenda)
+(keymap-global-set "C-c l" #'org-store-link)
+(keymap-global-set "C-c b" #'org-iswitchb)
+(keymap-global-set "C-c \"" #'org-capture)
+
 ;; org-mode uses C-\" for its own function.  Use C-\" \" for the
 ;; alternative key
-(define-key org-mode-map [(control ?c) ?\" ?\"] 'org-capture)
+(keymap-set org-mode-map "C-c \" \"" #'org-capture)
 
 ;;(org-remember-insinuate)
-(global-set-key [f8] 'org-capture)
+(keymap-global-set "<f8>" #'org-capture)
 
 (defvar my-org-directory nil
   "Directory for storing org files.
@@ -663,7 +664,7 @@ following:
             ;; (setq yas/trigger-key [tab])
             (add-to-list 'org-tab-first-hook
                          'yas-org-very-safe-expand)
-            ;; (define-key yas/keymap [tab] 'yas/next-field)
+            ;; (keymap-set yas/keymap "<tab>" #'yas/next-field)
             ))
 
 

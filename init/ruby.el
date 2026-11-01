@@ -46,13 +46,10 @@
     (add-hook 'ruby-mode-hook 'inf-ruby-keys)
     (add-hook 'ruby-mode-hook
               (lambda ()
-                (define-key ruby-mode-map [(control ?c) ?\!] 'inf-ruby-console-auto)
-                (define-key ruby-mode-map [(control ?c) (control ?c)]
-                  'comment-region)
-                (define-key ruby-mode-map [(control ?c) (control ?b)]
-                  'ruby-send-buffer)
-                (define-key ruby-mode-map [(control ?c) (control ?e)]
-                  'ruby-send-block))
+                (keymap-set ruby-mode-map "C-c !" #'inf-ruby-console-auto)
+                (keymap-set ruby-mode-map "C-c C-c" #'comment-region)
+                (keymap-set ruby-mode-map "C-c C-b" #'ruby-send-buffer)
+                (keymap-set ruby-mode-map "C-c C-e" #'ruby-send-block))
               ;; Make sure that this function is appended, not prepended
               'append))
 
@@ -66,15 +63,12 @@
     ;; `run-ruby' changed, and it is no longer a command.  Alternative: `inf-ruby'.
     ;; from https://github.com/nonsequitur/inf-ruby/issues/112.
     ;;
-    ;; (define-key ruby-mode-map [(control ?c) ?\!] 'run-ruby)
-    (define-key ruby-mode-map [(control ?c) ?\!] 'inf-ruby)
+    ;; (keymap-set ruby-mode-map "C-c !" 'run-ruby)
+    (keymap-set ruby-mode-map "C-c !" #'inf-ruby)
 
-    (define-key ruby-mode-map [(control ?c) (control ?c)]
-      'comment-region)
-    (define-key ruby-mode-map [(control ?c) (control ?b)]
-      'ruby-send-buffer)
-    (define-key ruby-mode-map [(control ?c) (control ?e)]
-      'ruby-send-region))
+    (keymap-set ruby-mode-map "C-c C-c" #'comment-region)
+    (keymap-set ruby-mode-map "C-c C-b" #'ruby-send-buffer)
+    (keymap-set ruby-mode-map "C-c C-e" #'ruby-send-region))
 
 
   (unless (fboundp 'ruby-send-buffer)

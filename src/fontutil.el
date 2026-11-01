@@ -56,13 +56,13 @@ New height will be calculated by (* FACTOR old-face-height)"
 
     ;; In darwin, the wheel-up and wheel-down events are [C-wheel-up]
     ;; and [C-wheel-down] respectively.
-    (let ((incr [C-mouse-4]) (decr [C-mouse-5]))
+    (let ((incr "C-<mouse-4>") (decr "C-<mouse-5>"))
       (and (eq system-type 'darwin)
-           (setq incr [C-wheel-up]
-                 decr [C-wheel-down]))
+           (setq incr "C-<wheel-up>"
+                 decr "C-<wheel-down>"))
 
-      (global-set-key incr 'fontutil/increase-default-height)
-      (global-set-key decr 'fontutil/decrease-default-height))))
+      (keymap-global-set incr #'fontutil/increase-default-height)
+      (keymap-global-set decr #'fontutil/decrease-default-height))))
 
 ;;;###autoload
 (defun fontutil/reload ()

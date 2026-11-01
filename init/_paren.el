@@ -67,26 +67,26 @@
 
 
 (when nil
-  ;; (define-key smartparens-mode-map ([control ?d]) 'sp-delete-char)
-  (define-key smartparens-mode-map [(control ?k)] 'sp-kill-sexp)
-  (define-key smartparens-mode-map [(meta ?k)] 'sp-copy-sexp)
-  (define-key smartparens-mode-map [(meta ?d)] 'sp-kill-word)
+  ;; (keymap-set smartparens-mode-map "C-d" 'sp-delete-char)
+  (keymap-set smartparens-mode-map "C-k" #'sp-kill-sexp)
+  (keymap-set smartparens-mode-map "M-k" #'sp-copy-sexp)
+  (keymap-set smartparens-mode-map "M-d" #'sp-kill-word)
 
-  (define-key smartparens-mode-map [(control meta ?f)] 'sp-forward-sexp)
-  (define-key smartparens-mode-map [(control meta ?b)] 'sp-backward-sexp)
-  (define-key smartparens-mode-map [(control meta ?n)] 'sp-up-sexp)
-  (define-key smartparens-mode-map [(control meta ?p)] 'sp-down-sexp)
+  (keymap-set smartparens-mode-map "C-M-f" #'sp-forward-sexp)
+  (keymap-set smartparens-mode-map "C-M-b" #'sp-backward-sexp)
+  (keymap-set smartparens-mode-map "C-M-n" #'sp-up-sexp)
+  (keymap-set smartparens-mode-map "C-M-p" #'sp-down-sexp)
 
 
-  (define-key smartparens-mode-map [(control ?\()] 'sp-backward-slurp-sexp)
-  (define-key smartparens-mode-map [(control ?\))] 'sp-forward-slurp-sexp)
-  (define-key smartparens-mode-map [(control ?\{)] 'sp-backward-barf-sexp)
-  (define-key smartparens-mode-map [(control ?\})] 'sp-forward-barf-sexp)
+  (keymap-set smartparens-mode-map "C-(" #'sp-backward-slurp-sexp)
+  (keymap-set smartparens-mode-map "C-)" #'sp-forward-slurp-sexp)
+  (keymap-set smartparens-mode-map "C-{" #'sp-backward-barf-sexp)
+  (keymap-set smartparens-mode-map "C-}" #'sp-forward-barf-sexp)
 
-  (define-key smartparens-mode-map [(control meta left)] 'sp-beginning-of-sexp)
-  (define-key smartparens-mode-map [(control meta right)] 'sp-end-of-sexp)
+  (keymap-set smartparens-mode-map "C-M-<left>" #'sp-beginning-of-sexp)
+  (keymap-set smartparens-mode-map "C-M-<right>" #'sp-end-of-sexp)
 
-  (define-key smartparens-mode-map [(meta ?s)] 'sp-splice-sexp)
-  (define-key smartparens-mode-map [(meta down)] 'sp-splice-sexp-killing-forward)
-  (define-key smartparens-mode-map [(meta up)] 'sp-splice-sexp-killing-backward)
+  (keymap-set smartparens-mode-map "M-s" #'sp-splice-sexp)
+  (keymap-set smartparens-mode-map "M-<down>" #'sp-splice-sexp-killing-forward)
+  (keymap-set smartparens-mode-map "M-<up>" #'sp-splice-sexp-killing-backward)
   )

@@ -98,5 +98,5 @@ See https://github.com/auto-complete/auto-complete for more"
               ;; A key binding to force complete (show completion candidate).
               ;; I thought `ac-complete' would call `ac-complete-go', but
               ;; `ac-complete' has no effect.
-              (define-key go-mode-map [(control meta ?I)] 'ac-complete-go)))))))
+              (keymap-set go-mode-map "C-M-S-i" #'ac-complete-go)))))))
 )

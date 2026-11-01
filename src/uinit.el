@@ -222,8 +222,8 @@ Returns non-nil if FEATURE ends up provided."
 (defvar uinit-report-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map tabulated-list-mode-map)
-    (define-key map (kbd "RET") #'uinit-report-find-file)
-    (define-key map (kbd "o") #'uinit-report-find-file-other-window)
+    (keymap-set map "RET" #'uinit-report-find-file)
+    (keymap-set map "o" #'uinit-report-find-file-other-window)
     map))
 
 (define-derived-mode uinit-report-mode tabulated-list-mode "Uinit-Report"

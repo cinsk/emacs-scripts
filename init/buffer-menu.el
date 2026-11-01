@@ -11,8 +11,8 @@
 (setq Buffer-menu-sort-column 2)
 
 ;; ibuffer - advanced buffer menu
-(global-set-key [(control ?x) (control ?b)] 'ibuffer)
-(autoload 'ibuffer "ibuffer" "List buffers." t)
+(keymap-global-set "C-x C-b" #'ibuffer)
+;; (autoload 'ibuffer "ibuffer" "List buffers." t)
 
 ;; I want ibuffer shows all buffer including internal one as I use
 ;; ibuffer mostly for debugging.

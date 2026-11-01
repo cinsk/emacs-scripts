@@ -333,22 +333,22 @@ rightward. (This causes the selected window grows horizontally.)"
 
 
 
-(global-set-key [(control tab)] 'wfu/other-window-or-frame)
-(global-set-key [(control x) ?o] 'wfu/other-frame-or-window)
+(keymap-global-set "C-<tab>" #'wfu/other-window-or-frame)
+(keymap-global-set "C-x o" #'wfu/other-frame-or-window)
 
-(global-set-key [(control meta shift up)] 'wfu/move-window-border-up)
-(global-set-key [(control meta shift down)] 'wfu/move-window-border-down)
-(global-set-key [(control meta shift left)] 'wfu/move-window-border-left)
-(global-set-key [(control meta shift right)] 'wfu/move-window-border-right)
+(keymap-global-set "C-M-S-<up>" #'wfu/move-window-border-up)
+(keymap-global-set "C-M-S-<down>" #'wfu/move-window-border-down)
+(keymap-global-set "C-M-S-<left>" #'wfu/move-window-border-left)
+(keymap-global-set "C-M-S-<right>" #'wfu/move-window-border-right)
 
 (let ((killmap (lookup-key (current-global-map) [(control ?c) ?k])))
   (when (or (null killmap) (keymapp killmap))
-    (global-set-key [(control ?c) ?k ?w] 'delete-window)
-    (global-set-key [(control ?c) ?k ?f] 'delete-frame)
+    (keymap-global-set "C-c k w" #'delete-window)
+    (keymap-global-set "C-c k f" #'delete-frame)
 
     ;; It would be better if we don't call this map a killmap
     ;; as I want to add additional key bindings
-    (global-set-key [(control ?c) ?k ?n] 'make-frame)
+    (keymap-global-set "C-c k n" #'make-frame)
     ))
 
 

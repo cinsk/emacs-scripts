@@ -4,6 +4,9 @@
 ;;; text deleting-related configuration
 ;;;
 
+(eval-when-compile
+  (require 'cinsk-common))
+
 ;;
 ;; hungray Delete
 ;;
@@ -49,15 +52,8 @@ NOTE: not fully implemented yet."
             (delete-char 1))
           (goto-char (- beg 1))))))
 
-(global-set-key [(control ?c) (control ?d)] 'delete-chars-forward-with-syntax)
+;; (keymap-global-set "C-c C-d" #'delete-chars-forward-with-syntax)
 
 ;; clojure/cider uses C-c C-d as a prefix key
-(global-set-key [(control shift ?d)] 'delete-chars-forward-with-syntax)
-
-
-(let ((cmd (lookup-key (current-global-map) [(meta ?z)])))
-  ;; Unfortunately `C-c C-d' is used a lot in other major-modes.
-  ;; `M-z' normally bound to `zap-to-char' which I don't use a lot.
-  (when (not (eq cmd 'delete-chars-forward-with-syntax))
-    (global-set-key [(meta ?z)] 'delete-chars-forward-with-syntax)
-    (global-set-key [(meta ?Z)] cmd)))
+(keymap-global-set "C-S-d" #'delete-chars-forward-with-syntax)
+(my/move-key :from "M-z" :to "M-Z" :with #'delete-chars-forward-with-syntax)

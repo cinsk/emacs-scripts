@@ -36,29 +36,29 @@
 
                    ;; Bind C-a to 'comint-bol when in sbt-mode. This
                    ;; will move the cursor to just after prompt.
-                   (local-set-key (kbd "C-a") 'comint-bol)
+                   (keymap-local-set "C-a" #'comint-bol)
 
                    ;; Bind M-RET to 'comint-accumulate. This will
                    ;; allow you to add more than one line to scala
                    ;; console prompt before sending it for
                    ;; interpretation. It will keep your command
                    ;; history cleaner.
-                   (local-set-key (kbd "M-RET") 'comint-accumulate)))
+                   (keymap-local-set "M-RET" #'comint-accumulate)))
 
       (add-hook 'scala-mode-hook
                 '(lambda ()
                    ;; sbt-find-definitions is a command that tries to
                    ;; find (with grep) the definition of the thing at
                    ;; point.
-                   (local-set-key (kbd "M-.") 'sbt-find-definitions)
+                   (keymap-local-set "M-." #'sbt-find-definitions)
 
                    ;; use sbt-run-previous-command to re-compile your
                    ;; code after changes
-                   (local-set-key (kbd "C-x '") 'sbt-run-previous-command)
-                   (local-set-key [(control ?c) ?!] 'run-scala)
-                   (local-set-key [(control ?c) ?c] 'sbt-compile)
-                   (local-set-key [(control ?c) (control ?r)]
-                                  'sbt-paste-region))))
+                   (keymap-local-set "C-x '" #'sbt-run-previous-command)
+                   (keymap-local-set "C-c !" #'run-scala)
+                   (keymap-local-set "C-c c" #'sbt-compile)
+                   (keymap-local-set "C-c C-r"
+                                     #'sbt-paste-region))))
 
   ;; Currently, Scala 2.8.x is not provided by gentoo portage. Thus, I
   ;; will use the binary distribution from the Scala repository in
@@ -77,14 +77,14 @@
     ;; C-c C-b   scala-eval-buffer
     ;; C-c C-r   scala-eval-region
     ;; C-c C-e   scala-eval-definition  (TODO: check the symantics)
-    (define-key scala-mode-map [(control ?c) (control ?e)]
-      'scala-eval-definition)
+    (keymap-set scala-mode-map "C-c C-e"
+                'scala-eval-definition)
     ;;
     ;; scala-undent-line: `C-<tab>' -> `<backtab>'
     (cinsk/move-key scala-mode-map
                     [(control tab)] [backtab])
 
-    (define-key scala-mode-map [(control ?c) ?\!] 'scala-run-scala)
+    (keymap-set scala-mode-map "C-c !" #'scala-run-scala)
     )
 
   (when (locate-library "scala-mode-auto")

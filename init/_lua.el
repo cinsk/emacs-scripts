@@ -6,18 +6,18 @@
 
 
 (with-eval-after-load "lua-mode"
-  ;;(define-key lua-mode-map [(control ?c) ?\!] 'run-js)
+  ;;(keymap-set lua-mode-map "C-c !" #'run-js)
   (when (and (fboundp 'lua-setup-keymap)
              (null lua-mode-map))
     (setq lua-mode-map (lua-setup-keymap)))
 
   (when (keymapp lua-mode-map)
-    (define-key lua-mode-map [(control ?c) (control ?r)] 'lua-send-region)
-    (define-key lua-mode-map [(control ?c) (control ?b)] 'lua-send-buffer)
-    (define-key lua-mode-map [(control ?c) (control ?l)]
-      'lua-send-current-line)
-    (define-key lua-mode-map [(control ?c) (control ?e)]
-      'lua-send-lua-region)))
+    (keymap-set lua-mode-map "C-c C-r" #'lua-send-region)
+    (keymap-set lua-mode-map "C-c C-b" #'lua-send-buffer)
+    (keymap-set lua-mode-map "C-c C-l"
+                #'lua-send-current-line)
+    (keymap-set lua-mode-map "C-c C-e"
+                #'lua-send-lua-region)))
 
 (when (locate-library "lua-mode")
   (require 'lua-mode))

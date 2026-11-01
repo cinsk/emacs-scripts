@@ -237,6 +237,18 @@ s t C
 v u                          # vector to values
 #+END_EXAMPLE
 
+***** Solving Proportions
+      
+      To solve "1345:1=x:350000" for =x=, just replace ':' with '/',
+      and type in Algebraic mode (').  Then, press =a S= and type 'x'
+
+#+BEGIN_EXAMPLE
+1345/1=x/350000
+a S x<RET>                   # solve the equation for 'x'
+j 2<RET>                     # select 2nd part
+<RET>                        # copy the selected part (number) into the stack
+#+END_EXAMPLE
+
 * Features I added/modified
 *** remove all whitespaces
     zap-to-nonspace, [[file:init/delete.el::delete-chars-forward-with-syntax][delete-chars-forward-with-syntax]] can delete

@@ -13,9 +13,9 @@
 
 (with-eval-after-load "indium-interaction"
   (cinsk/move-key indium-interaction-mode-map [(control ?c) ?d] [(control ?c) ?D])
-  (define-key indium-interaction-mode-map [(control ?c) (control ?r)] 'indium-eval-region)
-  (define-key indium-interaction-mode-map [(control ?c) (control ?b)] 'indium-eval-buffer)
-  (define-key indium-interaction-mode-map [(control ?c) ?\!] 'indium-run-node)
+  (keymap-set indium-interaction-mode-map "C-c C-r" #'indium-eval-region)
+  (keymap-set indium-interaction-mode-map "C-c C-b" #'indium-eval-buffer)
+  (keymap-set indium-interaction-mode-map "C-c !" #'indium-run-node)
   )
 
 (if (locate-library "js2-mode")
@@ -41,9 +41,9 @@
       (setq inferior-js-program-command path)))
 
   (with-eval-after-load "js"
-    (define-key js-mode-map [(control ?c) ?\!] 'run-js)
-    (define-key js-mode-map [(control ?c) (control ?r)] 'js-send-region-and-go)
-    (define-key js-mode-map [(control ?c) (control ?b)] 'js-send-buffer-and-go)))
+    (keymap-set js-mode-map "C-c !" #'run-js)
+    (keymap-set js-mode-map "C-c C-r" #'js-send-region-and-go)
+    (keymap-set js-mode-map "C-c C-b" #'js-send-buffer-and-go)))
 
 
 (enable-minor-mode skewer-mode
@@ -53,5 +53,5 @@
 
 
 (with-eval-after-load "skewer-mode"
-  (define-key skewer-mode-map [(control ?c) (control ?b)] 'skewer-load-buffer)
-  (define-key skewer-mode-map [(control ?c) ?\!] 'skewer-repl))
+  (keymap-set skewer-mode-map "C-c C-b" #'skewer-load-buffer)
+  (keymap-set skewer-mode-map "C-c !" #'skewer-repl))

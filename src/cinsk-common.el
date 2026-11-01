@@ -24,6 +24,8 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+
 (unless (fboundp 'with-eval-after-load)
   ;; with-eval-after-load was added in Emacs 24.4
   (defmacro with-eval-after-load (file &rest body)
@@ -87,25 +89,86 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;     `(let ((,new-key (lookup-key ,key-map ,new-bind))
 ;;            (,old-key (lookup-key ,key-map ,old-bind)))
 ;;        (when ,old-key
-;;          (define-key ,key-map ,new-bind ,old-key)
-;;          (define-key ,key-map ,old-bind nil)
+;;          (keymap-set ,key-map ,new-bind ,old-key)
+;;          (keymap-set ,key-map ,old-bind nil)
 ;;          ,new-key))))
+
+(defun cinsk/key-string (key)
+  "Return KEY as a string accepted by `keymap-set'.
+
+KEY may be a string already in `key-valid-p' form (\"C-c C-k\"), or
+a raw key sequence: a vector ([(control ?k)]) or the string result
+of `kbd'."
+  (if (and (stringp key) (key-valid-p key))
+      key
+    (key-description key)))
 
 (defun cinsk/move-key (keymap old-key new-key)
   "Move the key definition from OLD-KEY to NEW-KEY in KEYMAP.
 
+OLD-KEY and NEW-KEY are anything `cinsk/key-string' accepts.
 It will return the previous key definition bound in NEW-KEY, and
 the definition bound in OLD-KEY will be removed."
-  (let ((def (lookup-key keymap old-key))
-        (alt (lookup-key keymap new-key)))
-    (define-key keymap new-key def)
-    (define-key keymap old-key nil)
+  (let* ((old-key (cinsk/key-string old-key))
+         (new-key (cinsk/key-string new-key))
+         (def (keymap-lookup keymap old-key))
+         (alt (keymap-lookup keymap new-key)))
+    (keymap-set keymap new-key def)
+    (keymap-set keymap old-key nil)
     alt))
 
 (defun cinsk/copy-key (keymap src-key dst-key)
-  "Copy the key definition from SRC-KEY to DST-KEY"
-  (let ((def (lookup-key keymap src-key)))
-    (define-key keymap dst-key def)))
+  "Rebind the command currently bound to SRC-KEY to DST-KEY."
+  (let* ((src-key (cinsk/key-string src-key))
+         (def (keymap-lookup keymap src-key)))
+    (keymap-set keymap (cinsk/key-string dst-key) def)))
+
+
+(cl-defun my/move-key (&key from to with keymap overwrite)
+  "Move the binding of key sequence FROM to key sequence TO, then bind FROM to WITH.
+
+FROM and TO are key sequences: strings in `kbd' syntax (\"C-x f\")
+or vectors ([?\\C-x ?f]).  The definition of FROM can be a command,
+a keymap (a prefix key) or any other valid binding.  It is copied
+to TO as it is.
+
+WITH is the new definition for FROM.  If it is nil, FROM becomes
+unbound in KEYMAP.
+
+KEYMAP is the keymap to work in.  It defaults to the current
+global map.  Only KEYMAP itself is looked at.  Bindings that come
+from minor modes or parent keymaps are not considered.
+
+If TO already has a different binding in KEYMAP, signal an error
+unless OVERWRITE is non-nil.
+
+Return the definition that was moved.
+
+Example:
+  (move-key :from \"C-x f\" :to \"C-x F\" :with #\\='find-file
+            :keymap my-mode-map)"
+  (unless (and from to)
+    (error "move-key: both :from and :to are required"))
+  (let* ((map      (or keymap (current-global-map)))
+         (from-key (if (stringp from) from (key-description from)))
+         (to-key   (if (stringp to)   to   (key-description to)))
+         (old-def  (lookup-key map (key-parse from-key)))
+         (existing (lookup-key map (key-parse to-key))))
+    ;; A numeric result from `lookup-key' means a prefix of the
+    ;; sequence is bound to something that is not a keymap.
+    (when (or (null old-def) (numberp old-def))
+      (user-error "move-key: %s has no binding in this keymap"
+                  from-key))
+    (when (and existing
+               (not (numberp existing))
+               (not (equal existing old-def))
+               (not overwrite))
+      (user-error "move-key: %s is already bound to %S (use :overwrite t)"
+                  to-key existing))
+    (keymap-set map to-key old-def)
+    (keymap-set map from-key with)
+    old-def))
+
 
 (defun cinsk/visit-tags-table (file &optional local)
   "Call `visit-tags-table' iff FILE is readable"
@@ -147,7 +210,7 @@ This function uses `recursive-edit' internally."
     (substitute-key-definition
      'exit-recursive-edit
      'cinsk/exit-import-buffer-region map)
-    ;; (define-key map [(control meta ?c)] 'cinsk/exit-import-buffer-region)
+    ;; (keymap-set map "C-M-c" #'cinsk/exit-import-buffer-region)
 
     (let ((old-buffer (current-buffer))
           (src-buffer (unwind-protect
@@ -156,7 +219,7 @@ This function uses `recursive-edit' internally."
                                      (substitute-command-keys "\\[cinsk/exit-import-buffer-region]")
                                      (substitute-command-keys "\\[abort-recursive-edit]"))
                             (recursive-edit))
-                        ;; (define-key map [(control meta ?c)] old-binding))))
+                        ;; (keymap-set map "C-M-c" old-binding))))
                         (substitute-key-definition
                          'cinsk/exit-import-buffer-region
                          'exit-recursive-edit

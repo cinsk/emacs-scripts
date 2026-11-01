@@ -5,11 +5,12 @@
 ;;;
 
 (with-eval-after-load "dired"
-  (setq dired-x-hands-off-my-keys nil)
+  ;; helm package does not play nicely with dired-x-find-file.
+  (setq dired-x-hands-off-my-keys t)
   (require 'dired-x)
 
-  (define-key dired-mode-map [(control return)] 'dired-find-file-other-frame)
-  (define-key dired-mode-map [(meta ?O)] 'dired-do-desktop-open)
+  (keymap-set dired-mode-map "C-<return>" #'dired-find-file-other-frame)
+  (keymap-set dired-mode-map "M-O" #'dired-do-desktop-open)
   )
 
 
@@ -19,7 +20,7 @@
     (require 'dired+)))
 
 
-;; (global-set-key [(meta ?F)] 'find-dired)
+;; (keymap-global-set "M-F" #'find-dired)
 
 (defmacro setq-if-equal (symbol old-value new-value &optional nowarn)
   "setq-if-equal set SYMBOL to NEW-VALUE iff it has OLD-VALUE.
@@ -106,15 +107,15 @@ supplied one, a warning message is generated."
            "aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc" ; TeX related
            "\\`\.#.*[0-9]")))                          ; VC related
 
-;;(define-key global-map "\C-x\C-j" 'dired-jump)
-;;(define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
+;;(keymap-set global-map "C-x C-j" #'dired-jump)
+;;(keymap-set global-map "C-x 4 C-j" #'dired-jump-other-window)
 (defun dired-jump-other-frame ()
   "Like `dired-jump-other-window' but in other frame."
   (interactive)
   (let* ((file buffer-file-name)
          (dir (if file (file-name-directory file) default-directory)))
     (dired-other-frame dir)))
-(global-set-key [(control x) ?f ?j] 'dired-jump-other-frame)
+(keymap-global-set "C-x f j" #'dired-jump-other-frame)
 
 (defun dired-find-file-other-frame (&optional arg)
   (interactive "P")

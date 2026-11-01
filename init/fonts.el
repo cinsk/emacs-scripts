@@ -38,20 +38,20 @@ New height will be calculated by (* FACTOR old-face-height)"
 
   ;; In darwin, the wheel-up and wheel-down events are [C-wheel-up]
   ;; and [C-wheel-down] respectively.
-  (let ((incr [C-mouse-4]) (decr [C-mouse-5]))
+  (let ((incr "C-<mouse-4>") (decr "C-<mouse-5>"))
     (and (eq system-type 'darwin)
-         (setq incr [C-wheel-up]
-               decr [C-wheel-down]))
+         (setq incr "C-<wheel-up>"
+               decr "C-<wheel-down>"))
 
-    (global-set-key incr (lambda ()
-                           (interactive)
-                           (scale-default-font-height 1.1
-                                                      (selected-frame))
-                           (message "New face height: %d"
-                                    (face-attribute 'default :height))))
-    (global-set-key decr (lambda ()
-                           (interactive)
-                           (scale-default-font-height 0.9
-                                                      (selected-frame))
-                           (message "New face height: %d"
-                                    (face-attribute 'default :height))))))
+    (keymap-global-set incr (lambda ()
+                              (interactive)
+                              (scale-default-font-height 1.1
+                                                         (selected-frame))
+                              (message "New face height: %d"
+                                       (face-attribute 'default :height))))
+    (keymap-global-set decr (lambda ()
+                              (interactive)
+                              (scale-default-font-height 0.9
+                                                         (selected-frame))
+                              (message "New face height: %d"
+                                       (face-attribute 'default :height))))))

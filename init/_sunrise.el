@@ -41,8 +41,8 @@ frame that runs sunrise, if sunrise is running."
             (switch-to-buffer buff))))
     (error (message "%s" (cadr description)))))
 
-(global-set-key [(control ?c) (control ?j)] 'sunrise-cd-frame)
-(global-set-key [(control ?c) (control ?J)] 'sunrise-cd-frame)
+(keymap-global-set "C-c C-j" #'sunrise-cd-frame)
+(keymap-global-set "C-c C-J" #'sunrise-cd-frame)
 
 (defvar sr-frame-configuration-support t
   "If nil, do not save/restore frame configuration")

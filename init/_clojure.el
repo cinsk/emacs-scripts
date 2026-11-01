@@ -27,7 +27,7 @@
   (when (locate-library "paredit")
     (add-hook 'clojure-mode-hook 'paredit-mode))
   (when (boundp 'clojure-mode-map)
-    (define-key clojure-mode-map [(control ?c) ?\!] 'run-clojure)))
+    (keymap-set clojure-mode-map "C-c !" #'run-clojure)))
 
 (with-eval-after-load "company-mode"
   (add-hook 'cider-repl-mode-hook #'company-mode)

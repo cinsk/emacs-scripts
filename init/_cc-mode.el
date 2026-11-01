@@ -45,15 +45,15 @@
 
   (when (locate-library "cc-subword")
     (require 'cc-subword)
-    (define-key c-mode-base-map [(meta ?F)] 'c-forward-subword)
-    (define-key c-mode-base-map [(meta ?B)] 'c-backward-subword)
-    (define-key c-mode-base-map [(meta ?D)] 'c-kill-subword))
+    (keymap-set c-mode-base-map "M-F" #'c-forward-subword)
+    (keymap-set c-mode-base-map "M-B" #'c-backward-subword)
+    (keymap-set c-mode-base-map "M-D" #'c-kill-subword))
 
-  (define-key c-mode-base-map [(meta ?{)] 'c-beginning-of-defun)
-  (define-key c-mode-base-map [(meta ?})] 'c-end-of-defun)
+  (keymap-set c-mode-base-map "M-{" #'c-beginning-of-defun)
+  (keymap-set c-mode-base-map "M-}" #'c-end-of-defun)
 
-  (define-key c-mode-base-map [(control meta ?{)] 'c-up-conditional-with-else)
-  (define-key c-mode-base-map [(control meta ?})] 'c-down-conditional-with-else)
+  (keymap-set c-mode-base-map "C-M-{" #'c-up-conditional-with-else)
+  (keymap-set c-mode-base-map "C-M-}" #'c-down-conditional-with-else)
 
   ;; Highlights suspicious C/C++ constructions
   (add-hook 'c-mode-common-hook (lambda () (cwarn-mode 1)))

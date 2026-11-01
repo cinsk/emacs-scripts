@@ -20,7 +20,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
           (pop-to-buffer buf)
         (call-interactively #'cvs-examine)))))
 
-;;(global-set-key [f2] #'pop-to-cvs-buffer)
+;;(keymap-global-set "<f2>" #'pop-to-cvs-buffer)
 
 
 ;;
@@ -30,7 +30,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
   (setq git-show-uptodate t
         git-show-ignored t
         git-show-unknown t)
-  (define-key git-status-mode-map [(meta ?u)] 'git-refresh-status))
+  (keymap-set git-status-mode-map "M-u" #'git-refresh-status))
 
 (when nil
   ;; Currently, I'm using magit, not git package.
@@ -46,7 +46,7 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
        ;; Initially, magit uses C-tab for magit-section-cycle, but
        ;; since I use the key binding for
        ;; `wfu/other-window-or-frame' so remove the binding here.
-       (define-key magit-mode-map [(control tab)] nil)))
+       (keymap-set magit-mode-map "C-<tab>" nil)))
 
 (when nil
   (let ((magit-git-dir (file-name-concat user-emacs-directory "magit")))
@@ -93,6 +93,6 @@ With a prefix argument, call `cvs-examine' with the prefix argument, 16."
   ;;                    (cond ((fboundp 'magit-status) #'magit-status)
   ;;                          ((fboundp 'egg-status) #'egg-status)
   ;;                          (#'git-status))))
-  (global-set-key [f12] 'vc/dir)
-  (global-set-key [(control ?x) ?j] 'vc/dir))
+  (keymap-global-set "<f12>" #'vc/dir)
+  (keymap-global-set "C-x j" #'vc/dir))
 

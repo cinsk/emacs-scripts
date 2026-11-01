@@ -57,39 +57,39 @@
 (setq-default ediff-make-wide-display-function 'cinsk/ediff-make-wide-display)
 
 (let ((kmap (make-sparse-keymap)))
-  (define-key kmap [?f]
-    (lambda (arg) (interactive "P")
-      (cinsk/select-command arg 'ediff-files 'ediff-files3)))
+  (keymap-set kmap "f"
+              (lambda (arg) (interactive "P")
+                (cinsk/select-command arg 'ediff-files 'ediff-files3)))
 
-  (define-key kmap [?b]
-    (lambda (arg) (interactive "P")
-      (cinsk/select-command arg 'ediff-buffers 'ediff-buffers3)))
+  (keymap-set kmap "b"
+              (lambda (arg) (interactive "P")
+                (cinsk/select-command arg 'ediff-buffers 'ediff-buffers3)))
 
-  (define-key kmap [?d]
-    (lambda (arg) (interactive "P")
-      (cinsk/select-command arg 'ediff-directories
-                            'ediff-directories3)))
+  (keymap-set kmap "d"
+              (lambda (arg) (interactive "P")
+                (cinsk/select-command arg 'ediff-directories
+                                      'ediff-directories3)))
 
-  (define-key kmap [?v] 'ediff-revision)
-  (define-key kmap [?r]
-    (lambda (arg) (interactive "P")
-      (cinsk/select-command arg 'ediff-regions-wordwise
-                            'ediff-regions-linewise)))
-  (define-key kmap [?w]
-    (lambda (arg) (interactive "P")
-      (cinsk/select-command arg 'ediff-windows-wordwise
-                            'ediff-windows-linewise)))
+  (keymap-set kmap "v" #'ediff-revision)
+  (keymap-set kmap "r"
+              (lambda (arg) (interactive "P")
+                (cinsk/select-command arg 'ediff-regions-wordwise
+                                      'ediff-regions-linewise)))
+  (keymap-set kmap "w"
+              (lambda (arg) (interactive "P")
+                (cinsk/select-command arg 'ediff-windows-wordwise
+                                      'ediff-windows-linewise)))
 
-  (define-key kmap [?p] 'ediff-patch-file)
-  (define-key kmap [?P] 'ediff-patch-buffer)
-  (define-key kmap [?m]
-    (lambda (arg) (interactive "P")
-      (cinsk/select-command arg 'ediff-merge-revisions
-                            'ediff-merge-revisions-with-ancestor)))
+  (keymap-set kmap "p" #'ediff-patch-file)
+  (keymap-set kmap "P" #'ediff-patch-buffer)
+  (keymap-set kmap "m"
+              (lambda (arg) (interactive "P")
+                (cinsk/select-command arg 'ediff-merge-revisions
+                                      'ediff-merge-revisions-with-ancestor)))
 
-  (define-key kmap [(meta ?D)] 'ediff-show-registry)
+  (keymap-set kmap "M-D" #'ediff-show-registry)
 
-  (global-set-key [(meta ?D)] kmap))
+  (keymap-global-set "M-D" kmap))
 
 
 (defun cinsk/select-command (arg func1 func2)
@@ -136,7 +136,7 @@
   ;; (setq ediff-keep-variants nil)
 
   ;; Delete the buffer for the revision files on `ediff-quit'.
-  (add-to-list 'ediff-cleanup-hook #'cinsk/ediff-janitor)
+  (add-to-list 'ediff-cleanup-hook (lambda () (ediff-janitor nil nil)))
 
   ;; no effect
   ;; (setq ediff-make-wide-display-function 'cinsk/ediff-make-wide-display)
@@ -161,7 +161,7 @@ command."
       (call-interactively #'diff-ediff-patch))))
 
 (with-eval-after-load "diff-mode"
-  (define-key diff-mode-map [(control ?c) (control ?e)] 'diff-ediff-patch2))
+  (keymap-set diff-mode-map "C-c C-e" #'diff-ediff-patch2))
 
 (defvar cinsk/ediff-wide-display-policy 'center
   "Policy of the ediff frame resizing

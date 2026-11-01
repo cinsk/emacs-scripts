@@ -24,7 +24,7 @@
     (setq filelist (directory-files directory t match nosort))
     (delq nil (mapcar (lambda (p)
                         (if (funcall testproc p)
-                            (if (not (null full)) 
+                            (if (not (null full))
                                 p
                               (file-name-nondirectory p))
                           nil))
@@ -49,11 +49,11 @@
   )
 
 (set-keymap-parent dirtree-mode-map button-buffer-map)
-(define-key dirtree-mode-map "n" 'dirtree-next-line)
-(define-key dirtree-mode-map "p" 'dirtree-previous-line)
-(define-key dirtree-mode-map "\r" 'dirtree-expand-contract)
-(define-key dirtree-mode-map "+" 'dirtree-expand)
-(define-key dirtree-mode-map "-" 'dirtree-contract)
+(keymap-set dirtree-mode-map "n" #'dirtree-next-line)
+(keymap-set dirtree-mode-map "p" #'dirtree-previous-line)
+(keymap-set dirtree-mode-map "RET" #'dirtree-expand-contract)
+(keymap-set dirtree-mode-map "+" #'dirtree-expand)
+(keymap-set dirtree-mode-map "-" #'dirtree-contract)
 
 
 (defvar default-indent-spaces 2
@@ -65,14 +65,14 @@
 (defun dirtree-next-line (&optional arg try-vscroll)
   (interactive "p\np")
   (next-line arg try-vscroll)
-  (message "%d: %s" 
+  (message "%d: %s"
            (get-text-property (point) 'level)
            (get-text-property (point) 'fullpath)))
 
 (defun dirtree-previous-line (&optional arg try-vscroll)
   (interactive "p\np")
   (previous-line arg try-vscroll)
-  (message "%d: %s" 
+  (message "%d: %s"
            (get-text-property (point) 'level)
            (get-text-property (point) 'fullpath)))
 
@@ -123,10 +123,10 @@
         (lev (get-text-property pos 'level))
         (expanded (get-text-property pos 'expanded))
         nelems)
-    (cond ((string-equal "." (file-name-nondirectory path)) 
+    (cond ((string-equal "." (file-name-nondirectory path))
            ;; Refresh the current view??
            nil)
-          ((string-equal ".." (file-name-nondirectory path)) 
+          ((string-equal ".." (file-name-nondirectory path))
            ;; goto-parent-line??
            nil)
           ((eq expanded :contracted)
@@ -146,7 +146,7 @@ current line is not empty, fill from the next line"
       (set-buffer (get-buffer-create "*DirTree*"))
       (setq lst (directory-files-test dir
                                       (lambda (path)
-                                        (file-directory-p path)) 
+                                        (file-directory-p path))
                                       t nil nil))
       (dolist (elm lst)
         (and (not (string-equal (file-name-nondirectory elm) "."))
@@ -157,8 +157,8 @@ current line is not empty, fill from the next line"
                           (insert "\n")
                           ))
                (setq start (point))
-               (insert (format "%s [+] %s" 
-                               (make-string (* default-indent-spaces lev) ?\ ) 
+               (insert (format "%s [+] %s"
+                               (make-string (* default-indent-spaces lev) ?\ )
                                (file-name-nondirectory elm)))
                (setq nelems (1+ nelems))
                (setq end (point))
@@ -180,6 +180,3 @@ current line is not empty, fill from the next line"
       (if (not (local-variable-p 'dirtree-mode-variant))
           (dirtree-mode))
       (switch-to-buffer buf))))
-          
-
-    

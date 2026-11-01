@@ -5,7 +5,7 @@
 ;;; General korean langauge environment setting
 
 ;;; set input method toggle key to 'Shift-Space'
-(global-set-key [?\S- ] 'toggle-input-method)
+(keymap-global-set "S-SPC" #'toggle-input-method)
 
 (set-language-environment "Korean")
 ;; (setq-default file-name-coding-system 'utf-8)
@@ -51,12 +51,12 @@
 
 ;; turn off C-h during input
 (with-eval-after-load "quail"
-  (define-key quail-translation-keymap "\C-h"
-    'quail-delete-last-char)
-  ;;(define-key quail-translation-keymap "\C-?"
+  (keymap-set quail-translation-keymap "C-h"
+              'quail-delete-last-char)
+  ;;(keymap-set quail-translation-keymap "DEL"
   ;;  'quail-translation-help)
-  (define-key quail-translation-keymap "\C-?"
-    'quail-delete-last-char))
+  (keymap-set quail-translation-keymap "DEL"
+              'quail-delete-last-char))
 
 ;; The default coding system of the dired buffer is utf-8.
 (add-hook 'dired-before-readin-hook

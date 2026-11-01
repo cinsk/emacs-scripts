@@ -41,7 +41,7 @@
     (message "Window %sdedicated to %s"
              (if dedicated "no longer " "")
              (buffer-name))))
-(global-set-key [Scroll_Lock] 'toggle-current-window-dedication)
+(keymap-global-set "<Scroll_Lock>" #'toggle-current-window-dedication)
 
 (defun current-frame-configuration-only (&optional frame)
   "Return a list describing the positions and states of FRAME only.
@@ -73,7 +73,6 @@ CONFIGURATION."
 
 
 
-
 ;; (defun reverse-other-window (arg)
 ;;   "Reverse `other-window' with no argument"
 ;;   (interactive "p")
@@ -96,39 +95,39 @@ CONFIGURATION."
 ;;   (select-window (first-window))
 ;;   (other-window index))
 
-;; (global-set-key [(control x) ?w ?0]
-;;                 '(lambda () (interactive) (abs-other-window 0)))
-;; (global-set-key [(control x) ?w ?1]
-;;                 '(lambda () (interactive) (abs-other-window 1)))
-;; (global-set-key [(control x) ?w ?2]
-;;                 '(lambda () (interactive) (abs-other-window 2)))
-;; (global-set-key [(control x) ?w ?3]
-;;                 '(lambda () (interactive) (abs-other-window 3)))
-;; (global-set-key [(control x) ?w ?4]
-;;                 '(lambda () (interactive) (abs-other-window 4)))
-;; (global-set-key [(control x) ?w ?5]
-;;                 '(lambda () (interactive) (abs-other-window 5)))
-;; (global-set-key [(control x) ?w ?6]
-;;                 '(lambda () (interactive) (abs-other-window 6)))
-;; (global-set-key [(control x) ?w ?7]
-;;                 '(lambda () (interactive) (abs-other-window 7)))
-;; (global-set-key [(control x) ?w ?8]
-;;                 '(lambda () (interactive) (abs-other-window 8)))
-;; (global-set-key [(control x) ?w ?9]
-;;                 '(lambda () (interactive) (abs-other-window 9)))
+;; (keymap-global-set "C-x w 0"
+;;                 (lambda () (interactive) (abs-other-window 0)))
+;; (keymap-global-set "C-x w 1"
+;;                 (lambda () (interactive) (abs-other-window 1)))
+;; (keymap-global-set "C-x w 2"
+;;                 (lambda () (interactive) (abs-other-window 2)))
+;; (keymap-global-set "C-x w 3"
+;;                 (lambda () (interactive) (abs-other-window 3)))
+;; (keymap-global-set "C-x w 4"
+;;                 (lambda () (interactive) (abs-other-window 4)))
+;; (keymap-global-set "C-x w 5"
+;;                 (lambda () (interactive) (abs-other-window 5)))
+;; (keymap-global-set "C-x w 6"
+;;                 (lambda () (interactive) (abs-other-window 6)))
+;; (keymap-global-set "C-x w 7"
+;;                 (lambda () (interactive) (abs-other-window 7)))
+;; (keymap-global-set "C-x w 8"
+;;                 (lambda () (interactive) (abs-other-window 8)))
+;; (keymap-global-set "C-x w 9"
+;;                 (lambda () (interactive) (abs-other-window 9)))
 
-;;(global-set-key [C-tab] 'other-window)  ; C-x o
-;;(global-set-key [S-iso-lefttab] 'reverse-other-window)
-;;(global-set-key [(backtab)] 'reverse-other-window)
+;;(keymap-global-set "C-<tab>" #'other-window)  ; C-x o
+;;(keymap-global-set "S-<iso-lefttab>" #'reverse-other-window)
+;;(keymap-global-set "<backtab>" #'reverse-other-window)
 
-;;(global-set-key [(control tab)] 'smart-other-frame-or-window)
-;;(global-set-key [(control tab)] 'other-window-or-frame)
+;;(keymap-global-set "C-<tab>" #'smart-other-frame-or-window)
+;;(keymap-global-set "C-<tab>" #'other-window-or-frame)
 
 ;; ;; I want C-<tab> works consistently even in minibuffer-mode.
 ;; ;; Since, C-<tab> is bound to `file-cache-minibuffer-complete'
 ;; ;; in the minibuffer mode, I'll replace to S-<tab>.
-;; (define-key minibuffer-local-map [(backtab)] 'file-cache-minibuffer-complete)
-;; (define-key minibuffer-local-map [(control tab)] 'smart-other-frame-or-window)
+;; (keymap-set minibuffer-local-map "<backtab>" #'file-cache-minibuffer-complete)
+;; (keymap-set minibuffer-local-map "C-<tab>" #'smart-other-frame-or-window)
 
 
 ;; TODO: How about to bind keys like these?
@@ -137,11 +136,11 @@ CONFIGURATION."
 ;; C-x w 2  - select the second window
 ;; ...
 
-;; (global-set-key [(control x) ?w ?n] 'other-window)
-;; (global-set-key [(control x) ?w ?o] 'other-window)
-;; (global-set-key [(control x) ?w ?p] 'reverse-other-window)
-;; (global-set-key [(control x) ?w ?k] 'delete-window)
-;; (global-set-key [(control x) ?w ?K] 'delete-other-window)
+;; (keymap-global-set "C-x w n" #'other-window)
+;; (keymap-global-set "C-x w o" #'other-window)
+;; (keymap-global-set "C-x w p" #'reverse-other-window)
+;; (keymap-global-set "C-x w k" #'delete-window)
+;; (keymap-global-set "C-x w K" #'delete-other-window)
 
 ;; (defun first-window ()
 ;;   "Return the first window of the current frame"
@@ -206,52 +205,52 @@ CONFIGURATION."
 ;;   (if (> (length (frame-list)) 1)
 ;;       (other-frame (- arg))
 ;;     (other-window (- arg))))
+;;(keymap-global-set "C-x o" #'smart-other-frame)
+(defun delete-current-frame-keep-focus ()
+  "Select another available frame before deleting the current frame, to
+prevent focus loss."
+  (interactive)
+  (let* ((cframe (selected-frame))
+         (oframe (next-frame cframe nil)))
+    (if (and oframe (not (eq oframe cframe)))
+        (progn (select-frame-set-input-focus oframe)
+               (delete-frame cframe))
+      (message "No other frame to select"))))
 
+(let ((kmap (make-sparse-keymap)))
+  (keymap-set kmap "f" #'make-frame)
+  (keymap-set kmap "k" #'delete-current-frame-keep-focus)
+  (keymap-set kmap "K" #'delete-other-frames)
+  (keymap-set kmap "n" #'smart-other-frame)
+  (keymap-set kmap "o" #'smart-other-frame)
+  (keymap-set kmap "p" #'reverse-smart-other-frame)
 
+  (my/move-key :from "C-x f" :to "C-x F" :with kmap))
 
-
-
-
-
-
-
-;;(global-set-key [(control x) ?o] 'smart-other-frame)
-(global-unset-key [(control x) ?f])
-(global-set-key [(control x) ?f ?f] 'make-frame) ; `new-frame' is obsolute
-(global-set-key [(control x) ?f ?k] #'(lambda (&optional arg)
-                                        (interactive "p")
-                                        (let ((frame (selected-frame)))
-                                          (other-frame arg)
-                                          (delete-frame frame))))
-
-(global-set-key [(control x) ?f ?K] 'delete-other-frames)
-(global-set-key [(control x) ?f ?n] 'smart-other-frame)
-(global-set-key [(control x) ?f ?o] 'smart-other-frame)
-(global-set-key [(control x) ?f ?p] 'reverse-smart-other-frame)
 
 (defun run-command-other-frame (command)
   "Run COMMAND in a new frame."
   (interactive "CC-x 5 M-x ")
   (select-frame (make-frame))
   (call-interactively command))
-(global-set-key "\C-x5\M-x" 'run-command-other-frame)
+(keymap-global-set "C-x 5 M-x" #'run-command-other-frame)
 
 
 ;;
 ;; Quick Frame Configuration Load/Save
 ;;
 (when nil
-  (global-set-key [(control f3)] '(lambda ()
-                                    "Quick frame load"
-                                    (interactive)
-                                    (jump-to-register ?\x3)
-                                    (message "Load saved frame configuration")))
+  (keymap-global-set "C-<f3>" (lambda ()
+                                "Quick frame load"
+                                (interactive)
+                                (jump-to-register ?\x3)
+                                (message "Load saved frame configuration")))
 
-  (global-set-key [(control f4)] '(lambda ()
-                                    "Quick frame save"
-                                    (interactive)
-                                    (frame-configuration-to-register ?\x3)
-                                    (message "Frame configuration saved"))))
+  (keymap-global-set "C-<f4>" (lambda ()
+                                "Quick frame save"
+                                (interactive)
+                                (frame-configuration-to-register ?\x3)
+                                (message "Frame configuration saved"))))
 
 
 
@@ -319,15 +318,15 @@ to the display width"
 
 
 
-;; (global-set-key [(control ?x) ?w up] 'move-window-border-up)
-;; (global-set-key [(control ?x) ?w down] 'move-window-border-down)
-;; (global-set-key [(control ?x) ?w left] 'move-window-border-left)
-;; (global-set-key [(control ?x) ?w right] 'move-window-border-right)
+;; (keymap-global-set "C-x w <up>" #'move-window-border-up)
+;; (keymap-global-set "C-x w <down>" #'move-window-border-down)
+;; (keymap-global-set "C-x w <left>" #'move-window-border-left)
+;; (keymap-global-set "C-x w <right>" #'move-window-border-right)
 
-;; (global-set-key [(meta shift up)] 'move-window-border-up)
-;; (global-set-key [(meta shift down)] 'move-window-border-down)
-;; (global-set-key [(meta shift left)] 'move-window-border-left)
-;; (global-set-key [(meta shift right)] 'move-window-border-right)
+;; (keymap-global-set "M-S-<up>" #'move-window-border-up)
+;; (keymap-global-set "M-S-<down>" #'move-window-border-down)
+;; (keymap-global-set "M-S-<left>" #'move-window-border-left)
+;; (keymap-global-set "M-S-<right>" #'move-window-border-right)
 
 
 (defun load-or-save-frame-configuration (&optional arg)
@@ -344,20 +343,20 @@ to the display width"
 
 (defvar frame-configuration-map
   (let ((map (make-sparse-keymap)))
-    (define-key map [?1] 'load-or-save-frame-configuration)
-    (define-key map [?2] 'load-or-save-frame-configuration)
-    (define-key map [?3] 'load-or-save-frame-configuration)
-    (define-key map [?4] 'load-or-save-frame-configuration)
-    (define-key map [?5] 'load-or-save-frame-configuration)
-    (define-key map [?6] 'load-or-save-frame-configuration)
-    (define-key map [?7] 'load-or-save-frame-configuration)
-    (define-key map [?8] 'load-or-save-frame-configuration)
-    (define-key map [?9] 'load-or-save-frame-configuration)
-    (define-key map [?0] 'load-or-save-frame-configuration)
+    (keymap-set map "1" #'load-or-save-frame-configuration)
+    (keymap-set map "2" #'load-or-save-frame-configuration)
+    (keymap-set map "3" #'load-or-save-frame-configuration)
+    (keymap-set map "4" #'load-or-save-frame-configuration)
+    (keymap-set map "5" #'load-or-save-frame-configuration)
+    (keymap-set map "6" #'load-or-save-frame-configuration)
+    (keymap-set map "7" #'load-or-save-frame-configuration)
+    (keymap-set map "8" #'load-or-save-frame-configuration)
+    (keymap-set map "9" #'load-or-save-frame-configuration)
+    (keymap-set map "0" #'load-or-save-frame-configuration)
     map)
   "hotkey keymap for save/load frameconfiguration")
 
-(global-set-key [(control f3)] frame-configuration-map)
+(keymap-global-set "C-<f3>" frame-configuration-map)
 
 
 

@@ -26,7 +26,7 @@
 ;;; INSTALLATION: In your ~/.emacs,
 ;;;
 ;;; (require 'vc-jump)
-;;; (global-set-key [f12] 'vc-jump)   ; for your convenience
+;;; (keymap-global-set "<f12>" #'vc-jump)   ; for your convenience
 ;;;
 
 ;;;

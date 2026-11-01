@@ -31,11 +31,11 @@
 (ediff-defvar-local ediffx-truncate-alist nil "")
 (ediff-defvar-local ediffx-next-truncates nil "")
 
-;;(define-key ediff-mode-map [?\$] 'ediffx-switch-truncate-lines)
+;;(keymap-set ediff-mode-map "$" #'ediffx-switch-truncate-lines)
 
 (add-to-list 'ediff-keymap-setup-hook
              (lambda ()
-               (define-key ediff-mode-map "$" 'ediffx-switch-truncate-lines)))
+               (keymap-set ediff-mode-map "$" #'ediffx-switch-truncate-lines)))
 
 (defun ediffx-truncate-status ()
   "Return alist of (BUFFER . TRUNCATE-LINES) of the current ediff buffers"

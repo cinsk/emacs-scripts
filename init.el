@@ -184,16 +184,15 @@
 
 (use-package enable-mmode)
 
-
 ;;; ==================================================================
 ;;; Packages Configuration
 ;;; ==================================================================
 
 (use-package cinsk-common
   :config
-  (global-set-key [(control ?c) ?n] #'cinsk/line-numbers-on-region)
-  (global-set-key [(control ?c) ?q] #'cinsk/fill-text-line-paragraph)
-  (global-set-key [(meta ?Q)] #'cinsk/unfill-paragraph)
+  (keymap-global-set "C-c n" #'cinsk/line-numbers-on-region)
+  (keymap-global-set "C-c q" #'cinsk/fill-text-line-paragraph)
+  (keymap-global-set "M-Q" #'cinsk/unfill-paragraph)
   ;;(cinsk/add-site-lisp-directories "/usr/local/share/emacs/site-lisp")
   ;;(cinsk/add-site-lisp-directories user-custom-packages-directory)
   )
@@ -231,7 +230,7 @@
 (use-package hippie-exp
   ;; Use hippie expansion for dynamic abbreviation
   :config
-  (global-set-key [(meta ?/)] 'hippie-expand)
+  (keymap-global-set "M-/" #'hippie-expand)
   (setq hippie-expand-try-functions-list
         '(try-complete-file-name-partially
           try-complete-file-name
@@ -414,8 +413,8 @@
 ;;; and the keypad delete the character under the cursor and to the
 ;;; right under X, instead of the default, backspace behavior.
 ;;;
-;; (global-set-key [delete] 'delete-char)
-;; (global-set-key [kp-delete] 'delete-char)
+;; (keymap-global-set "<delete>" #'delete-char)
+;; (keymap-global-set "<kp-delete>" #'delete-char)
 
 
 
@@ -449,8 +448,8 @@
   ;; The default key binding M-% and C-M-% are too difficult to type.
   ;; Since M-# and C-M-# are not used by official bindings, I'll use
   ;; them.
-  (global-set-key [(meta ?#)] 'query-replace)
-  (global-set-key [(control meta ?#)] 'query-replace-regexp)
+  (keymap-global-set "M-#" #'query-replace)
+  (keymap-global-set "C-M-#" #'query-replace-regexp)
 
   ;; During isearch, M-% and C-M-% will also launching replace job
   ;; with the last search string.  Thus, I'll add M-% and C-M-% for
@@ -482,20 +481,20 @@
 ;;
 ;; (when (uinit-require 'browse-kill-ring)
 ;;   (when (fboundp 'browse-kill-ring)
-;;     (global-set-key [(control ?c) (control ?k)] 'browse-kill-ring)))
+;;     (keymap-global-set "C-c C-k" #'browse-kill-ring)))
 
 
 ;;; If you are intended BS (backspace) key to work
 ;;; correctly on some terminals, uncomment one of below s-exp.
 ;;;                                                 -- cinsk
-;;(global-set-key [C-?] 'backward-delete-char)
-;;(global-set-key [C-h] 'backward-delete-char)
+;;(keymap-global-set "C-?" #'backward-delete-char)
+;;(keymap-global-set "C-h" #'backward-delete-char)
 
 (keymap-global-set "C-c c" #'compile)
 (use-package dwim-compile
   :if (locate-library "dwim-compile")
   :config
-  (global-set-key [(control ?c) ?c] 'dwim-c/compile))
+  (keymap-global-set "C-c c" #'dwim-c/compile))
 
 ;; See http://stackoverflow.com/questions/13397737/ansi-coloring-in-compilation-mode
 (ignore-errors
@@ -507,15 +506,15 @@
 
 
 
-(global-set-key [(control ?c) (control ?c)] 'comment-region)
+(keymap-global-set "C-c C-c" #'comment-region)
 (setq comment-empty-lines t)
 
-(global-set-key [?\C-.] 'find-tag-other-window) ; C-x o
+(keymap-global-set "C-." #'find-tag-other-window) ; C-x o
 
 
-(global-set-key [(control c) ?i] 'indent-region)
+(keymap-global-set "C-c i" #'indent-region)
 
-(global-set-key [(f11)] 'toggle-case-fold-search)
+(keymap-global-set "<f11>" #'toggle-case-fold-search)
 
 (show-paren-mode 1)                     ; show matching parenthese
 
@@ -542,25 +541,47 @@
 ;;; Switching between buffers using iswitchb/ido
 ;;;
 
-(unless (package-installed-p 'helm)
-  (use-package iswitchb
-    :disabled
-    :config
-    ;; (iswitchb-mode 1)                     ; smart buffer switching mode
-    (setq iswitchb-default-method 'maybe-frame)) ; ask to use another frame.
+
+;; I tried helm-mode, which looks promising, but it does not seem to
+;; have enough short-cut mechanism to boost user's input.  For
+;; example, completing q-r-r is not possible for
+;; `query-replace-regexp'.  And if there are multiple choices, I need
+;; to navigate using up/down shortcut, with careful on-looking to the
+;; helm buffer.  It distract me from what I try to do.  Until helm
+;; updated, or until I found better way, I'll stick to
+;; 'icomplete-mode.
+;(icomplete-mode 1)
+;(with-eval-after-load "icomplete"
+;  (uinit-require 'icomplete+ nil 'noerror))
 
-  (use-package ido
-    :config
-    (ido-mode 1)
+;; Now I'm using helm.  One minor problem is, whenever I invoke
+;; `helm-find-files', sometimes it freezes.  I believe this is related
+;; to the garbage collection. See the comment in the beginning of the
+;; file for `garbage-collection-messages'.
 
-    ;;(setq ido-default-buffer-method 'maybe-frame)
-    (setq ido-use-filename-at-point 'guess)
-    (setq ido-max-directory-size 100000)
+;; (uinit "_helm" :when (locate-library "helm"))
+(uinit "vomce")
 
-    (when (boundp 'ido-file-completion-map)
-      ;; The default binding `C-x C-f' is too much for me
-      (define-key ido-file-completion-map [(control return)] 'ido-enter-dired)
-      (define-key ido-file-completion-map [(meta return)] 'ido-enter-dired))))
+(when nil
+  (unless (package-installed-p 'helm)
+    (use-package iswitchb
+      :disabled
+      :config
+      ;; (iswitchb-mode 1)                     ; smart buffer switching mode
+      (setq iswitchb-default-method 'maybe-frame)) ; ask to use another frame.
+
+    (use-package ido
+      :config
+      (ido-mode 1)
+
+      ;;(setq ido-default-buffer-method 'maybe-frame)
+      (setq ido-use-filename-at-point 'guess)
+      (setq ido-max-directory-size 100000)
+
+      (when (boundp 'ido-file-completion-map)
+        ;; The default binding `C-x C-f' is too much for me
+        (keymap-set ido-file-completion-map "C-<return>" #'ido-enter-dired)
+        (keymap-set ido-file-completion-map "M-<return>" #'ido-enter-dired)))))
 
 ;;
 ;; Normally, switching buffer commands (e.g. `switch-to-buffer' or
@@ -575,29 +596,6 @@
 ;; names in `iswitchb-buffer-ignore'. -- cinsk
 ;;
 ;; (setq iswitchb-buffer-ignore '("^ \\*Minibuf[^*]*\\*"))
-
-
-;; I tried helm-mode, which looks promising, but it does not seem to
-;; have enough short-cut mechanism to boost user's input.  For
-;; example, completing q-r-r is not possible for
-;; `query-replace-regexp'.  And if there are multiple choices, I need
-;; to navigate using up/down shortcut, with careful on-looking to the
-;; helm buffer.  It distract me from what I try to do.  Until helm
-;; updated, or until I found better way, I'll stick to
-;; 'icomplete-mode.
-;(icomplete-mode 1)
-;(with-eval-after-load "icomplete"
-;  (uinit-require 'icomplete+ nil 'noerror))
-
-(when (> emacs-major-version 23)
-  ;; diable completion cycling
-  (setq completion-cycle-threshold nil))
-
-;; Now I'm using helm.  One minor problem is, whenever I invoke
-;; `helm-find-files', sometimes it freezes.  I believe this is related
-;; to the garbage collection. See the comment in the beginning of the
-;; file for `garbage-collection-messages'.
-(uinit "_helm" :when (locate-library "helm"))
 
 
 
@@ -650,11 +648,11 @@
 (fset 'find-next-tag "\C-u\256")        ; macro for C-u M-.
 (fset 'find-prev-tag "\C-u-\256")       ; macro for C-u - M-.
 
-(global-set-key "\M-]" 'find-next-tag)
-(global-set-key "\M-[" 'find-prev-tag)
+(keymap-global-set "M-]" #'find-next-tag)
+(keymap-global-set "M-[" #'find-prev-tag)
 
-;;(global-set-key [up]   '(lambda () (interactive) (scroll-down 1)))
-;;(global-set-key [down] '(lambda () (interactive) (scroll-up 1)))
+;;(keymap-global-set "<up>"   (lambda () (interactive) (scroll-down 1)))
+;;(keymap-global-set "<down>" (lambda () (interactive) (scroll-up 1)))
 
 (defun scroll-other-frame (&optional arg)
   "Scroll the selected window in the next frame.
@@ -680,13 +678,13 @@ instead of the next window."
           (scroll-down arg))
       (user-error "No valid window found in the next frame"))))
 
-(global-set-key [(meta shift prior)] 'scroll-other-frame-down)
-(global-set-key [(meta shift next)] 'scroll-other-frame)
+(keymap-global-set "M-S-<prior>" #'scroll-other-frame-down)
+(keymap-global-set "M-S-<next>" #'scroll-other-frame)
 
 
 
-(global-set-key [(control meta ?\])] #'forward-page)
-(global-set-key [(control meta ?\[)] #'backward-page)
+(keymap-global-set "C-M-]" #'forward-page)
+(keymap-global-set "C-M-[" #'backward-page)
 
 
 
@@ -695,7 +693,7 @@ instead of the next window."
                #'suspend-frame))
   ;; `suspend-frame' is bound to `C-z' and `C-x C-z'.
   ;; As I accidentally press `C-z' so remove its binding.
-  (global-unset-key [(control ?z)]))
+  (keymap-global-unset "C-z"))
 
 
 
@@ -720,17 +718,6 @@ instead of the next window."
 
 
 
-;;
-;; Company mode
-;;
-(with-eval-after-load "company"
-  (define-key company-mode-map [(control meta ?i)] 'company-complete-common)
-  (define-key company-active-map [(control ?n)] 'company-select-next)
-  (define-key company-active-map [(control ?p)] 'company-select-previous)
-  (define-key company-active-map [(control ?v)] 'company-next-page)
-  (define-key company-active-map [(meta ?v)] 'company-previous-page)
-  )
-
 
 (uinit "_paren.el" :when (or (locate-library "paredit")
                              (locate-library "smartparens")))
@@ -754,10 +741,10 @@ instead of the next window."
 
 (uinit "_dired" :when 'dired)
 
-(global-set-key [(meta ?F) ?d return] 'find-dired)
-(global-set-key [(meta ?F) ?g ?d] 'find-grep-dired)
-(global-set-key [(meta ?F) ?g return] 'find-grep)
-(global-set-key [(meta ?F) ?r] 'rgrep)
+(keymap-global-set "M-F d <return>" #'find-dired)
+(keymap-global-set "M-F g d" #'find-grep-dired)
+(keymap-global-set "M-F g <return>" #'find-grep)
+(keymap-global-set "M-F r" #'rgrep)
 
 
 ;;;
@@ -779,10 +766,10 @@ instead of the next window."
 ;;;
 
 ;; vc-toggle-read-only is an obsolete command (as of 24.1)
-(global-set-key [(control x) (control q)]
-                (if (fboundp 'read-only-mode)
-                    'read-only-mode
-                  'vc-toggle-read-only))
+(keymap-global-set "C-x C-q"
+                   (if (fboundp 'read-only-mode)
+                       #'read-only-mode
+                     #'vc-toggle-read-only))
 
 
 ;;(split-window-horizontally)
@@ -806,12 +793,58 @@ instead of the next window."
 
 
 
+;;; GPG passphrase entry: loopback mode
+;;
+;; Why: Emacs decrypts ~/.authinfo.gpg (used by auth-source, and so by
+;; TRAMP, Gnus, smtpmail, etc.) by running `gpg'.  Normally gpg-agent
+;; starts an external pinentry program (GTK dialog, curses, pinentry-mac)
+;; to ask for the passphrase.  That breaks in terminal Emacs, over SSH,
+;; or with no display.
+;;
+;; Loopback: gpg-agent does NOT start a pinentry.  It sends the request
+;; back to `gpg', which sends it back to Emacs (epg).  Emacs then asks
+;; in the minibuffer via `read-passwd':
+;;
+;;   Emacs <-- gpg <-- gpg-agent   ("need passphrase")
+;;   Emacs --> gpg --> gpg-agent   (passphrase)
+;;
+;; gpg-agent still caches the passphrase (see default-cache-ttl /
+;; max-cache-ttl in gpg-agent.conf), so you aren't asked every time.
+;;
+;; No `pinentry' package (pinentry.el) is needed for this.  Don't set
+;; INSIDE_EMACS yourself either; epg already sets it for the gpg it starts.
+;;
+;; ---- One-time GnuPG setup (in case you forgot) ----------------------
+;;
+;; 1. Allow loopback in ~/.gnupg/gpg-agent.conf (on by default since
+;;    GnuPG 2.1.12, but add it explicitly to be safe):
+;;
+;;      allow-loopback-pinentry
+;;
+;; 2. Reload the agent so it picks up the change:
+;;
+;;      gpgconf --reload gpg-agent
+;;
+;;    (or restart it: gpgconf --kill gpg-agent; the agent starts again
+;;    on demand)
+;;
+;; Check: M-: (epg-decrypt-file (epg-make-context) "~/.authinfo.gpg" nil)
+;; should ask for the passphrase in the minibuffer and not in a popup.
+;; ----------------------------------------------------------------------
+
+(use-package epg-config
+  :ensure nil                      ; built in (Emacs 27+)
+  :custom
+  (epg-pinentry-mode 'loopback))   ; ask for the GPG passphrase in the minibuffer
+
+
+
 ;;;
 ;;; Calender
 ;;;
 (require 'calendar)
 
-(global-set-key [(control f12)] 'calendar)
+(keymap-global-set "C-<f12>" #'calendar)
 
 (let ((my-diary-file (file-name-concat user-emacs-directory "diary")))
   (if (file-readable-p my-diary-file)
@@ -949,8 +982,8 @@ instead of the next window."
 ;;; GNU Emacs Calculator Configuration
 ;;;
 (autoload 'calc "calc" "The Emacs Calculator" t)
-(global-set-key [f10] 'calc)
-(global-set-key [(control f10)] 'quick-calc-dwim)
+(keymap-global-set "<f10>" #'calc)
+(keymap-global-set "C-<f10>" #'quick-calc-dwim)
 
 (defun quick-calc-dwim (&optional arg)
   "Call `calc-eval-region' if there is active region, otherwise
@@ -1014,7 +1047,7 @@ prefix ARGs, insert the result at the end of region."
   ;; commonly than `graphviz-dot-mode', I'll bind
   ;; `graphviz-dot-preview to "C-c P"
 
-  (define-key graphviz-dot-mode-map [(control ?c) ?P] 'graphviz-dot-preview))
+  (keymap-set graphviz-dot-mode-map "C-c P" #'graphviz-dot-preview))
 
 
 (defun fkey (arg)
@@ -1030,8 +1063,8 @@ A prefix argument N is translated to <fn> key"
     (message "key: %S" ks)
     (add-to-list 'unread-command-events (listify-key-sequence ks))))
 
-;;(global-set-key [f2] 'ff-find-other-file)
-;;(global-set-key [f3] 'dired-jump)
+;;(keymap-global-set "<f2>" #'ff-find-other-file)
+;;(keymap-global-set "<f3>" #'dired-jump)
 
 
 ;; On Emacs version 25, especiall on text terminal, the key `M-['
@@ -1040,7 +1073,7 @@ A prefix argument N is translated to <fn> key"
 ;;
 ;; See https://emacs.stackexchange.com/questions/28851/how-to-turn-off-bracketed-paste-mode
 (unless window-system
-  (global-unset-key (kbd "M-[")))
+  (keymap-global-unset "M-["))
 
 
 ;; Run `M-x uinit-report' (or see `emacs-init-time') for a breakdown
@@ -1069,7 +1102,6 @@ A prefix argument N is translated to <fn> key"
   (setq transient-default-level 6))
 
 (uinit "_claude" :when (executable-find "claude"))
-
 
 
 ;;; ====================================================================

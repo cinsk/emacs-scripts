@@ -57,4 +57,4 @@ instead of the current word."
           (goto-char (cdr range))))))
 
 (with-eval-after-load "tex-mode"
-  (define-key tex-mode-map [(control ?c) ?e] 'latex-enclose-word))
+  (keymap-set tex-mode-map "C-c e" #'latex-enclose-word))

@@ -24,8 +24,8 @@ SNAKE should be a string in absolute path."
 (with-eval-after-load "pyenv-mode"
   ;; pyenv uses "C-c C-s" for `pyenv-mode-set', which overlapped with
   ;; python.el's "C-c C-s", `python-shell-send-string'.
-  (define-key pyenv-mode-map [(control ?c) (control ?s)] nil)
-  (define-key pyenv-mode-map [(control ?c) (control ?p)] 'pyenv-mode-set))
+  (keymap-set pyenv-mode-map "C-c C-s" nil)
+  (keymap-set pyenv-mode-map "C-c C-p" #'pyenv-mode-set))
 
 (when (pyenv-check-executable (executable-find "python"))
   (require 'pyenv-mode))
@@ -44,23 +44,23 @@ del _fname"))
   (add-to-list 'python-mode-hook 'pyenv-mode)
 
 
-  (define-key python-mode-map [(control ?c) ?\!] 'run-python)
+  (keymap-set python-mode-map "C-c !" #'run-python)
 
   ;; By default, python.el set "C-c C-c" to python-shell-send-buffer,
   ;; which overlapped with my personal config. (comment-region).
-  (define-key python-mode-map [(control ?c) (control ?c)] nil)
-  (define-key python-mode-map [(control ?c) (control ?b)] #'python-shell-send-buffer)
+  (keymap-set python-mode-map "C-c C-c" nil)
+  (keymap-set python-mode-map "C-c C-b" #'python-shell-send-buffer)
 
   ;; From Python 3.11, it supports terminal capability which is not
   ;; compatible with Emacs.  This forces Python to use legacy REPL, to
   ;; remove the 'pyrepl' warning.
   (setenv "PYTHON_BASIC_REPL" "1")
 
-  (define-key inferior-python-mode-map [(control ?c) (control ?q)] #'pd-set-display)
-  (define-key inferior-python-mode-map [(control ?c) (control ?f) (control ?p)] #'pd-dataframe-from-clipboard)
-  (define-key inferior-python-mode-map [(control ?c) (control ?f) (control ?o)] #'pd-dataframe-from-orgtable)
+  (keymap-set inferior-python-mode-map "C-c C-q" #'pd-set-display)
+  (keymap-set inferior-python-mode-map "C-c C-f C-p" #'pd-dataframe-from-clipboard)
+  (keymap-set inferior-python-mode-map "C-c C-f C-o" #'pd-dataframe-from-orgtable)
 
-  (global-set-key [(control ?x) ?w ?p] 'python-shell-switch-to-shell)
+  (keymap-global-set "C-x w p" #'python-shell-switch-to-shell)
   )
 
 (use-package uv-mode

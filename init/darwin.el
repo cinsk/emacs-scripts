@@ -70,7 +70,7 @@
 
 
 ;; sets fn-delete to be right-delete
-(global-set-key [kp-delete] 'delete-char)
+(keymap-global-set "<kp-delete>" #'delete-char)
 
 ;;(set-exec-path-from-shell-path)
 
@@ -169,9 +169,9 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
                                     (alpha . (100 . 90)))))
 
 ;; (when (display-graphic-p)
-;;   (global-set-key [(meta ?c)] 'ns-copy-including-secondary))
+;;   (keymap-global-set "M-c" #'ns-copy-including-secondary))
 
-(global-set-key [(meta ?`)] 'darwin-smart-other-frame)
+(keymap-global-set "M-`" #'darwin-smart-other-frame)
 
 ;; If Emacs is not launched in Terminal, .bashrc is not executed, so
 ;; that /usr/local/bin is not added to the PATH, so that Emacs will
@@ -188,8 +188,12 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
 (setq cinsk/ediff-wide-display-policy 'fullscreen)
 
 (when nil
-  ;; By placing /usr/local/bin prior to /usr/bin, below snippets are
-  ;; not necessary
+  ;; Historically, Homebrew used /usr/local for x86_64 binaries, but
+  ;; has switched to /opt/homebrew for native ARM binaries.
+  ;;
+  ;; Proper order of PATH should be done out of Emacs' scope so below
+  ;; snippets are not necessary.
+
   (when (file-executable-p "/usr/local/bin/diff3")
     (setq ediff-diff3-program "/usr/local/bin/diff3"
           ediff-diff-program  "/usr/local/bin/diff"
@@ -231,7 +235,7 @@ then try to use a word at point."
         (message "Looking up '%s'..." w)
         (call-process "/usr/bin/open" nil nil nil (format "dict://%s" w))))))
 
-(global-set-key [(alt ?d)] 'darwin-dictionary-look-up)
+(keymap-global-set "A-d" #'darwin-dictionary-look-up)
 
 (with-eval-after-load "dired-x"
   (setq dired-guess-shell-alist-user
@@ -271,7 +275,7 @@ then try to use a word at point."
 ;; Darwin (MacOS Ventura) uses Control-Meta-D for dictionary lookup,
 ;; which is not able to override at the moment.  it is used for
 ;; `isearch-del-char', so we can use Option key instead of C-M-d.
-(define-key isearch-mode-map (kbd "A-C-d") 'isearch-del-char)
+(keymap-set isearch-mode-map "A-C-d" #'isearch-del-char)
 
 
 ;; `M-x man' in Emacs 30.1 causes sed(1) error.   Override to use GNU sed(1)

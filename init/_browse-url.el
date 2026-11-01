@@ -39,4 +39,4 @@
         (if url
             (call-interactively #'browse-url))))))
 
-(global-set-key [(control ?c) (control ?o)] #'browse-url-dwim)
+(keymap-global-set "C-c C-o" #'browse-url-dwim)
