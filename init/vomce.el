@@ -85,6 +85,7 @@
    ("M-s r"   . consult-ripgrep)
    ("M-s g"   . consult-grep)
    ("M-s d"   . consult-find)
+   ("M-s f"   . consult-fd)
    ;; Isearch integration
    :map isearch-mode-map
    ("M-e"   . consult-isearch-history)

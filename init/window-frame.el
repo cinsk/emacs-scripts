@@ -217,16 +217,24 @@ prevent focus loss."
                (delete-frame cframe))
       (message "No other frame to select"))))
 
-(let ((kmap (make-sparse-keymap)))
-  (keymap-set kmap "f" #'make-frame)
-  (keymap-set kmap "k" #'delete-current-frame-keep-focus)
-  (keymap-set kmap "K" #'delete-other-frames)
-  (keymap-set kmap "n" #'smart-other-frame)
-  (keymap-set kmap "o" #'smart-other-frame)
-  (keymap-set kmap "p" #'reverse-smart-other-frame)
+(defvar-keymap my/ctl-x-f-map
+  :doc "frame (or tab) management keymap"
+  "f" #'make-frame
+  "k" #'delete-current-frame-keep-focus
+  "K" #'delete-other-frames
+  "n" #'smart-other-frame
+  ;; "t" #'tab-bar-new-tab
+  "o" #'smart-other-frame
+  "p" #'reverse-smart-other-frame)
 
-  (my/move-key :from "C-x f" :to "C-x F" :with kmap))
+(my/move-key :from "C-x f" :to "C-x F" :with my/ctl-x-f-map)
 
+(when (require 'tab-bar nil t)
+  (when (boundp 'tab-prefix-map)
+    (keymap-set tab-prefix-map "[" #'tab-previous)
+    (keymap-set tab-prefix-map "]" #'tab-next))
+  (keymap-global-set "C-M-{" #'tab-previous)
+  (keymap-global-set "C-M-}" #'tab-next))
 
 (defun run-command-other-frame (command)
   "Run COMMAND in a new frame."
