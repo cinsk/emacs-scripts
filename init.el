@@ -541,26 +541,6 @@
 ;;; Switching between buffers using iswitchb/ido
 ;;;
 
-
-;; I tried helm-mode, which looks promising, but it does not seem to
-;; have enough short-cut mechanism to boost user's input.  For
-;; example, completing q-r-r is not possible for
-;; `query-replace-regexp'.  And if there are multiple choices, I need
-;; to navigate using up/down shortcut, with careful on-looking to the
-;; helm buffer.  It distract me from what I try to do.  Until helm
-;; updated, or until I found better way, I'll stick to
-;; 'icomplete-mode.
-;(icomplete-mode 1)
-;(with-eval-after-load "icomplete"
-;  (uinit-require 'icomplete+ nil 'noerror))
-
-;; Now I'm using helm.  One minor problem is, whenever I invoke
-;; `helm-find-files', sometimes it freezes.  I believe this is related
-;; to the garbage collection. See the comment in the beginning of the
-;; file for `garbage-collection-messages'.
-
-;; (uinit "_helm" :when (locate-library "helm"))
-(uinit "vomce")
 
 (when nil
   (unless (package-installed-p 'helm)
@@ -582,6 +562,26 @@
         ;; The default binding `C-x C-f' is too much for me
         (keymap-set ido-file-completion-map "C-<return>" #'ido-enter-dired)
         (keymap-set ido-file-completion-map "M-<return>" #'ido-enter-dired)))))
+
+;; I tried helm-mode, which looks promising, but it does not seem to
+;; have enough short-cut mechanism to boost user's input.  For
+;; example, completing q-r-r is not possible for
+;; `query-replace-regexp'.  And if there are multiple choices, I need
+;; to navigate using up/down shortcut, with careful on-looking to the
+;; helm buffer.  It distract me from what I try to do.  Until helm
+;; updated, or until I found better way, I'll stick to
+;; 'icomplete-mode.
+;(icomplete-mode 1)
+;(with-eval-after-load "icomplete"
+;  (uinit-require 'icomplete+ nil 'noerror))
+
+;; Now I'm using helm.  One minor problem is, whenever I invoke
+;; `helm-find-files', sometimes it freezes.  I believe this is related
+;; to the garbage collection. See the comment in the beginning of the
+;; file for `garbage-collection-messages'.
+
+;; (uinit "_helm" :when (locate-library "helm"))
+(uinit "vomce")
 
 ;;
 ;; Normally, switching buffer commands (e.g. `switch-to-buffer' or
