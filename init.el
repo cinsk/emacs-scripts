@@ -268,6 +268,7 @@
 
 
 (use-package untabify
+  :disabled
   :config
   (setq-default indent-tabs-mode nil)     ; do not insert tab character.
   (add-hook 'before-save-hook 'untabify-remove-trailing-spaces-on-write))
@@ -461,6 +462,20 @@
   )
 
 (uinit "korean" :when enable-multibyte-characters)
+
+
+;;;
+;;; Text/Programming mode specific
+;;;
+(defun my/whitespaces-setup ()
+  "Whitespace and final-newline settings for programming buffers."
+  (setq-local require-final-newline t)
+  (setq-local delete-trailing-lines nil)
+  ;; (setq show-trailing-whitespace t)
+  (add-hook 'before-save-hook #'delete-trailing-whitespace nil t))
+
+(dolist (hook '(prog-mode-hook org-mode-hook))
+  (add-hook hook #'my/whitespaces-setup))
 
 
 ;;;
