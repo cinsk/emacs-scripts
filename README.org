@@ -103,6 +103,22 @@
     Several shell functions are available for interacting Emacs.  See
     [[./ghostel.bash]] for more.
 
+*** ripgrep(rg) and fd
+
+    /consult/ bindings are for quick operation; to jump to the file by
+    finding pattern from the file contents, use =M-s r=.  Otherwise
+    =C-c s=.  To quickly jump to the file filtered by filename
+    pattern, use =M-s f=.
+
+    With "*​rg*" buffer, you can use standard =C-x `= to navigate.
+
+    Within "*​rg*" buffer:
+      - =d= change the search directory
+      - =f= change file types
+      - =t= change search string (literal)
+      - =r= change search string (regexp)
+      - =e= turns the buffer editable. (=C-c C-c= to commit, =C-c C-k= to abort)
+
 * Emacs features that I forgot frequently
 *** Force inserting characters
     - =C-q <tab>= to insert a =<tab>= character.
@@ -197,6 +213,7 @@
 #+BEGIN_EXAMPLE
       =foo=<!>는              # word-joiner
       =<!>C-c C-'<!>=         # zero-width space
+      =*<!>escape bold*=      # escape bold markup
 #+END_EXAMPLE
 
 ***** Agenda: Browse TODO items
@@ -209,6 +226,9 @@
 ***** Capture: journal
       Save the TODO items or leave logs on capture files.   Use =​C-c "​=
       on regular buffer, or =​C-c " "​= on org buffer.
+
+      On calendar (=C-<f12>=), =d= will launch =org-calendar-goto-agenda=,
+      which displays
 
 ***** TODO Math
       Look at the [[~/agenda/math.org][math.org]] for some examples.  (Use =C-c C-o= on the link.)
@@ -330,6 +350,23 @@ j 2<RET>                     # select 2nd part
     =mandb(1)= will improve the performance.  However, it has too many
     dependencies which makes me not comforable due to limited space on
     my Mac.
+
+*** External tools
+
+    Recommended:
+
+    [[https://github.com/sharkdp/fd][- fd]]                 # M-s f (consult-fd)
+    -[[https://github.com/burntsushi/ripgrep][ ripgrep]]            # M-s r (consult-ripgrep)
+
+    On Mac(darwin), install additional GNU packages:
+
+#+begin_example
+    brew install gpg-agent
+    brew install pinentry
+    brew install coreutils
+    brew install findutils
+    brew install bash
+#+end_example
 
 # Local Variables:
 # eval: (view-mode)

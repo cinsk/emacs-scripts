@@ -388,10 +388,11 @@ instead of the next window."
 
 (uinit "_dired" :when 'dired)
 
-;; (keymap-global-set "M-F d <return>" #'find-dired)
-;; (keymap-global-set "M-F g d" #'find-grep-dired)
-;; (keymap-global-set "M-F g <return>" #'find-grep)
-;; (keymap-global-set "M-F r" #'rgrep)
+(when (executable-find "rg")
+  (use-package rg
+    :ensure t
+    :init
+    (keymap-global-set "C-c s" #'rg-menu)))
 
 
 ;;;

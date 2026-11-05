@@ -466,7 +466,7 @@ command this key would run without `my/org-wordjoin-mode'."
   (keymap-set org-mode-map "C-c \" \"" #'org-capture)
   (keymap-set org-mode-map "C-c C-\\" #'my/org-table-from-lines)
   (keymap-set org-mode-map "C-c t"    #'org-todo)
-  (keymap-set org-mode-map "C-c s"    #'my/org-sourcefy)
+  (keymap-set org-mode-map "C-c S"    #'my/org-sourcefy)
   ;; Shift + TAB in rdesktop, xmanager, ...
   (keymap-set org-mode-map "S-<kp-tab>" #'org-shifttab)
   ;; Both keys insert Org's escape character (U+200B).  "C-c C-;"
