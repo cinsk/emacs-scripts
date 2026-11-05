@@ -3,721 +3,483 @@
 ;;;
 ;;; Org mode
 ;;;
+;;; Org itself is loaded lazily: everything that needs Org's own
+;;; definitions (keymaps, customizations with :set functions, ...)
+;;; lives in the `with-eval-after-load' form below.  Plain variable
+;;; settings are done at top level so they are already in place
+;;; when Org (or org-agenda / org-capture) is first loaded.
 
-(eval-when-compile
-  (require 'org)
-  (require 'org-table))
+(require 'seq)
+(require 'subr-x)
 
-(unless (fboundp 's-trim)
-  ;; I stole these three string functions from s package.
-  ;; See https://github.com/magnars/s.el for more
-  (defun s-trim-left (s)
-    "Remove whitespace at the beginning of S."
-    (save-match-data
-      (if (string-match "\\`[ \t\n\r]+" s)
-          (replace-match "" t t s)
-        s)))
-
-  (defun s-trim-right (s)
-    "Remove whitespace at the end of S."
-    (save-match-data
-      (if (string-match "[ \t\n\r]+\\'" s)
-          (replace-match "" t t s)
-        s)))
-
-  (defun s-trim (s)
-    "Remove whitespace at the beginning and end of S."
-    (s-trim-left (s-trim-right s))))
-
-;;
-;; Indent to outline node level
-;;
-(setq org-adapt-indentation t)
+(defvar org-mode-map)
+(defvar org-src-lang-modes)
+(defvar org-file-apps)
+(declare-function org-table-align "org-table")
+(declare-function org-insert-structure-template "org")
+(declare-function org-in-src-block-p "org")
+(declare-function org-edit-src-code "org-src")
+(declare-function org-edit-src-exit "org-src")
 
 
-;;
-;; Disable the prompt for evaluation of code block
-;;
-(setq org-confirm-babel-evaluate nil)
+;;;; Basic settings
 
-;;
-;; Disable safe link check
-;;
-(put 'orglink/url-man 'org-link-abbrev-safe t)
+(setq org-adapt-indentation t           ; indent to outline node level
+      org-hide-leading-stars t
+      org-odd-levels-only t
+      ;; If an org file is loaded folded, comparing files with ediff
+      ;; is very unhandy, so start with everything shown.
+      org-hide-block-startup nil
+      org-startup-folded 'showeverything
+      ;; Don't ask before evaluating code blocks.
+      org-confirm-babel-evaluate nil)
 
-;;
-;; generate link description automatically
-;;
+
+;;;; Link abbreviations and descriptions
+
 (setq org-link-abbrev-alist
-      '(("google" . "http://www.google.com/search?q=%s")
-        ("rfc" . "http://www.rfc-editor.org/rfc/rfc%s.txt")
-        ("man" . "%(orglink/url-man)")
-        ;; ("java" . "%(orglink/url-java)")
+      '(("google" . "https://www.google.com/search?q=%s")
+        ("rfc"    . "https://www.rfc-editor.org/rfc/rfc%s.txt")
+        ("man"    . "%(my/org-link-man-url)")
+        ;; ("java" . "%(my/org-link-java-url)")
         ))
 
-(defvar org-link-javadoc-root-alist
-      '(("org.springframework.boot." . "http://docs.spring.io/spring-boot/docs/current/api/")
-        ("org.springframework." . "http://docs.spring.io/spring/docs/current/javadoc-api/")
-        ("org.apache.log4j." . "http://www.slf4j.org/apidocs/")
-        ("org.slf4j." . "http://www.slf4j.org/apidocs/")
-        ("org.junit." . "http://junit.sourceforge.net/javadoc/")
-        ("lombok." . "https://projectlombok.org/api/")
-        ("java." . "http://docs.oracle.com/javase/8/docs/api/"))
-"List of java package root and their base URLs
+;; Org refuses to call a function from a link abbreviation unless
+;; the function is marked as safe.
+(put 'my/org-link-man-url 'org-link-abbrev-safe t)
+(put 'my/org-link-java-url 'org-link-abbrev-safe t)
 
-Unlike other alist type, the order of entries are important."
-      )
+(defun my/org-link-man-url (spec)
+  "Return a man7.org URL for the manual page described by SPEC.
 
+SPEC is \"NAME(SECTION)\", \"SECTION NAME\", or just \"NAME\" (which
+means section 1).  SECTION does not need to be numeric only, e.g.
+\"scanf(3p)\" is fine.
 
-(defun orglink/starts-with (s1 s2)
-  "Return non-nil if S1 starts with S2."
-  (let ((s1len (length s1))
-        (s2len (length s2)))
-    (when (>= s1len s2len)
-      (string-equal s2 (substring s1 0 s2len)))))
+Used by the \"man\" entry of `org-link-abbrev-alist', so that
+[[man:printf(3)]] becomes a link to the online manual page."
+  (pcase-let
+      ((`(,name ,sect)
+        (pcase (string-trim spec)
+          ((rx bos (let n (+ (not (any space "(")))) (* space)
+               "(" (* space) (let s (+ (not (any space ")")))) (* space) ")" eos)
+           (list n s))
+          ((rx bos (let s (+ (not space))) (+ space) (let n (+ (not space))) eos)
+           (list n s))
+          ((rx bos (let n (+ (not space))) eos)
+           (list n "1"))
+          (_ (user-error "Invalid manual page spec: %s" spec)))))
+    ;; man7.org keeps e.g. "printf.3p" under the "man3" directory.
+    (format "https://man7.org/linux/man-pages/man%s/%s.%s.html"
+            (if (string-match "\\`[0-9]+" sect) (match-string 0 sect) sect)
+            name sect)))
 
-(defun orglink/url-java (tag)
-  ;; "org.springframework.web.SpringServletContainerInitializer"
-  (save-match-data
-    (let ((name (replace-regexp-in-string "\\." "/" tag)))
-      (catch 'orglink/found
-        (dolist (ent org-link-javadoc-root-alist)
-          (let ((pkg (car ent))
-                (base (cdr ent)))
-            (if (orglink/starts-with tag pkg)
-                (throw 'orglink/found (concat base name ".html")))))))))
+(defvar my/org-javadoc-root-alist
+  '(("org.springframework.boot." . "https://docs.spring.io/spring-boot/docs/current/api/")
+    ("org.springframework."      . "https://docs.spring.io/spring/docs/current/javadoc-api/")
+    ("org.apache.log4j."         . "https://www.slf4j.org/apidocs/")
+    ("org.slf4j."                . "https://www.slf4j.org/apidocs/")
+    ("org.junit."                . "https://junit.org/junit4/javadoc/latest/")
+    ("lombok."                   . "https://projectlombok.org/api/")
+    ("java."                     . "https://docs.oracle.com/javase/8/docs/api/"))
+  "Alist of (PACKAGE-PREFIX . BASE-URL) used by `my/org-link-java-url'.
 
+Unlike other alists, the order matters: the first entry whose
+prefix matches wins, so list more specific prefixes first.")
 
-(defun orglink/url-man (spec)
-  "Return an URL for man pages.
+(defun my/org-link-java-url (class)
+  "Return the Javadoc URL of the fully qualified CLASS name.
+For example, \"org.slf4j.Logger\".  See `my/org-javadoc-root-alist'."
+  (when-let ((entry (seq-find (lambda (ent) (string-prefix-p (car ent) class))
+                              my/org-javadoc-root-alist)))
+    (concat (cdr entry) (string-replace "." "/" class) ".html")))
 
-SPEC is in the form of \"NAME(SECTION)\" or \"SECTION NAME\",
-where NAME is the keyword and SECTION is the manual section
-number.
+(defvar my/org-link-description-alist
+  '(("google" . nil)
+    ("rfc"    . my/org-link-rfc-description)
+    ("java"   . my/org-link-java-description))
+  "Alist of (LINK-TYPE . FUNCTION) for `my/org-link-make-description'.
 
-This function is used for the `org-mode' file to provide an link abbreviation.
-For example, add following line in your org file:
+When a link \"TYPE:PATH\" is inserted without a description and
+TYPE is listed here, FUNCTION is called with PATH and its return
+value is used as the description.  If FUNCTION is nil or returns
+nil, PATH itself is used.")
 
-#+LINK: man %(org-man-link)"
-  (save-match-data
-    (let (name sect)
-      (if (string-match
-           "\\`[[:blank:]]*\\([^[:blank:]]+\\)[[:blank:]]*(\\([^)]+\\))"
-           spec)
-          (setq name (match-string 1 spec)
-                sect (match-string 2 spec))
-        (if (string-match
-             "\\`[[:blank:]]*\\([^)]+\\)[[:blank:]]*\\([^[:blank]]+\\)" spec)
-            (setq name (match-string 2 spec)
-                  sect (match-string 1 spec))
-          (error "Invalid manual format, %s" spec)))
-      ;; We can't guarantee that SECT is consists of numbers only.
-      ;; e.g.  there can be "scanf (3p)".
-      (setq sect (s-trim sect))
-      (format "http://man7.org/linux/man-pages/man%s/%s.%s.html"
-              sect name sect))))
+(defun my/org-link-make-description (link desc)
+  "Default description for LINK; see `my/org-link-description-alist'.
+DESC, if non-empty, is returned unchanged."
+  (cond
+   ((and desc (not (string-empty-p desc))) desc)
+   ((string-match "\\`\\([^:]+\\):\\(.+\\)\\'" link)
+    (let ((type (match-string 1 link))
+          (path (match-string 2 link)))
+      (if-let ((entry (assoc type my/org-link-description-alist)))
+          (or (and (functionp (cdr entry)) (funcall (cdr entry) path))
+              path)
+        desc)))
+   (t desc)))
 
-
-(defun my-create-empty-files (files &optional directory)
-  "Create empty file(s) if not exists in DIRECTORY."
-  (if (stringp files)
-      (setq files (list files)))
-  (if (not (null directory))
-      (setq directory (file-name-as-directory directory)))
-  (dolist (f files)
-    (if (and (null (file-name-directory f))
-             (not (null directory)))
-        (setq f (concat directory f)))
-    (unless (file-exists-p f)
-      (make-empty-file f))))
-
-
-(defvar orglink/link-desc-alist
-      '(("google" . nil)
-        ("rfc" . orglink/desc-rfc)
-        ("java" . orglink/desc-java))
-      "Alist of org linkwords and their description generating functions
-
-Each description function takes three parameters; If the user
-gives \"LINKWORD:PATH\", then the first parameter receives
-\"PATH\", the second parameter receives \"LINKWORD\", and the
-third parameter receives the DESC value.  Note that rest of
-parameters except the first one are optional.
-
-See `org-make-link-description-function' for DESC value.
-")
-
-(defun orglink/description-function (link desc)
-  (save-match-data
-    (if desc desc
-      (let* ((scheme (if (string-match "\\`\\([^:]+\\):\\(.*\\)\\'" link)
-                        (match-string 1 link)))
-             (path (match-string 2 link))
-             (entry (assoc scheme orglink/link-desc-alist))
-             (proc  (cdr entry)))
-        (if (or (not proc) (not (fboundp proc))) path
-          (or (funcall proc path scheme desc)
-              path))))))
-
-(setq org-make-link-description-function 'orglink/description-function)
-
-(defun orglink/desc-rfc (path &optional scheme desc)
-  ;; path will be something like "0434" or "23"
-  (let ((index (string-to-number path)))
-    (unless (> index 0)
-      (error "Invalid RFC number, %s" index))
+(defun my/org-link-rfc-description (path)
+  "Return \"RFC N\" for the rfc link PATH (e.g. \"0434\" or \"23\")."
+  (let ((n (string-to-number path)))
+    (unless (> n 0)
+      (user-error "Invalid RFC number: %s" path))
     (format "RFC %s" path)))
 
-(defun orglink/desc-java (path &optional scheme desc)
-  ;; path will be something like spring:web.springframwork.aop.support.AopUtils
-  (when (string-match
-         "\\`\\(?:.*?\\.\\([^.]+\\)\\|\\([^.]+\\)\\)\\'" path)
-    (or (match-string 1 path) (match-string 2 path))))
+(defun my/org-link-java-description (path)
+  "Return the unqualified class name of the java link PATH."
+  (car (last (split-string path "\\." t))))
+
+(setq org-link-make-description-function #'my/org-link-make-description)
 
 
-
-(defun different-command-p (command name)
-  "Return t iff COMMAND is a command and has different from NAME"
-  (and (commandp command)
-       (not (eq name command))
-       ;string-match name (symbol-name command)))
-       command))
+;;;; Org directory, agenda files and capture
 
-(defun call-next-command (keys not-this-command)
-  "Interactively call the command that has a binding of KEYS, but
-not NOT-THIS-COMMAND"
-  (let ((command (catch 'found
-                   (mapc (lambda (map)
-                           (let ((cmd (different-command-p
-                                       (lookup-key map keys)
-                                       not-this-command)))
-                             (when cmd
-                               (throw 'found cmd))))
-                          (current-minor-mode-maps))
-                   (or (different-command-p (lookup-key (current-local-map)
-                                                        keys)
-                                            not-this-command)
-                       (different-command-p (lookup-key (current-global-map)
-                                                        keys)
-                                            not-this-command)))))
-  (when (commandp command)
-    (call-interactively command))))
-
-(defun org-insert-word-joiner-or-space ()
-  (interactive)
-  (if (bolp)
-      ;; If this trick used with yas-snippet, and if TAB is pressed
-      ;; where the point is in the begining of the line, then the following
-      ;; error occurs: lisp nesting exceeds `max-lisp-eval-depth'.
-      (call-interactively
-       (lookup-key org-mode-map (this-command-keys-vector)))
-      (save-match-data
-        (when (looking-back "\\([=/]\\)\\(.*\\)\\1\\([^[:space:]\u2060]+\\)"
-                            (line-beginning-position) 'greedy)
-          ;; 2nd match => emphasised phrase (e.g. =code=)
-          ;; 3rd match => partial word appended
-          (save-excursion
-            (goto-char (match-beginning 3))
-            (insert-char #x2060)))
-        (call-next-command (this-command-keys-vector)
-                           'org-insert-word-joiner-or-space))))
-
-(when nil
-  (defvar org-wordjoin-mode-map
-    (let ((map (make-sparse-keymap)))
-      (keymap-set map "SPC" #'org-insert-word-joiner-or-space)
-      (keymap-set map "C-j" #'org-insert-word-joiner-or-space)
-      (keymap-set map "RET" #'org-insert-word-joiner-or-space)
-      (keymap-set map "<tab>" #'org-insert-word-joiner-or-space)
-      map)
-    "Keymap for `org-wordjoin-mode'"))
-
-(defvar org-wordjoin-genuine-map)
-(defvar org-wordjoin/override-keys
-  '([?\ ] [(control ?j)] [(control ?m)] [(tab)])
-  "List of key sequences for `org-wordjoin-mode'.")
-
-
-(define-minor-mode org-wordjoin-mode
-  "Enable automatic insertion of word joiner"
-  nil
-  " WordJoin"
-  ;; :keymap org-wordjoin-mode-map
-  :keymap nil
-  (make-local-variable 'org-wordjoin-genuine-map)
-  (if org-wordjoin-mode
-      (progn
-        (setq org-wordjoin-genuine-map (org-wordjoin/genuine-command-keymap))
-        (org-wordjoin/install-wordjoin-commands))
-    (org-wordjoin/restore-command-keymap org-wordjoin-genuine-map)))
-
-(defun org-wordjoin/install-wordjoin-commands ()
-  "Install keybindings of `org-wordjoin-mode'."
-  (dolist (key org-wordjoin/override-keys)
-    (let ((cmd (lookup-key org-mode-map key)))
-      (if cmd
-          (define-key org-mode-map key `(lambda ()
-                                          (interactive)
-                                          (org-wordjoin/insert-command
-                                           (quote ,cmd))))
-        (define-key org-mode-map key (lambda ()
-                                       (interactive)
-                                       (org-wordjoin/insert-command
-                                        'self-insert-command)))))))
-
-(defun org-wordjoin/restore-command-keymap (map)
-  "Restore the genuine bindings from `org-wordjoin-mode'."
-  (map-keymap (lambda (ev cmd)
-                (define-key org-mode-map (vector ev) cmd)) map))
-
-(defun org-wordjoin/genuine-command-keymap ()
-  "Return a keymap with genuine bindings before `org-wordjoin-mode'."
-  (let ((map (make-sparse-keymap)))
-    (dolist (key org-wordjoin/override-keys)
-      (let ((cmd (lookup-key org-mode-map key)))
-        (define-key map key cmd)))
-    map))
-
-(defun org-wordjoin/insert-command (&optional command)
-  "Insert word joiner, and call COMMAND interactively if any."
-  (save-match-data
-    (when (looking-back "\\([=/]\\)\\(.*\\)\\1\\([^[:space:]\u2060]+\\)"
-                        (line-beginning-position) 'greedy)
-      ;; 2nd match => emphasised phrase (e.g. =code=)
-      ;; 3rd match => partial word appended
-      (save-excursion
-        (goto-char (match-beginning 3))
-        (insert-char #x2060))))
-  (and command
-       (call-interactively command)))
-
-(with-eval-after-load "org"
-  ;;
-  ;; Enable evaluation code block of certain languages
-  ;;
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   `((emacs-lisp . t)
-     ; (R . t)
-     (python . t)
-     ; (ruby . t)
-     (dot . t)
-     ; ,(when (locate-library "ob-go") '(go . t))
-     ; (sh . t) -- ob-sh renamed to ob-shell
-     (shell . t)))
-
-  (keymap-set outline-mode-map "C-<down>"
-              'outline-next-visible-heading)
-  (keymap-set outline-mode-map "C-<up>"
-              'outline-previous-visible-heading)
-  (keymap-set outline-mode-map "C-S-<down>"
-              'outline-forward-same-level)
-  (keymap-set outline-mode-map "C-S-<up>"
-              'outline-backward-same-level)
-
-  ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
-  ;; since I use "C-<TAB>" for `smart-other-window'.
-  ;; (my/move-key :keymap org-mode-map :from "C-<tab>" :to "C-x C-<tab>")
-
-  ;; Move the binding of `org-deadline' from "C-c C-d" to "C-c
-  ;; C-S-d", since I'vd used the keybinding for
-  ;; `delete-chars-forward-with-syntax'.
-  (my/move-key :keymap org-mode-map :from "C-c C-d" :to "C-c C-D")
-
-  (keymap-set org-mode-map "C-c C-\\"
-              'org-table-convert-from-lines)
-
-  (keymap-set org-mode-map "C-c t" #'org-todo)
-
-  (keymap-set org-mode-map "C-c s" #'my/org-sourcefy)
-
-  ;; Shift + TAB in rdesktop, xmanager, emacs
-  (keymap-set org-mode-map "S-<kp-tab>" #'org-shifttab)
-
-  ;; unicode: word joiner
-  ;;
-  ;; To mark-up certain text (e.g. /"hello"/ga), place 'word joiner'
-  ;; character in /"hello"/<!>ga, where <!> represents the position for the
-  ;; word joiner.
-  (keymap-set org-mode-map "C-c C-;"
-              (lambda ()
-                (interactive)
-                (insert-char #x2060)))
-  ;; unicode: zero width space
-  ;;
-  ;; To mark-up certain text (e.g. ="hello"=), place 'zero width space'
-  ;; character in =<!>"hello"<!>=, where <!> represent the two position
-  ;; for the zero width space character.
-  (keymap-set org-mode-map "C-c C-'"
-              (lambda ()
-                (interactive)
-                (insert-char #x200B)))
-
-  ;;(add-to-list 'org-mode-hook (lambda ()
-  ;; (org-wordjoin-mode 1)))
-
-  (when (fboundp 'graphviz-dot-mode)
-    (let ((dotpair (assoc "dot" org-src-lang-modes)))
-      (and dotpair
-           (setcdr dotpair 'graphviz-dot))))
-
-  (cond ((eq system-type 'gnu/linux)
-         (add-to-list 'org-file-apps '("pdf" . "acroread %s"))
-         (add-to-list 'org-file-apps '("ps" . "ggv %s")))
-        ((eq system-type 'darwin)
-         ;; pdf already handled by Preview
-         (add-to-list 'org-file-apps '("ps" . "open %s"))))
-  (when (fboundp 'browse-url)
-    ;; "export as HTML and open" (a.k.a `C-c C-e h o') uses
-    ;; `org-open-file' to open HTML, which uses $HOME/.mailcap,
-    ;; which usually uses lynx(1) to open HTML file, which is not
-    ;; what I want.  It's better to use `browse-url' to determine
-    ;; the suitable browser.
-    (add-to-list 'org-file-apps
-                 '("\\.x?html?\\'" . (lambda (file link) (browse-url file)))))
-
-  ;; Org mode requires font-locking on every org buffer
-  ;; Since I use global-font-lock-mode, below sexp is not necessary.
-  ;;
-  ;; (add-hook 'org-mode-hook 'turn-on-font-lock)
-
-  ;; According to http://orgmode.org/org.html#Conflicts,
-  ;; filladapt.el is not working well with Org, so disable it in
-  ;; org-mode.
-  (add-hook 'org-mode-hook '(lambda ()
-                              (if (fboundp 'turn-off-filladapt-mode)
-                                  (turn-off-filladapt-mode))))
-
-  ;; org-hide-leading-stars should be set before loading org-mode.
-  (setq org-hide-leading-stars t)
-  (setq org-odd-levels-only t)
-  ;; (setq org-agenda-include-diary t)
-
-  ;; If org file loaded with folding, comparing files with ediff
-  ;; is very unhandy, thus starting with everything is shown
-  (setq org-hide-block-startup nil)
-  (setq org-startup-folded 'showeverything)
-
-  (when (and (> emacs-major-version 22)
-             (fboundp 'org-set-emph-re))
-    ;; Current org-mode mark-up algorithm does not support marking
-    ;; partial word. (e.g. =partial=word)
-    ;;
-    ;; On some languages that have postposition, which has no word
-    ;; boundary with the previous noun (e.g. Korean aka josa),
-    ;; marking-up partial word is essential.
-    ;;
-    ;; To work around current implementation, it is possible to insert
-    ;; invisible unicode character such as "word joiner" character,
-    ;; \u2060, between the noun and the postposition, to enable partial
-    ;; word.  Thus the text will be "=partial=\u2060word", and adding
-    ;; this special character to `org-emphasis-regexp-components' will
-    ;; do the trick. (Use `ucs-insert' to insert the character into the
-    ;; text)
-    ;;
-    ;; See the original idea from:
-    ;;   http://thread.gmane.org/gmane.emacs.orgmode/46197/focus=46263
-    (org-set-emph-re 'org-emphasis-regexp-components
-                     '(" \t('\"{\\\u2060"
-                       "- \t.,:!?;'\")}\\\u2060"
-                       " \t\r\n,\"'⁠"
-                       "." 1)))
-
-  (and (boundp 'org-drawers)
-       (add-to-list 'org-drawers "COMMENT"))
-  )
-
-
-(when (locate-library "org-version")
-  ;; From Org-Mode version 7.9.2, there is no need to load
-  ;; 'org-install.  Worse, it will display a warning, which makes me
-  ;; uncomfortable.  Following sexp will load 'org-install if the
-  ;; installed version is lower than 7.9.2.
-  (require 'org-version)
-  (if (and (fboundp 'org-release)
-           (string-lessp (org-release) "7.9.2"))
-      ;; Around orgmode version 7.9.2 and version 7.9.3, if the module,
-      ;; org-version is loaded, then some of org-related symbols are
-      ;; accessible (e.g. `org-mode-map').
-      ;;
-      ;; From orgmode 7.9.4, however, `org-mode-map' is not loaded unless
-      ;; org module is loaded.  Thus, I loaded org module below.
-      ;;
-      ;; TODO: Move all of org specific configuration below to the
-      ;;       `eval-after-load' if possible
-      ;; (require 'org)
-    ;; nil                               ; do nothing
-    (require 'org-install)))
-
-
-(when (string-lessp emacs-version "22.2")
-  ;; From GNU Emacs version 22.2, ".org" extension use Org mode by default.
-  (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode)))
-
-(keymap-global-set "C-c a" #'org-agenda)
-(keymap-global-set "C-c l" #'org-store-link)
-(keymap-global-set "C-c b" #'org-iswitchb)
-(keymap-global-set "C-c \"" #'org-capture)
-
-;; org-mode uses C-\" for its own function.  Use C-\" \" for the
-;; alternative key
-(keymap-set org-mode-map "C-c \" \"" #'org-capture)
-
-;;(org-remember-insinuate)
-(keymap-global-set "<f8>" #'org-capture)
-
-(defvar my-org-directory nil
+(defvar my/org-directory nil
   "Directory for storing org files.
 
-This will control how `org-directory' would set.
+`my/org-init-directory' decides `org-directory' as follows:
+the ORG_PATH environment variable if set, then this variable if
+non-nil, and finally \"~/agenda\".
 
-First, use the directory in ORG_PATH environment variable, if exists.
-Second, use the vaule of `my-org-directory' if not nil.
-Finally, \"~/agenda\" will be used.")
+Why not just set `org-directory'?  It cannot express \"unset\":
+Org gives it a default of \"~/org\" once loaded, so a fallback
+chain reading it could never tell your choice from the default,
+and `my/org-init-directory' overwrites it anyway.  This variable
+is nil unless you set it, so the chain can tell the difference.
+Set it before this file is loaded (e.g. in early init or a
+machine-specific file); setting it later has no effect on
+`org-agenda-files' or the capture templates.")
 
-(defvar my-org-agenda-exclude-regexp '("conflicted copy [0-9-:]*)\\.org$"
-                                       "충돌하는 사본 [0-9-:]*)\\.org$"
-                                       "\\.sync-conflict-.*\\.org$")
-  "A list of regular expressions to exclude org files for `org-agenda-files'")
+(defvar my/org-default-files nil
+  "Org files that are created (empty) in `org-directory' if missing.")
 
+(defvar my/org-agenda-exclude-regexps
+  '(;; Dropbox conflicted copies, e.g.
+    ;;   "sample (XXX's conflicted copy 2009-10-15).org"
+    ;;   "sample (XXX와(과) 충돌하는 사본 2013-02-22).org"
+    "conflicted copy [0-9-:]*)\\.org\\'"
+    "충돌하는 사본 [0-9-:]*)\\.org\\'"
+    ;; Syncthing conflicts
+    "\\.sync-conflict-.*\\.org\\'")
+  "Regexps matched against the file name (without directory).
+Org files whose name matches any of them are not agenda files.")
 
-(defun my-org-agenda-files (&optional directory)
-  "Return a list of .org files in DIRECTORY."
-  (cl-labels ((chk3 (file excludes)
-               (if (null excludes)
-                   file
-                 (if (string-match (car excludes) file)
-                     nil
-                   (chk3 file (cdr excludes))))))
-    (let ((dir (or directory org-directory)))
-      (when (file-accessible-directory-p dir)
-        (let ((files (directory-files dir nil
-                                      "\\`[^.#].*\\.org\\'"))
-              retval)
-          (dolist (fn files (nreverse retval))
-            (let ((f (chk3 fn my-org-agenda-exclude-regexp)))
-              (if f
-                  (setq retval (cons (concat (file-name-as-directory dir) f)
-                                     retval))))))))))
+(defvar my/org-agenda-exclude-tags '("noagenda" "ARCHIVE")
+  "File tags (case-insensitive) that exclude an org file from the agenda.
+An org file is excluded if its #+FILETAGS contain any of them.")
 
+(defun my/org-file-tags (file)
+  "Return the list of tags in the #+FILETAGS keyword(s) of FILE.
+Multiple #+FILETAGS lines are combined, as Org does."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (let ((case-fold-search t)
+          tags)
+      (while (re-search-forward "^[ \t]*#\\+FILETAGS:[ \t]*\\(.*\\)$" nil t)
+        (setq tags (nconc tags (split-string (match-string-no-properties 1)
+                                             "[: \t]+" t))))
+      tags)))
 
-(defun my-init-org ()
-  (let ((org-path (or (getenv "ORG_PATH")
-                      (and my-org-directory (expand-file-name my-org-directory))
-                      (expand-file-name "~/agenda"))))
-    (and (not (file-accessible-directory-p org-path))
-         (make-directory org-path t))
+(defun my/org-agenda-file-p (file &optional exclude-regexps exclude-tags)
+  "Return non-nil if FILE should be one of `org-agenda-files'.
 
-    (unless (file-accessible-directory-p org-path)
-      (lwarn '(dot-emacs) :warning
-             (format "cannot access org files in %s." org-path)))
+FILE is rejected if its non-directory name matches any regexp in
+EXCLUDE-REGEXPS, or if its #+FILETAGS contain any tag in
+EXCLUDE-TAGS (compared case-insensitively).  They default to
+`my/org-agenda-exclude-regexps' and `my/org-agenda-exclude-tags'."
+  (let ((name (file-name-nondirectory file))
+        (regexps (or exclude-regexps my/org-agenda-exclude-regexps))
+        (tags (or exclude-tags my/org-agenda-exclude-tags)))
+    (and (file-readable-p file)
+         (not (seq-some (lambda (re) (string-match-p re name)) regexps))
+         (not (seq-intersection (my/org-file-tags file) tags
+                                #'string-equal-ignore-case)))))
 
-    ;; If `org-path' is linked to a subdirectory of Dropbox
-    ;; directory, then make the auto-save directory to be placed in
-    ;; /tmp/.
-    (add-to-list 'auto-save-file-name-transforms
-                 (list
-                  (concat "\\`"
-                          (file-name-as-directory org-path)
-                          "\\([^/]*/\\)*\\([^/]*\\)\\'")
-                  (concat (file-name-as-directory temporary-file-directory)
-                          "\\2")
-                  t))
+(defun my/org-agenda-files (&optional directory exclude-regexps exclude-tags)
+  "Return the agenda-worthy .org files in DIRECTORY as absolute names.
 
-    (my-create-empty-files
-     '("work.org" "pproject.org" "personal.org" "emacs-tips.org" "notes.org")
-     org-path)
+DIRECTORY defaults to `org-directory'.  Hidden files and lock or
+auto-save files (starting with \".\" or \"#\") are ignored, and so
+is every file rejected by `my/org-agenda-file-p' with
+EXCLUDE-REGEXPS and EXCLUDE-TAGS."
+  (let ((dir (expand-file-name (or directory org-directory))))
+    (when (file-accessible-directory-p dir)
+      (seq-filter (lambda (f)
+                    (and (file-regular-p f)
+                         (my/org-agenda-file-p f exclude-regexps exclude-tags)))
+                  (directory-files dir t "\\`[^.#].*\\.org\\'")))))
 
-    (setq org-default-notes-file (concat (file-name-as-directory org-path) "notes.org"))
+(defun my/org-agenda-refresh-files (&optional directory)
+  "Set `org-agenda-files' to `my/org-agenda-files' of DIRECTORY.
+Interactively, DIRECTORY is `org-directory'; with a prefix
+argument, ask for it."
+  (interactive
+   (list (and current-prefix-arg
+              (read-directory-name "Org directory: " org-directory nil t))))
+  (setq org-agenda-files (my/org-agenda-files directory))
+  (when (called-interactively-p 'interactive)
+    (message "%d agenda files" (length org-agenda-files)))
+  org-agenda-files)
 
-    ;; Install all .org files in `org-path' if exists
-    ;;
-    ;; Currently `org-path' is maintained by Dropbox.
-    ;; I don't know what causes this, but Dropbox leaves some conflicted
-    ;; copy in the form of "sample (XXX's conflicted copy 2009-10-15).org"
-    ;; or "sample (XXX와(과) 충돌하는 사본 2013-02-22).org" in Korean.
-    ;;
-    ;; Thus, I'll add non-conflicted filenames into `org-agenda-files'.
+(defun my/org-init-directory ()
+  "Set up `org-directory', default files and `org-agenda-files'."
+  (let ((dir (file-name-as-directory
+              (expand-file-name (or (getenv "ORG_PATH")
+                                    my/org-directory
+                                    "~/agenda")))))
+    (make-directory dir t)
+    (if (not (file-accessible-directory-p dir))
+        (lwarn 'dot-emacs :warning "cannot access org files in %s" dir)
+      (dolist (f my/org-default-files)
+        (let ((file (expand-file-name f dir)))
+          (unless (file-exists-p file)
+            (make-empty-file file)))))
+    (setq org-directory dir
+          org-default-notes-file (expand-file-name "notes.org" dir))
+    (my/org-agenda-refresh-files dir)))
 
-    ;; (my/org-refresh-agenda-files org-path)
-    (setq org-agenda-files (my-org-agenda-files org-path))
-
-    (setq org-directory org-path)))
-
-(my-init-org)
+(my/org-init-directory)
 
 (setq org-capture-templates
       `(("w" "Work-related TODO" entry
-         (file+headline ,(file-name-concat org-directory "work.org")
-                        "Tasks")
+         (file+headline ,(expand-file-name "work.org" org-directory) "Tasks")
          "* TODO %? %T\n  %i\n  %a")
         ("f" "Finance Journal" entry
-         (file+headline ,(file-name-concat org-directory "fjournal.org")
-                        "Journal")
+         (file+headline ,(expand-file-name "fjournal.org" org-directory) "Journal")
          "* %?%t\n  %i\n")
         ("p" "Personal Project-related TODO" entry
-         (file+headline ,(file-name-concat org-directory "pproject.org")
-                        "Tasks")
+         (file+headline ,(expand-file-name "pproject.org" org-directory) "Tasks")
          "* TODO %? %T\n  %i\n  %a")
         ;; ("P" "Personal TODO" entry
-        ;;  (file+headline ,(file-name-concat org-directory "personal.org")
-        ;;                 "Tasks")
+        ;;  (file+headline ,(expand-file-name "personal.org" org-directory) "Tasks")
         ;;  "* TODO %? %T\n  %i\n  %a")
         ("e" "Emacs Tips" entry
-         (file+headline ,(file-name-concat user-emacs-directory "emacs-tips.org")
-                        "Tips")
+         (file+headline ,(expand-file-name "emacs-tips.org" user-emacs-directory) "Tips")
          "* TODO %? %T\n  %i\n  %a")
         ("j" "Personal Journal (date based)" entry
-         (file+datetree ,(file-name-concat org-directory "personal.org"))
+         (file+olp+datetree ,(expand-file-name "personal.org" org-directory))
          "* %?\n  Entered on %U\n  %i\n  %a")))
 
-(defun my/org-refresh-agenda-files (&optional directory)
-  "Refresh `org-agenda-files' to the ORG files in DIRECTORY.
 
-Filenames that matches Dropbox conflict will not be included"
-  (let ((dir (or directory org-directory)))
-    (when (file-accessible-directory-p dir)
-      (setq org-agenda-files
-            (let ((files (directory-files dir t
-                                          "\\`[^.#].*\\.org\\'"))
-                  (conflict-regexp
-                   "(.*?[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}).org$"))
-              (delete nil (mapcar
-                           (lambda (filename)
-                             (if (string-match conflict-regexp
-                                               filename)
-                                 nil
-                               filename)) files)))))))
-
-
-(defvar org-table-convert-last-nrows    3
-  "Default number of columns per row.  This is changed if user used
-another value")
-
-(defun org-table-convert-from-lines (&optional nrows)
-  "Convert lines to the org table. Each line contains one column
-so that users need to specify the number of columns per row.
-
-For example, if the region contains 9 lines and each line
-contains the digit from 1 to 9, calling
-`org-table-convert-from-lines' with the column number 3 makes the
-following:
-
-| 1 | 2 | 3 |
-| 4 | 5 | 6 |
-| 7 | 8 | 9 |"
-  (interactive "P")
-  (require 'org)
-  (if (null nrows)
-      (let ((nrows (string-to-number
-                    (read-string
-                     (format "Number of columns per row[%d]: "
-                             org-table-convert-last-nrows)
-                     nil nil
-                     (number-to-string org-table-convert-last-nrows)))))
-        (setq org-table-convert-last-nrows nrows)
-        (save-excursion
-          (save-restriction
-            (let ((start (set-marker (make-marker) (region-beginning)))
-                  (end (set-marker (make-marker) (region-end))))
-              ;;(message "nrows(%S) start(%S) end(%S)" nrows start end)
-              (set-marker-insertion-type end t)
-              (narrow-to-region start end)
-              (goto-char start)
-              (while (progn
-                       (dotimes (i (1- nrows))
-                         (end-of-line) (zap-to-nonspace) (insert "\t"))
-                       (beginning-of-line)
-                       (and (eq (forward-line) 0) (< (point) end))))
-              (org-table-convert-region start end '(16))))))))
+;;;; HTML export
 
 (setq org-html-head "
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://cinsk.github.io/bootstrap/css/bootstrap.css\"/>
+      href=\"https://cinsk.github.io/bootstrap/css/bootstrap.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://cinsk.github.io/bootstrap/css/bootstrap-responsive.css\"/>
+      href=\"https://cinsk.github.io/bootstrap/css/bootstrap-responsive.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\"
-      href=\"http://cinsk.github.io/bootstrap/css/docs.css\"/>
+      href=\"https://cinsk.github.io/bootstrap/css/docs.css\"/>
 <style type=\"text/css\">
-  <!--/*--><![CDATA[/*><!--*/
   body { margin: 2% 6% 2% 10%; }
   h2 { margin-left: -7%; }
   h3 { margin-left: -5%; }
   pre  { background-color: Black; color: White; }
-  /*]]>*/-->
 </style>
 ")
 
-;;
-;; yasnippet support (tested with yasnippets 0.8.0 beta)
-;;
-;; See also http://orgmode.org/org.html#Conflicts
-;;
-(defun yas-org-very-safe-expand ()
-  (let ((yas-fallback-behavior 'return-nil))
-    (and (fboundp 'yas-expand) (yas-expand))))
 
-(add-hook 'org-mode-hook
-          (lambda ()
-            ;; (make-variable-buffer-local 'yas/trigger-key)
-            ;; (setq yas/trigger-key [tab])
-            (add-to-list 'org-tab-first-hook
-                         'yas-org-very-safe-expand)
-            ;; (keymap-set yas/keymap "<tab>" #'yas/next-field)
-            ))
+;;;; Commands
 
+(defvar my/org-table-from-lines-columns 3
+  "Last number of columns used by `my/org-table-from-lines'.")
 
-
-(defvar my/mode-name-list
-  (let (lst)
-    (mapatoms (lambda (sym)
-                (let ((name (symbol-name sym)))
-                  (if (string-match "^\\([^-]*\\)-mode$" name)
-                      (push (match-string 1 name) lst)))))
-    lst)
-  "names of the Emacs mode that can be used in SRC block in org-mode")
+(defun my/org-table-from-lines (beg end ncols)
+  "Convert the lines between BEG and END to an org table of NCOLS columns.
+
+Each non-blank line becomes one cell, filling the table row by
+row.  For example, with NCOLS 3, nine lines containing the digits
+1 to 9 become:
+
+| 1 | 2 | 3 |
+| 4 | 5 | 6 |
+| 7 | 8 | 9 |
+
+Interactively, NCOLS is the numeric prefix argument, or read from
+the minibuffer (defaulting to the last value used)."
+  (interactive
+   (let ((n (if current-prefix-arg
+                (prefix-numeric-value current-prefix-arg)
+              (read-number "Number of columns per row: "
+                           my/org-table-from-lines-columns))))
+     (unless (use-region-p)
+       (user-error "No active region"))
+     (list (region-beginning) (region-end) n)))
+  (unless (> ncols 0)
+    (user-error "Number of columns must be positive"))
+  (setq my/org-table-from-lines-columns ncols)
+  ;; Operate on whole lines; a region ending at the beginning of a
+  ;; line does not include that line.
+  (let* ((beg (save-excursion (goto-char beg) (line-beginning-position)))
+         (end (save-excursion
+                (goto-char end)
+                (when (and (bolp) (> (point) beg)) (backward-char))
+                (line-end-position)))
+         (cells (mapcar (lambda (s) (string-replace "|" "\\vert{}" s))
+                        (split-string (buffer-substring-no-properties beg end)
+                                      "\n" t "[ \t]+"))))
+    (delete-region beg end)
+    (goto-char beg)
+    (insert (mapconcat (lambda (row) (concat "| " (string-join row " | ") " |"))
+                       (seq-split cells ncols)
+                       "\n"))
+    (goto-char beg)
+    (org-table-align)))
 
 (defvar my/org-sourcefy-history nil
-  "history variable for `org-sourcefy'.")
+  "History of languages for `my/org-sourcefy'.")
 
-(setq my/org-sourcefy-history nil)
+(defun my/org-src-languages ()
+  "Return candidate languages for an org source block."
+  (let (langs)
+    (mapatoms (lambda (sym)
+                (let ((name (symbol-name sym)))
+                  (when (and (string-suffix-p "-mode" name)
+                             (commandp sym))
+                    (push (string-remove-suffix "-mode" name) langs)))))
+    (seq-uniq (append (mapcar #'car org-src-lang-modes) langs))))
 
-(defun my/org-sourcefy (mode begin end)
-  "Enclose the current region with #+BEGIN_SRC ... #+END_SRC"
+(defun my/org-sourcefy (lang)
+  "Wrap the region in a source block of LANG (\"#+begin_src LANG\").
+Without an active region, insert an empty source block.  This is
+`org-insert-structure-template' with completion for LANG; the
+block contents are then re-indented by a round trip through
+`org-edit-special'."
   (interactive
-   (list
-    (let ((initial (and (boundp 'my/org-sourcefy-history)
-                    (car my/org-sourcefy-history))))
-      ;; don't know why, but HIST arg in `completing-read' is not working
-      (completing-read "mode: " my/mode-name-list nil 'confirm initial
-                       'my/org-sourcefy-history))
-    (region-beginning)
-    (region-end)))
+   (let ((def (car my/org-sourcefy-history)))
+     (list (completing-read (format-prompt "Language" def)
+                            (my/org-src-languages) nil 'confirm nil
+                            'my/org-sourcefy-history def))))
+  (let ((region (use-region-p)))
+    (org-insert-structure-template (concat "src " lang))
+    (when (and region (org-in-src-block-p))
+      ;; Same as C-c ' C-c ', normalizing the block indentation.
+      (save-excursion
+        (when (org-edit-src-code)
+          (org-edit-src-exit))))))
 
-  (when (not (use-region-p))
-    (setq begin (point) end (point)))
+(defun my/org-insert-zero-width-space ()
+  "Insert U+200B ZERO WIDTH SPACE, Org's escape character for mark-up.
 
-  (goto-char end)
-  (unless (bolp)
-    (newline))
-  (insert "#+END_SRC\n")
-  (push-mark)
-  (goto-char begin)
-  (unless (bolp)
-    (newline))
-  (insert (format "#+BEGIN_SRC %s\n" mode))
-  (end-of-line 0)
+Org mark-up cannot emphasize part of a word (e.g. =partial=word),
+which matters for languages whose postpositions have no word
+boundary with the preceding noun (e.g. Korean josa).  Org accepts
+a zero width space as the boundary, so =partial=<ZWSP>word works,
+both for display and export.  It also helps with text that starts
+or ends with a quote: =<ZWSP>\"hello\"<ZWSP>=.
+See Info node `(org) Escape Character'."
+  (interactive)
+  (insert-char #x200B))
 
-  (when (use-region-p)
-    ;; Run keyboard macro C-' C-' (`org-edit-special' and `org-edit-src-exit')
-    ;; to indent the source block properly
-    (kmacro-exec-ring-item (quote ("''" 0 "%d")) 1))
-  (push mode my/org-sourcefy-history))
 
-;;
-;; This setting causes org export to HTML failed.
+;;;; Word joiner minor mode
+
+(defconst my/org-wordjoin-regexp
+  "\\([=/]\\)\\(.*\\)\\1\\([^[:space:]\u200B]+\\)"
+  "Regexp matching an emphasized phrase followed by a partial word.
+Group 1 is the marker, group 2 the phrase, group 3 the partial word.")
+
+(defvar-keymap my/org-wordjoin-mode-map
+  "SPC"   #'my/org-wordjoin-dwim
+  "RET"   #'my/org-wordjoin-dwim
+  "C-j"   #'my/org-wordjoin-dwim
+  "TAB"   #'my/org-wordjoin-dwim
+  "<tab>" #'my/org-wordjoin-dwim)
+
+(define-minor-mode my/org-wordjoin-mode
+  "Insert zero width spaces automatically after partial-word emphasis.
+See `my/org-insert-zero-width-space'."
+  :lighter " WordJoin"
+  :keymap my/org-wordjoin-mode-map)
+
+(defun my/org-wordjoin-dwim ()
+  "Insert a ZWSP after a just-closed emphasis, then run the key's command.
+
+If the text before point looks like =phrase=word, insert a zero
+width space before \"word\" so the emphasis still works.  Then run the
+command this key would run without `my/org-wordjoin-mode'."
+  (interactive)
+  (save-match-data
+    (when (looking-back my/org-wordjoin-regexp (line-beginning-position) t)
+      (save-excursion
+        (goto-char (match-beginning 3))
+        (insert-char #x200B))))
+  (let ((cmd (let ((my/org-wordjoin-mode nil))
+               (key-binding (this-command-keys-vector) t))))
+    (when (commandp cmd)
+      (setq this-command cmd)
+      (call-interactively cmd))))
+
+;; (add-hook 'org-mode-hook #'my/org-wordjoin-mode)
+
+
+;;;; Global key bindings
+
+(keymap-global-set "C-c a" #'org-agenda)
+(keymap-global-set "C-c l" #'org-store-link)
+(keymap-global-set "C-c b" #'org-switchb)
+(keymap-global-set "C-c \"" #'org-capture)
+(keymap-global-set "<f8>" #'org-capture)
+
+
+;;;; After Org is loaded
+
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     ;; (R . t)
+     (python . t)
+     ;; (ruby . t)
+     (dot . t)
+     (shell . t)))
+
+  (keymap-set outline-mode-map "C-<down>"   #'outline-next-visible-heading)
+  (keymap-set outline-mode-map "C-<up>"     #'outline-previous-visible-heading)
+  (keymap-set outline-mode-map "C-S-<down>" #'outline-forward-same-level)
+  (keymap-set outline-mode-map "C-S-<up>"   #'outline-backward-same-level)
+
+  ;; Rebind `org-force-cycle-archived' from "C-<tab>" to "C-x C-<tab>"
+  ;; since I use "C-<tab>" for `smart-other-window'.
+  ;; (my/move-key :keymap org-mode-map :from "C-<tab>" :to "C-x C-<tab>")
+
+  ;; Move `org-deadline' from "C-c C-d" to "C-c C-S-d", since I use
+  ;; "C-c C-d" for `delete-chars-forward-with-syntax'.
+  (when (eq (keymap-lookup org-mode-map "C-c C-d") 'org-deadline)
+    (my/move-key :keymap org-mode-map :from "C-c C-d" :to "C-c C-S-d"))
+
+  ;; org-mode uses "C-c \"" as a prefix; use "C-c \" \"" for capture.
+  (keymap-set org-mode-map "C-c \" \"" #'org-capture)
+  (keymap-set org-mode-map "C-c C-\\" #'my/org-table-from-lines)
+  (keymap-set org-mode-map "C-c t"    #'org-todo)
+  (keymap-set org-mode-map "C-c s"    #'my/org-sourcefy)
+  ;; Shift + TAB in rdesktop, xmanager, ...
+  (keymap-set org-mode-map "S-<kp-tab>" #'org-shifttab)
+  ;; Both keys insert Org's escape character (U+200B).  "C-c C-;"
+  ;; used to insert U+2060 WORD JOINER, which no longer works for
+  ;; export since Org 9.6 hard-codes the emphasis boundaries.
+  (keymap-set org-mode-map "C-c C-;" #'my/org-insert-zero-width-space)
+  (keymap-set org-mode-map "C-c C-'" #'my/org-insert-zero-width-space)
+
+  (when (fboundp 'graphviz-dot-mode)
+    (setf (alist-get "dot" org-src-lang-modes nil nil #'equal) 'graphviz-dot))
+
+  ;; "Export as HTML and open" (C-c C-e h o) uses `org-open-file',
+  ;; which may pick lynx(1) from ~/.mailcap.  Use `browse-url' instead.
+  (add-to-list 'org-file-apps
+               '("\\.x?html?\\'" . (lambda (file _link) (browse-url file))))
+  (when (eq system-type 'gnu/linux)
+    (add-to-list 'org-file-apps '("\\.pdf\\'" . "xdg-open %s"))
+    (add-to-list 'org-file-apps '("\\.ps\\'" . "xdg-open %s")))
+
+  ;; filladapt does not play well with Org.
+  (when (fboundp 'filladapt-mode)
+    (add-hook 'org-mode-hook (lambda () (filladapt-mode -1)))))
+
+;; This setting causes org export to HTML to fail.
 ;;
 ;; (setq org-todo-keywords
 ;;       '((sequence "TODO" "|" "DONE")
 ;;         (sequence "RESEARCH" "|" "DEVELOP" "|" "TEST" "|" "OP-DONE")
-;;         (sequence "IMPL" "|" "REVIEW" | "RELEASE" "|" "SP-DONE")))
+;;         (sequence "IMPL" "|" "REVIEW" "|" "RELEASE" "|" "SP-DONE")))
