@@ -592,39 +592,7 @@ instead of the next window."
 (uinit "_ess" :when (locate-library "ess-site")) ; statistics/R
 
 
-;;;
-;;; GNU Emacs Calculator Configuration
-;;;
-(autoload 'calc "calc" "The Emacs Calculator" t)
-(keymap-global-set "<f10>" #'calc)
-(keymap-global-set "C-<f10>" #'quick-calc-dwim)
-
-(defun quick-calc-dwim (&optional arg)
-  "Call `calc-eval-region' if there is active region, otherwise
-call `quick-calc'"
-  (interactive "P")
-  (let ((current-prefix-arg arg))
-    (if (use-region-p)
-        (call-interactively 'calc-eval-region)
-      (call-interactively 'quick-calc))))
-
-(defun calc-eval-region (arg beg end)
-  "Calculate the region and display the result in the echo area.
-With a prefix ARG non-nil, replace the region with the result. With two
-prefix ARGs, insert the result at the end of region."
-  (interactive "p\nr")
-  (let* ((expr (buffer-substring-no-properties beg end))
-         (result (calc-eval expr)))
-    (cond ((eq arg 4)
-           (goto-char beg)
-           (push-mark (point) 'nomsg)
-           (delete-region beg end)
-           (insert result))
-          ((eq arg 16)
-           (goto-char end)
-           (push-mark (point) 'nomsg)
-           (insert result))
-          (t (message "%s = %s" expr result)))))
+(uinit "_calc")
 
 
 (keymap-global-set "C-c c" #'compile)

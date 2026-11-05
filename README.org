@@ -48,7 +48,7 @@
 
       =C-c C-f C-o= to parse the org table at the point, and evaluate
       it.
-    
+
 * Version Control System support
 
   =<f12>= or =M-x vc/dir= will launch version control system (VCS)
@@ -61,11 +61,11 @@
   <f11>         toggle-case-fold-search  (ignore case)
   <f10>         calc
 
-  C-c c         compile 
+  C-c c         compile
   M-c           capitalize current word (e.g. word, Word, WORD)
 
 
-  C-x C-j       jump to the dired buffer 
+  C-x C-j       jump to the dired buffer
 #+END_SRC
 
   For full list of custom key bindings, you can press =C-c C-c= on
@@ -88,7 +88,7 @@
     screen(1)/tmux(1) like terminal interface is available. (via [[https://github.com/dakra/ghostel][ghostel]])
 
     =M-x ghostel= or =M-x ghostel-project= to create a terminal.
-    
+
     Within the terminal, you can use:
 #+BEGIN_SRC
   C-z "         list all terminal(ghostel) sessions
@@ -102,7 +102,7 @@
 
     Several shell functions are available for interacting Emacs.  See
     [[./ghostel.bash]] for more.
-    
+
 * Emacs features that I forgot frequently
 *** Force inserting characters
     - =C-q <tab>= to insert a =<tab>= character.
@@ -118,7 +118,7 @@
     - =M-s r= toggle regexp
     - =M-%= query-replace
     - =C-M-%= query-replace-regexp
-      
+
 *** Removing lines with a pattern
 
     Select a region (e.g. =C-x h= for whole buffer), then =C-u M-|=
@@ -129,8 +129,8 @@
     Pressing =M-n= again fill the filename of the buffer.
 
     =M-n= works similarily on =M-x query-replace= as well.
-    
-*** Tramp    
+
+*** Tramp
 
     =ssh= may not work on Darwin.  I suspect it may be related to the
     =ksh(1)=, or the prompt at least, but I have not had enough time
@@ -152,7 +152,7 @@
 *** Rectangle Mark Mode
     To select rectangular region, press =C-x SPC=.  Then you can do
     =C-w= or =M-w= as usual.
-    
+
 *** Lisp Code in query
 
     When you do M-x replace-regexp, you could insert =\,(LISP...CODE)=.
@@ -177,14 +177,14 @@
 
     - =* c= change existing mark to another
     - =M <DEL>= remove specific mark
-      
+
     =dired-omit-mode= is turned on, which means uninteresting files
     are not visible by default (e.g. backup files).  To make it
     visible, press =C-x M-o= (toggle dired-omit-mode).  To mark
     omitted files, press =* O=.
 
 *** Org mode
-    
+
 ***** Insert Word Joiner or Zero-Width Space
       To mark up word with Korean postposition, since it is attached
       with the words, Org mark up will not detect them.  Insert
@@ -193,7 +193,7 @@
       =​C-c C-'​= to insert zero-width space character.  Here's the
       example where you need to insert the special character (marked
       at =<!>=):
-    
+
 #+BEGIN_EXAMPLE
       =foo=<!>는              # word-joiner
       =<!>C-c C-'<!>=         # zero-width space
@@ -217,6 +217,9 @@
 
     =s t=  Assign top-most value to a variable and pop it.
     =s s=  Assign top-most value to a variable
+
+    =M-n=                        Grab a number from previous buffer's point and push it
+    =C-x * M-n= or =C-x * N=     (in any buffer) grab a number at point, push to Calc
 
 ***** Formula and Variables
 
@@ -244,7 +247,7 @@ v u                          # vector to values
 #+END_EXAMPLE
 
 ***** Solving Proportions
-      
+
       To solve "1345:1=x:350000" for =x=, just replace ':' with '/',
       and type in Algebraic mode (').  Then, press =a S= and type 'x'
 
@@ -266,7 +269,7 @@ j 2<RET>                     # select 2nd part
     corresponding Emacs feature for VCS it detects.  For git(1), it
     uses [[https://magit.vc/][magit]].
 
-*** Compile    
+*** Compile
     =C-c c= bounds to =dwim-c/compile=, which try to understand the
     build(compile) tool name from the context.
 
@@ -319,7 +322,7 @@ j 2<RET>                     # select 2nd part
 #+END_SRC
 
 *** man pages on MacOs (darwin)
-      
+
     On Mac, =man(1)= does not support cached index which makes completion
     on man pages extremely slow (e.g. in /helm/ or /ivy-mode/).
 
