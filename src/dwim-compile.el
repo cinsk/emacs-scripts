@@ -378,5 +378,15 @@ With two prefix arguments (C-u C-u), it will just call `compile' command."
 
 (add-hook 'compilation-finish-functions 'compilation-finished-notification)
 
+
+;; See http://stackoverflow.com/questions/13397737/ansi-coloring-in-compilation-mode
+(ignore-errors
+  (require 'ansi-color)
+  (defun my-colorize-compilation-buffer ()
+    (when (eq major-mode 'compilation-mode)
+      (ansi-color-apply-on-region compilation-filter-start (point-max))))
+  (add-hook 'compilation-filter-hook 'my-colorize-compilation-buffer))
+
+
 (provide 'dwim-compile)
 ;;; dwim-compile.el ends here

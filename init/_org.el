@@ -317,20 +317,19 @@ not NOT-THIS-COMMAND"
 
   ;; Rebind `org-force-cycle-archived' from "C-<TAB>" to "C-x C-<TAB>"
   ;; since I use "C-<TAB>" for `smart-other-window'.
-  (cinsk/move-key org-mode-map [(control tab)] [(control x) (control tab)])
+  ;; (my/move-key :keymap org-mode-map :from "C-<tab>" :to "C-x C-<tab>")
 
   ;; Move the binding of `org-deadline' from "C-c C-d" to "C-c
   ;; C-S-d", since I'vd used the keybinding for
   ;; `delete-chars-forward-with-syntax'.
-  (cinsk/move-key org-mode-map [(control ?c) (control ?d)]
-                  [(control ?c) (control shift ?d)])
+  (my/move-key :keymap org-mode-map :from "C-c C-d" :to "C-c C-D")
 
   (keymap-set org-mode-map "C-c C-\\"
               'org-table-convert-from-lines)
 
   (keymap-set org-mode-map "C-c t" #'org-todo)
 
-  (keymap-set org-mode-map "C-c s" #'cinsk/org-sourcefy)
+  (keymap-set org-mode-map "C-c s" #'my/org-sourcefy)
 
   ;; Shift + TAB in rdesktop, xmanager, emacs
   (keymap-set org-mode-map "S-<kp-tab>" #'org-shifttab)
@@ -540,7 +539,7 @@ Finally, \"~/agenda\" will be used.")
     ;;
     ;; Thus, I'll add non-conflicted filenames into `org-agenda-files'.
 
-    ;; (cinsk/org-refresh-agenda-files org-path)
+    ;; (my/org-refresh-agenda-files org-path)
     (setq org-agenda-files (my-org-agenda-files org-path))
 
     (setq org-directory org-path)))
@@ -572,7 +571,7 @@ Finally, \"~/agenda\" will be used.")
          (file+datetree ,(file-name-concat org-directory "personal.org"))
          "* %?\n  Entered on %U\n  %i\n  %a")))
 
-(defun cinsk/org-refresh-agenda-files (&optional directory)
+(defun my/org-refresh-agenda-files (&optional directory)
   "Refresh `org-agenda-files' to the ORG files in DIRECTORY.
 
 Filenames that matches Dropbox conflict will not be included"
@@ -669,7 +668,7 @@ following:
 
 
 
-(defvar cinsk/mode-name-list
+(defvar my/mode-name-list
   (let (lst)
     (mapatoms (lambda (sym)
                 (let ((name (symbol-name sym)))
@@ -678,20 +677,20 @@ following:
     lst)
   "names of the Emacs mode that can be used in SRC block in org-mode")
 
-(defvar cinsk/org-sourcefy-history nil
+(defvar my/org-sourcefy-history nil
   "history variable for `org-sourcefy'.")
 
-(setq cinsk/org-sourcefy-history nil)
+(setq my/org-sourcefy-history nil)
 
-(defun cinsk/org-sourcefy (mode begin end)
+(defun my/org-sourcefy (mode begin end)
   "Enclose the current region with #+BEGIN_SRC ... #+END_SRC"
   (interactive
    (list
-    (let ((initial (and (boundp 'cinsk/org-sourcefy-history)
-                    (car cinsk/org-sourcefy-history))))
+    (let ((initial (and (boundp 'my/org-sourcefy-history)
+                    (car my/org-sourcefy-history))))
       ;; don't know why, but HIST arg in `completing-read' is not working
-      (completing-read "mode: " cinsk/mode-name-list nil 'confirm initial
-                       'cinsk/org-sourcefy-history))
+      (completing-read "mode: " my/mode-name-list nil 'confirm initial
+                       'my/org-sourcefy-history))
     (region-beginning)
     (region-end)))
 
@@ -713,7 +712,7 @@ following:
     ;; Run keyboard macro C-' C-' (`org-edit-special' and `org-edit-src-exit')
     ;; to indent the source block properly
     (kmacro-exec-ring-item (quote ("''" 0 "%d")) 1))
-  (push mode cinsk/org-sourcefy-history))
+  (push mode my/org-sourcefy-history))
 
 ;;
 ;; This setting causes org export to HTML failed.

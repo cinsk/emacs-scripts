@@ -17,10 +17,10 @@
 (when nil
   (add-hook 'c-mode-hook '(lambda ()
                             (make-local-variable 'write-contents-hooks)
-                            (add-hook 'write-contents-hooks 'cinsk/source-untabify)))
+                            (add-hook 'write-contents-hooks 'my/source-untabify)))
   (add-hook 'c++-mode-hook '(lambda ()
                               (make-local-variable 'write-contents-hooks)
-                              (add-hook 'write-contents-hooks 'cinsk/source-untabify))))
+                              (add-hook 'write-contents-hooks 'my/source-untabify))))
 
 
 (when nil

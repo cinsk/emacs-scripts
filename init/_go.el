@@ -18,10 +18,10 @@
               (setq tab-width 4)
               (subword-mode 1))))
 
-(add-hook 'go-mode-hook 'cinsk/go-check-utils)
+(add-hook 'go-mode-hook 'my/go-check-utils)
 (add-hook 'go-mode-hook 'lsp-deferred)
 
-(defun cinsk/go-check-utils (&optional nowarn)
+(defun my/go-check-utils (&optional nowarn)
   (if (executable-find "gopls")
       (progn
         (add-hook 'before-save-hook #'lsp-format-buffer t t)
@@ -37,17 +37,17 @@
   ;; Prefer company-mode based auto-completion to auto-complete-mode based one.
   ;;
   (cond ((locate-library "company")
-         (add-hook 'go-mode-hook 'cinsk/go-init-cp-autocomplete))
+         (add-hook 'go-mode-hook 'my/go-init-cp-autocomplete))
         ((locate-library "auto-complete")
-         (add-hook 'go-mode-hook 'cinsk/go-init-ac-autocomplete)))
+         (add-hook 'go-mode-hook 'my/go-init-ac-autocomplete)))
 
-  (defun cinsk/go-check-gocode (&optional nowarn)
+  (defun my/go-check-gocode (&optional nowarn)
     (unless (executable-find "gocode")
       (add-to-list 'exec-path (substitute-in-file-name "$GOPATH/bin"))
       (unless (and (executable-find "gocode") nowarn)
         (warn "gocode not found; try build it using 'go get github.com/nsf/gocode' in $GOPATH directory"))))
 
-  (defun cinsk/go-check-utils (&optional nowarn)
+  (defun my/go-check-utils (&optional nowarn)
     (if (executable-find "goimports")
         (setq gofmt-command "goimports")
       (add-to-list 'exec-path (substitute-in-file-name "$GOPATH/bin"))
@@ -57,7 +57,7 @@
         (unless nowarn
           (warn "goimports not found; try build it using 'go get golang.org/x/tools/cmd/goimports' in $GOPATH directory")))))
 
-  (defun cinsk/go-init-cp-autocomplete-deprecated ()
+  (defun my/go-init-cp-autocomplete-deprecated ()
     "Set up auto completion of Go sources using `company-mode'"
     (unless (locate-library "company-go")
       (let ((go-cp-dir (substitute-in-file-name
@@ -65,7 +65,7 @@
         (when (locate-library "company-go" nil (list go-cp-dir))
           (add-to-list 'load-path go-cp-dir)
 
-          (cinsk/go-check-gocode)
+          (my/go-check-gocode)
 
           (unless (featurep 'company-go)
             (require 'company)
@@ -75,7 +75,7 @@
     (set (make-local-variable 'company-backends) '(company-go))
     (company-mode))
 
-  (defun cinsk/go-init-ac-autocomplete-deprecated ()
+  (defun my/go-init-ac-autocomplete-deprecated ()
     "Set up auto completion of Go sources.
 
 See https://github.com/auto-complete/auto-complete for more"
@@ -88,7 +88,7 @@ See https://github.com/auto-complete/auto-complete for more"
         (when (locate-library "go-autocomplete" nil (list go-ac-dir))
           (add-to-list 'load-path go-ac-dir)
 
-          (cinsk/go-check-gocode)
+          (my/go-check-gocode)
 
           (unless (featurep 'go-autocomplete)
             (require 'go-autocomplete)

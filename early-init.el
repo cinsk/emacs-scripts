@@ -10,7 +10,8 @@
   "Return the absolute path of NAME inside `my/cache-dir'."
   (expand-file-name name my/cache-dir))
 
-(dolist (d '("" "backups/" "auto-save/" "auto-save-list/" "transient/"))
+(dolist (d '("" "backups/" "auto-save/" "auto-save-list/"
+	     "transient/" "tramp-autosave/"))
   (make-directory (my/cache-file d) t))
 
 ;; Native compilation cache
@@ -29,6 +30,7 @@
       save-place-file              (my/cache-file "places")
       project-list-file            (my/cache-file "projects")
       tramp-persistency-file-name  (my/cache-file "tramp")
+      tramp-auto-save-directory    (my/cache-file "tramp-autosave/")
       url-configuration-directory  (my/cache-file "url/")
       nsm-settings-file            (my/cache-file "network-security.data")
       multisession-directory       (my/cache-file "multisession/")

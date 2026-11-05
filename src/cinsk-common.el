@@ -37,7 +37,28 @@ in case that file does not provide any feature."
     `(eval-after-load ,file (lambda () ,@body))))
 
 
-(defun cinsk/priortize-auto-mode (mode)
+(defun system--uname ()
+  "Return system information."
+  (let ((cmd (cond ((or (eq system-type 'gnu/linux)
+                        (eq system-type 'darwin))
+                    "uname -a")
+                   ((eq system-type 'windows-nt)
+                    "ver")
+                   (t
+                    nil))))
+    (if cmd
+        (string-trim (shell-command-to-string cmd))
+      "")))
+
+(defvar system-uname (system--uname)
+  "system information")
+
+(defun my/wsl-p ()
+  (if (and (eq system-type 'gnu/linux)
+           (string-match "[mM]icrosoft" system-uname))
+      t))
+
+(defun my/priortize-auto-mode (mode)
   "Sort(prepend) `auto-mode-alist' entries that has MODE in them."
   (setq auto-mode-alist
         (let (newlst filtered)
@@ -51,7 +72,7 @@ in case that file does not provide any feature."
             auto-mode-alist))))
 
 
-(defun cinsk/add-site-lisp-directories (site-dir)
+(defun my/add-site-lisp-directories (site-dir)
   "Add the subdirectories of SITE-DIR into `load-path'.
 
 This function will ignore any subdirectory of SITE-DIR does not
@@ -67,7 +88,7 @@ contains .el file."
                     (directory-files basedir 'full-name "^[^.]")))
         (add-to-list 'load-path dir)))))
 
-(defun cinsk/accessible-directories (&rest dirs)
+(defun my/accessible-directories (&rest dirs)
   "Return the list of directories that are accessible.
 
 Each elements in DIRS will be expanded using `expand-file-name'."
@@ -76,6 +97,28 @@ Each elements in DIRS will be expanded using `expand-file-name'."
                         (if (file-accessible-directory-p path)
                             path))
                       dirs)))
+
+(defun my/missing-use-packages ()
+  "List `use-package' declarations whose library can't be found."
+  (interactive)
+  (let (missing)
+    (dolist (f (append (list user-init-file
+                             (expand-file-name "postinit.el" user-emacs-directory))
+                       (directory-files (expand-file-name "init" user-emacs-directory)
+                                        t "\\.el\\'")))
+      (when (file-readable-p f)
+        (with-temp-buffer
+          (insert-file-contents f)
+          (goto-char (point-min))
+          (while (re-search-forward
+                  "^[ \t]*(use-package[ \t\n]+\\([^ \t\n()]+\\)" nil t)
+            (let ((pkg (match-string 1)))
+              (unless (locate-library pkg)
+                (push (format "%s (%s)" pkg (file-name-nondirectory f))
+                      missing)))))))
+    (message "Missing: %s"
+             (if missing (string-join (nreverse missing) ", ") "none"))))
+
 
 ;; ;;; I haven't tested throughly, but macro version of `move-key' makes
 ;; ;;; `cider-jack-in' causes problems.
@@ -94,7 +137,7 @@ Each elements in DIRS will be expanded using `expand-file-name'."
 ;;          (keymap-set ,key-map ,old-bind nil)
 ;;          ,new-key))))
 
-(defun cinsk/key-string (key)
+(defun my/key-string (key)
   "Return KEY as a string accepted by `keymap-set'.
 
 KEY may be a string already in `key-valid-p' form (\"C-c C-k\"), or
@@ -104,25 +147,11 @@ of `kbd'."
       key
     (key-description key)))
 
-(defun cinsk/move-key (keymap old-key new-key)
-  "Move the key definition from OLD-KEY to NEW-KEY in KEYMAP.
-
-OLD-KEY and NEW-KEY are anything `cinsk/key-string' accepts.
-It will return the previous key definition bound in NEW-KEY, and
-the definition bound in OLD-KEY will be removed."
-  (let* ((old-key (cinsk/key-string old-key))
-         (new-key (cinsk/key-string new-key))
-         (def (keymap-lookup keymap old-key))
-         (alt (keymap-lookup keymap new-key)))
-    (keymap-set keymap new-key def)
-    (keymap-set keymap old-key nil)
-    alt))
-
-(defun cinsk/copy-key (keymap src-key dst-key)
+(defun my/copy-key (keymap src-key dst-key)
   "Rebind the command currently bound to SRC-KEY to DST-KEY."
-  (let* ((src-key (cinsk/key-string src-key))
+  (let* ((src-key (my/key-string src-key))
          (def (keymap-lookup keymap src-key)))
-    (keymap-set keymap (cinsk/key-string dst-key) def)))
+    (keymap-set keymap (my/key-string dst-key) def)))
 
 
 (cl-defun my/move-key (&key from to with keymap overwrite)
@@ -171,12 +200,12 @@ Example:
     old-def))
 
 
-(defun cinsk/visit-tags-table (file &optional local)
+(defun my/visit-tags-table (file &optional local)
   "Call `visit-tags-table' iff FILE is readable"
   (and (file-readable-p file)
        (visit-tags-table file local)))
 
-(defun cinsk/source-untabify ()
+(defun my/source-untabify ()
   "Stealed from Jamie Zawinski's homepage,
 http://www.jwz.org/doc/tabs-vs-spaces.html
 Remove any right trailing whitespaces and convert any tab
@@ -191,7 +220,7 @@ character to the spaces"
   nil)
 
 
-(defun cinsk/import-buffer-region (&optional after-import)
+(defun my/import-buffer-region (&optional after-import)
   "Copy region from the current buffer to the previous buffer.
 
 Once called, Emacs enters in recursive edit mode.  Marking a region
@@ -210,19 +239,19 @@ This function uses `recursive-edit' internally."
          (old-binding (lookup-key map [(control meta ?c)])))
     (substitute-key-definition
      'exit-recursive-edit
-     'cinsk/exit-import-buffer-region map)
-    ;; (keymap-set map "C-M-c" #'cinsk/exit-import-buffer-region)
+     'my/exit-import-buffer-region map)
+    ;; (keymap-set map "C-M-c" #'my/exit-import-buffer-region)
 
     (let ((old-buffer (current-buffer))
           (src-buffer (unwind-protect
                           (catch 'exit-from-import
                             (message "Use `%s' when done, or use `%s' to abort."
-                                     (substitute-command-keys "\\[cinsk/exit-import-buffer-region]")
+                                     (substitute-command-keys "\\[my/exit-import-buffer-region]")
                                      (substitute-command-keys "\\[abort-recursive-edit]"))
                             (recursive-edit))
                         ;; (keymap-set map "C-M-c" old-binding))))
                         (substitute-key-definition
-                         'cinsk/exit-import-buffer-region
+                         'my/exit-import-buffer-region
                          'exit-recursive-edit
                          map))))
       (when (buffer-live-p old-buffer)
@@ -243,11 +272,11 @@ This function uses `recursive-edit' internally."
                  (funcall after-import src-buffer))
             (pop-mark)))))))
 
-(defun cinsk/exit-import-buffer-region ()
+(defun my/exit-import-buffer-region ()
   (interactive)
-  (throw 'cinsk/exit-from-import (current-buffer)))
+  (throw 'my/exit-from-import (current-buffer)))
 
-(defun cinsk/line-numbers-on-region (begin end &optional start)
+(defun my/line-numbers-on-region (begin end &optional start)
   "Insert line numbers on the region.
 
 When called interactively, it insert the line number starting
@@ -273,7 +302,7 @@ starting number."
           (forward-line))))))
 
 
-(defun cinsk/fill-text-line-paragraph (begin end)
+(defun my/fill-text-line-paragraph (begin end)
   "Convert each line in the region to a filled-paragraph"
   (interactive "r")
   (save-excursion
@@ -293,7 +322,7 @@ starting number."
                  (fill-paragraph nil)
                  (eq (forward-line) 0)))))))
 
-(defun cinsk/unfill-paragraph (&optional arg)
+(defun my/unfill-paragraph (&optional arg)
   (interactive "P")
   (let ((fill-column (point-max)))
     (fill-paragraph arg t)))
@@ -324,10 +353,10 @@ and the buffer, returns the last expression of the BODY."
 ;;
 ;; Launch view-mode when visiting other's file.
 ;;
-(defun cinsk/file-uid (filename)
+(defun my/file-uid (filename)
   (cl-caddr (file-attributes (expand-file-name filename))))
 
-(defun cinsk/smart-view-mode ()
+(defun my/smart-view-mode ()
   "Enable `view-mode' on certain condition.
 
 If the user is not the owner of the file, or if the file's truename is
@@ -335,7 +364,7 @@ not belong to user's home directory, then enable `view-mode'.
 
 This function is best used in `find-file-hook'."
   (let* ((file (and buffer-file-name (file-truename buffer-file-name)))
-         (fuid (and file (cinsk/file-uid file)))
+         (fuid (and file (my/file-uid file)))
          (home (getenv "HOME")))
     (setq home (and home (file-truename home)))
     (when (or (and (not (null fuid))          ; file exists,
@@ -346,7 +375,7 @@ This function is best used in `find-file-hook'."
                    (not (string-equal home (substring file 0 (length home))))))
       (view-mode 1))))
 
-(add-hook 'find-file-hook 'cinsk/smart-view-mode)
+(add-hook 'find-file-hook 'my/smart-view-mode)
 
 (provide 'cinsk-common)
 ;;; cinsk-common.el ends here

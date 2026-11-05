@@ -62,9 +62,9 @@
      'paredit-backward-delete
      'paredit-close-round))
 
-  (cinsk/move-key paredit-mode-map [(control ?k)] [(control ?K)])
-  (cinsk/move-key paredit-mode-map [(control ?d)] [(control ?D)])
-  (cinsk/move-key paredit-mode-map (kbd "DEL") [(shift backspace)]))
+  (my/move-key :keymap paredit-mode-map :from "C-k" :to "C-K")
+  (my/move-key :keymap paredit-mode-map :from "C-d" :to "C-D")
+  (my/move-key :keymap paredit-mode-map :from "DEL" :to "S-<backspace>"))
 
 
 (when nil

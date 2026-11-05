@@ -81,8 +81,7 @@
                 'scala-eval-definition)
     ;;
     ;; scala-undent-line: `C-<tab>' -> `<backtab>'
-    (cinsk/move-key scala-mode-map
-                    [(control tab)] [backtab])
+    (my/move-key :keymap scala-mode-map :from "C-<tab>" :to "<backtab>")
 
     (keymap-set scala-mode-map "C-c !" #'scala-run-scala)
     )

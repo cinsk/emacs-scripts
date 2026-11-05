@@ -26,11 +26,11 @@
 ;;; Code:
 
 
-(setq cinsk/contact-databases '(joyent-contacts))
+(setq my/contact-databases '(joyent-contacts))
 
-(defun cinsk/update-contacts-database (decorator)
+(defun my/update-contacts-database (decorator)
   (let ((database ()))
-    (dolist (var cinsk/contact-databases)
+    (dolist (var my/contact-databases)
       (let ((db (symbol-value var)))
         (dolist (rec db)
           (let ((key (car rec))
@@ -42,14 +42,14 @@
                                  database))))))
     database))
 
-(setq cinsk/contact-database (cinsk/update-contacts-database (lambda (f l e) (format "[[mailto:%s][%s %s]]" e f l))))
+(setq my/contact-database (my/update-contacts-database (lambda (f l e) (format "[[mailto:%s][%s %s]]" e f l))))
 
-(setq cinsk/ido-completing-choices (mapcar (lambda (x) (car x)) cinsk/contact-database))
+(setq my/ido-completing-choices (mapcar (lambda (x) (car x)) my/contact-database))
 
-(defun cinsk/org-insert-contact ()
+(defun my/org-insert-contact ()
   (interactive)
-  (let ((contact (ido-completing-read "mailto: " cinsk/ido-completing-choices)))
-    (insert (cdr (assoc contact cinsk/contact-database)))))
+  (let ((contact (ido-completing-read "mailto: " my/ido-completing-choices)))
+    (insert (cdr (assoc contact my/contact-database)))))
 
 (provide 'contacts)
 ;;; contacts.el ends here

@@ -80,14 +80,14 @@
 (add-to-list 'auto-mode-alist '(".*\\.scala\\.s?html?\\'" . nxml-mode))
 
 
-(defvar cinsk/nxml-initialized nil
-  "Non-nil if `cinsk/nxml-init' is called")
+(defvar my/nxml-initialized nil
+  "Non-nil if `my/nxml-init' is called")
 
-(defadvice nxml-mode (before cinsk/nxml-init
+(defadvice nxml-mode (before my/nxml-init
                              ())
   "package-wide init for `nxml-mode'."
-  (unless cinsk/nxml-initialized
-    (setq cinsk/nxml-initialized t)
+  (unless my/nxml-initialized
+    (setq my/nxml-initialized t)
 
     ;; Current nxml-mode package (nxml-mode-20041004-r3) in Gentoo Linux
     ;; install schema files (schemas.xml) in

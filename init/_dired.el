@@ -95,7 +95,7 @@ supplied one, a warning message is generated."
 ;; (`-t') can push them down.  This moves just those two lines back
 ;; to the top; the order of everything else is left to ls(1).
 ;;
-(defun cinsk/dired-dot-dirs-first ()
+(defun my/dired-dot-dirs-first ()
   "Move the \".\" and \"..\" lines to the top of the listing.
 Runs from `dired-after-readin-hook', where the buffer is narrowed
 to a single directory listing."
@@ -124,7 +124,7 @@ to a single directory listing."
       (when top (set-marker top nil)))
     (set-buffer-modified-p modified)))
 
-(add-hook 'dired-after-readin-hook #'cinsk/dired-dot-dirs-first)
+(add-hook 'dired-after-readin-hook #'my/dired-dot-dirs-first)
 
 (setq dired-omit-files
       (concat ""
@@ -174,7 +174,7 @@ to a single directory listing."
          (select-frame-set-input-focus frame))))
 
 
-(defun cinsk/buffer-directory (&optional buffer)
+(defun my/buffer-directory (&optional buffer)
   "Return the expanded directory string of the BUFFER."
   (with-current-buffer (or buffer (current-buffer))
     (expand-file-name
@@ -182,12 +182,12 @@ to a single directory listing."
          (file-name-directory buffer-file-name)
        default-directory))))
 
-(defun cinsk/dired-buffers (&optional buffer)
+(defun my/dired-buffers (&optional buffer)
   "Return a list of dired buffers that contains the directory of BUFFER."
-  (let ((dir (cinsk/buffer-directory (or buffer (current-buffer)))))
+  (let ((dir (my/buffer-directory (or buffer (current-buffer)))))
     (remove nil
             (mapcar (lambda (buf)
-                      (let ((d (cinsk/buffer-directory buf)))
+                      (let ((d (my/buffer-directory buf)))
                         (with-current-buffer buf
                           (when (and (buffer-live-p buf)
                                      (memq major-mode '(dired-mode sr-mode))
@@ -202,17 +202,17 @@ to a single directory listing."
                                  buf)))))
                     (buffer-list)))))
 
-(defun cinsk/dired-jump (orig-fun &rest args)
+(defun my/dired-jump (orig-fun &rest args)
   "Advice for dired-jump to reuse the existing `dired' buffer."
-  (let ((dir (cinsk/buffer-directory))
-        (buf (car (cinsk/dired-buffers)))
+  (let ((dir (my/buffer-directory))
+        (buf (car (my/dired-buffers)))
         (file buffer-file-name))
     (if (null buf)
         (apply orig-fun args)
       (switch-to-buffer buf)
       (dired-revert)
       (dired-goto-file (or file dir)))))
-;;(advice-add 'dired-jump :around #'cinsk/dired-jump)
+;;(advice-add 'dired-jump :around #'my/dired-jump)
 
 
 

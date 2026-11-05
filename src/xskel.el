@@ -30,7 +30,7 @@
 (require 'autoinsert)
 (require 'xlicense)
 
-(defun cinsk/safe-call-skeleton (func)
+(defun my/safe-call-skeleton (func)
   "call FUNC if and only if the cuurent buffer looks like an user
 created file buffer."
   (save-match-data
@@ -219,7 +219,7 @@ created file buffer."
                . xhtml-skeleton))
 
 (add-to-list 'auto-insert-alist '("\\.org\\'" . (lambda ()
-                                                  (cinsk/safe-call-skeleton
+                                                  (my/safe-call-skeleton
                                                    'org-skeleton))))
 
 (add-to-list 'auto-insert-alist

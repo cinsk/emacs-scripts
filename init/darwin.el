@@ -78,7 +78,7 @@
 ;; it as "gls" (plain "ls" only if its gnubin directory is put first
 ;; in PATH).  GNU ls supports "--dired", which lets Emacs handle
 ;; unusual file names, and "--group-directories-first" (see
-;; `cinsk/dired-group-directories-first' in _dired.el).
+;; `my/dired-group-directories-first' in _dired.el).
 (when (executable-find "gls")
   (setq insert-directory-program "gls"))
 
@@ -175,7 +175,7 @@ Each element has the form (WIDTH . HEIGHT) in pixel."
                '("View" "open %o"
                  TeX-run-discard-or-function t t :help "Run Viewer")))
 
-(setq cinsk/ediff-wide-display-policy 'fullscreen)
+(setq my/ediff-wide-display-policy 'fullscreen)
 
 (when nil
   ;; Historically, Homebrew used /usr/local for x86_64 binaries, but

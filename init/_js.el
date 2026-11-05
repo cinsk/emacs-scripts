@@ -12,7 +12,7 @@
 
 
 (with-eval-after-load "indium-interaction"
-  (cinsk/move-key indium-interaction-mode-map [(control ?c) ?d] [(control ?c) ?D])
+  (my/move-key :keymap indium-interaction-mode-map :from "C-c d" :to "C-c D")
   (keymap-set indium-interaction-mode-map "C-c C-r" #'indium-eval-region)
   (keymap-set indium-interaction-mode-map "C-c C-b" #'indium-eval-buffer)
   (keymap-set indium-interaction-mode-map "C-c !" #'indium-run-node)

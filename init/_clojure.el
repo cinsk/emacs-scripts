@@ -16,11 +16,11 @@
     ;; I used `C-c C-d' for `delete-chars-forward-with-syntax' years.
     ;; Since xcscope.el uses `C-c s d' for similar purpose, I rebind
     ;; `cider-doc-map' to `C-c s'.
-    (cinsk/move-key cider-mode-map [(control ?c) (control ?d)] [(control ?c) ?s])))
+    (my/move-key :keymap cider-mode-map :from "C-c C-d" :to "C-c s")))
 
 (with-eval-after-load "cider-repl"
   (when (boundp 'cider-repl-mode-map)
-    (cinsk/move-key cider-repl-mode-map [(control ?c) (control ?d)] [(control ?c) ?s])))
+    (my/move-key :keymap cider-repl-mode-map :from "C-c C-d" :to "C-c s")))
 
 (with-eval-after-load "clojure-mode"
   (when (locate-library "paredit")

@@ -13,7 +13,7 @@ insert the character the user typed by calling `self-insert-command'."
     (call-interactively 'self-insert-command nil
                         [(listify-key-sequence (this-command-keys))])))
 
-(defun cinsk/register-syntactic-close-binding (map)
+(defun my/register-syntactic-close-binding (map)
   (keymap-set map ")" #'syntactic-close-or-self-insert)
   (keymap-set map "]" #'syntactic-close-or-self-insert)
   (keymap-set map "}" #'syntactic-close-or-self-insert)
@@ -22,16 +22,16 @@ insert the character the user typed by calling `self-insert-command'."
 
 (when (locate-library "syntactic-close")
   ;; '(lisp-interaction-mode-map emacs-lisp-mode-map lisp-mode-map)
-  (cinsk/register-syntactic-close-binding lisp-mode-shared-map)
+  (my/register-syntactic-close-binding lisp-mode-shared-map)
 
   (with-eval-after-load "racket-mode"
-    (cinsk/register-syntactic-close-binding racket-mode-map))
+    (my/register-syntactic-close-binding racket-mode-map))
   (with-eval-after-load "geiser-repl"
-    (cinsk/register-syntactic-close-binding geiser-repl-mode-map))
+    (my/register-syntactic-close-binding geiser-repl-mode-map))
   (with-eval-after-load "scheme"
-    (cinsk/register-syntactic-close-binding scheme-mode-map))
+    (my/register-syntactic-close-binding scheme-mode-map))
   (with-eval-after-load "clojure-mode"
-    (cinsk/register-syntactic-close-binding clojure-mode-map)))
+    (my/register-syntactic-close-binding clojure-mode-map)))
 
 (with-eval-after-load "lisp-mode"
   (keymap-set emacs-lisp-mode-map "<f5>" #'eval-buffer)
@@ -49,8 +49,8 @@ insert the character the user typed by calling `self-insert-command'."
 
 (add-hook 'emacs-lisp-mode-hook
           #'(lambda ()
-             (cinsk/visit-tags-table (file-name-concat user-emacs-directory
-                                               "TAGS.emacs") t)))
+             (my/visit-tags-table (file-name-concat user-emacs-directory
+						    "TAGS.emacs") t)))
 
 (with-eval-after-load "lisp-mode"
   (keymap-set emacs-lisp-mode-map "<f5>" #'eval-buffer)
@@ -102,10 +102,8 @@ Prefix argument means switch to the Lisp buffer afterwards."
     ;; C-c C-r slime-eval-region
 
     ;; `M-x slime-interrupt' moved to `C-c C-B' from `C-c C-b'
-    (cinsk/move-key slime-mode-map [(control ?c) (control ?b)]
-                    [(control ?c) (control ?B)])
-    (cinsk/move-key slime-mode-map [(control ?c) (control ?e)]
-                    [(control meta ?\:)])
+    (my/move-key :keymap slime-mode-map :from "C-c C-b" :to "C-c C-B")
+    (my/move-key :keymap slime-mode-map :from "C-c C-e" :to "C-M :")
     ;; C-c v   slime-describe-symbol
     ;; C-c f   slime-describe
     ;;(keymap-set slime-mode-map "C-c v" #'slime-describe-symbol)
@@ -187,7 +185,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 
 (with-eval-after-load "racket-mode"
-  (defun cinsk/racket-mode-switch-to-repl (&optional arg)
+  (defun my/racket-mode-switch-to-repl (&optional arg)
     (interactive "P")
     (if arg
         (racket-run-and-switch-to-repl)
@@ -199,15 +197,14 @@ Prefix argument means switch to the Lisp buffer afterwards."
           (racket-run-and-switch-to-repl)))))
 
   ;; TODO: `racket-run' or `racket-repl'?
-  (keymap-set racket-mode-map "C-c !" #'cinsk/racket-mode-switch-to-repl)
+  (keymap-set racket-mode-map "C-c !" #'my/racket-mode-switch-to-repl)
   ;; keep `C-c C-c' for `comment-region'.
-  (cinsk/move-key racket-mode-map [(control ?c) (control ?c)]
-                  [(control ?c) (control ?C)])
+  (my/move-key :keymap racket-mode-map :from "C-c C-c" :to "C-c C-C")
 
   ;; geiser forces to use scheme-mode for ".rkt" files. force to use
   ;; `racket-mode'.
   ;;
-  ;; (cinsk/priortize-auto-mode 'racket-mode)
+  ;; (my/priortize-auto-mode 'racket-mode)
   )
 
 (when nil
@@ -217,7 +214,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
     ;; geiser-mode made .rkt file uses scheme-mode.  Force to use
     ;; racket-mode if it is installed
-    (cinsk/priortize-auto-mode 'racket-mode)))
+    (my/priortize-auto-mode 'racket-mode)))
 
 (with-eval-after-load "racket-mode"
   (when (locate-library "geiser")
@@ -229,7 +226,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 (with-eval-after-load "geiser-mode"
   (keymap-set geiser-mode-map "C-c !" #'geiser-mode-switch-to-repl)
-  (cinsk/move-key geiser-mode-map [(control ?c) (control ?c)] [(control ?c) (control ?C)]))
+  (my/move-key :keymap geiser-mode-map :from "C-c C-c" :to "C-c C-C"))
 )
 
 (defun pop-to-scratch-buffer ()
