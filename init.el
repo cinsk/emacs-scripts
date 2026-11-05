@@ -478,37 +478,6 @@ instead of the next window."
 
 
 
-;;;
-;;; Calender
-;;;
-(require 'calendar)
-
-(keymap-global-set "C-<f12>" #'calendar)
-
-(let ((my-diary-file (file-name-concat user-emacs-directory "diary")))
-  (if (file-readable-p my-diary-file)
-      (setq diary-file my-diary-file)))
-
-(setq mark-holidays-in-calendar t)
-
-(when (and (boundp 'diary-file)
-           (file-readable-p diary-file))
-  (setq mark-diary-entries-in-calendar t))
-
-(add-hook 'diary-display-hook 'fancy-diary-display)
-
-(setq local-holidays
-      '((holiday-fixed 11 1 "삼성전자 창립일")))
-
-(let ((cal-korea-path (expand-file-name
-                       (file-name-concat user-emacs-directory "cal-korea-x"))))
-  (when (file-accessible-directory-p cal-korea-path)
-    (add-to-list 'load-path cal-korea-path)
-    (when (locate-library "cal-korea-x")
-      (require 'cal-korea-x)
-      (setq holiday-general-holidays cal-korea-x-korean-holidays))))
-
-
 (use-package markdown-mode
   :config
   (add-to-list 'markdown-css-paths
@@ -525,6 +494,7 @@ instead of the next window."
 
 
 (uinit "_org" :when (locate-library "org"))
+(uinit "_calendar")                     ; after _org: uses `org-directory'
 
 (use-package org-bookmarks
   :ensure nil

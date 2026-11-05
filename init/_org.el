@@ -259,7 +259,16 @@ argument, ask for it."
          "* TODO %? %T\n  %i\n  %a")
         ("j" "Personal Journal (date based)" entry
          (file+olp+datetree ,(expand-file-name "personal.org" org-directory))
-         "* %?\n  Entered on %U\n  %i\n  %a")))
+         "* %?\n  Entered on %U\n  %i\n  %a")
+        ;; Diary entry in the date tree of ~/agenda/diary.org.  Asks for
+        ;; the date (e.g. "fri", "+2w 3pm", "12/24"); a time of day, if
+        ;; given, goes into the timestamp.  From the agenda (`k') or the
+        ;; calendar (`i d'), the date at point is used without asking.
+        ;; `my/org-capture-diary-timestamp' is defined in _calendar.el.
+        ("d" "Diary entry (date-based)" entry
+         (file+olp+datetree ,(expand-file-name "diary.org" org-directory))
+         "* %? %(my/org-capture-diary-timestamp)\n  %i"
+         :time-prompt t)))
 
 
 ;;;; HTML export
@@ -417,6 +426,10 @@ command this key would run without `my/org-wordjoin-mode'."
 ;;;; Global key bindings
 
 (keymap-global-set "C-c a" #'org-agenda)
+;; `q' in the agenda restores the windows as they were before the
+;; agenda was shown (e.g. the calendar at the bottom, see `d' in the
+;; calendar), instead of leaving the agenda's window layout behind.
+(setq org-agenda-restore-windows-after-quit t)
 (keymap-global-set "C-c l" #'org-store-link)
 (keymap-global-set "C-c b" #'org-switchb)
 (keymap-global-set "C-c \"" #'org-capture)
