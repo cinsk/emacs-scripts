@@ -30,3 +30,4 @@ auto-save-list/
 /abbrev_defs
 /w3m
 /packages
+/extern/*.setup

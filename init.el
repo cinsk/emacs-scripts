@@ -247,7 +247,9 @@
               abb_default
             abb_correct))))
 
-(use-package xskel)
+(use-package xskel
+  :init
+  (setq auto-insert-query nil))
 
 (use-package hippie-exp
   ;; Use hippie expansion for dynamic abbreviation

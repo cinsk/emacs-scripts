@@ -1,11 +1,9 @@
-;; -*- mode: emacs-lisp; lexical-binding: t; -*-
-
-;;; xskel.el --- Insert a pre-defined license text
+;;; xskel.el --- Personal auto-insert skeletons  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2010  Seong-Kook Shin
 
 ;; Author: Seong-Kook Shin <cinsky@gmail.com>
-;; Keywords: abbrev, convenience
+;; Keywords: convenience, tools
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -22,7 +20,13 @@
 
 ;;; Commentary:
 
-;; $Id: xskel.el,v 1.2 2010/12/16 08:26:16 cinsk Exp $
+;; Skeletons for new files (C/C++ headers, HTML, Python, Org), registered
+;; in `auto-insert-alist'.
+;;
+;; Auto-insertion only happens in file buffers that were opened by one of
+;; the interactive commands listed in `xskel-auto-insert-commands'.  Files
+;; that packages create or visit programmatically (org-capture, drafts,
+;; history files, ...) are therefore left alone.
 
 ;;; Code:
 
@@ -30,26 +34,30 @@
 (require 'autoinsert)
 (require 'xlicense)
 
-(defun my/safe-call-skeleton (func)
-  "call FUNC if and only if the cuurent buffer looks like an user
-created file buffer."
-  (save-match-data
-   (unless (or (string-match "\\`[* ]" (buffer-name))
-               (null (buffer-file-name)))
-     (funcall func))))
 
+;;; Helpers
 
 (defun c-file-name-macro ()
-  "Return a string in XXX_H__ form where XXX is the upcase name of the file"
-  (upcase (concat (file-name-nondirectory
-                   (file-name-sans-extension buffer-file-name))
-                  "_"
-                  (file-name-extension buffer-file-name) "__")))
+  "Return an include-guard macro name for the current file.
+For \"foo-bar.h\" this returns \"FOO_BAR_H_\".  Every character that is
+not valid in a C identifier is replaced by an underscore."
+  (concat (upcase (replace-regexp-in-string
+                   "[^A-Za-z0-9]" "_"
+                   (file-name-nondirectory buffer-file-name)))
+          "_"))
+
+(defun xskel-maybe-insert-license ()
+  "Call `insert-license', treating C-g as \"no license\"."
+  (condition-case nil
+      (insert-license)
+    (quit nil)))
+
+;;; Skeletons
 
 (define-skeleton c-header-skeleton
   "cinsk's personal skeleton for a blank C header file"
   (c-file-name-macro)
-  (insert-license)
+  (xskel-maybe-insert-license)
   "#ifndef " str \n
   "#define " str "\n\n"
   "/* This indirect using of extern \"C\" { ... } makes Emacs happy */" \n
@@ -69,7 +77,7 @@ created file buffer."
   "cinsk's personal skeleton for a blank C++ header file"
   (c-file-name-macro)
   "/* -*-c++-*- */" \n
-  (insert-license) \n
+  (xskel-maybe-insert-license)
   "#ifndef " str \n
   "#define " str "\n\n"
   "#ifndef __cplusplus" \n
@@ -106,13 +114,12 @@ created file buffer."
   "<!--\n"
   " Local Variables:\n"
   " fill-column: 78\n"
-  "-->\n"
-)
+  "-->\n")
 
 (define-skeleton py-init-skeleton
-  "doc"
-  ""
-  "#!/usr/bin/env python" \n
+  "Insert a skeleton for a new Python script."
+  nil
+  "#!/usr/bin/env python3" \n
   "# -*-python-*-" \n \n
   "\"\"\"A documentation string of this module." \n
   "\"\"\"" \n \n
@@ -121,90 +128,99 @@ created file buffer."
   "if __name__ == \"__main__\":" \n
   > "main()" \n)
 
+(defun my/org-html-theme-url ()
+  "Return the location of setup file for org html export"
+  (let ((path (file-name-concat user-emacs-directory "extern/html-theme-readtheorg.setup")))
+    (if (file-readable-p path)
+	path
+      "https://raw.githubusercontent.com/fniessen/org-html-themes/refs/heads/master/org/setup/html-theme-readtheorg.setup")))
+
 (define-skeleton org-skeleton
   "Inserts a ORG mode skeleton into current buffer."
-  ""
+  nil
   "# -*-org-*-\n"
-  "#+OPTIONS: toc:4\n"
-  "#+OPTIONS: html-style:nil\n"
-  "#+OPTIONS: d:(not \"LOGBOOK\" \"COMMENT\")\n"
-  "#+HTML_HEAD: <link href=\"http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css\" rel=\"stylesheet\" type=\"text/css\">\n"
-  "#+HTML_HEAD: <link href=\"http://cinsk.github.io/css/org-standalone.css\" rel=\"stylesheet\" type=\"text/css\">\n"
-  "#+HTML_MATHJAX: path:\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"\n"
-  "#+LINK: google http://www.google.com/search?q=%s\n"
-  "#+LINK: rfc http://www.rfc-editor.org/rfc/rfc%s.txt\n"
-  "#+TODO: TODO(t) | DONE(d) CANCELED(c) POSTPONED\n"
-  "#+DRAWERS: PROPERTIES CLOCK LOGBOOK COMMENT\n"
-  "#+LATEX_CLASS: article\n"
-  "#+LATEX_CLASS_OPTIONS: [letterpaper]\n"
-  "#+LATEX_HEADER: \\usepackage{kotex}\n"
-  "#+TITLE: " (skeleton-read "Agenda Title: " (file-name-base)) \n
-  "#+AUTHOR: " (skeleton-read "Author: " (user-full-name)) \n
-  "#+EMAIL: " (skeleton-read "email: " user-mail-address) \n
+  "#+options: d:(not \"LOGBOOK\" \"COMMENT\")\n"
+  "#+link: google http://www.google.com/search?q=%s\n"
+  "#+link: rfc http://www.rfc-editor.org/rfc/rfc%s.txt\n"
+  "#+todo: TODO(t) | DONE(d) CANCELED(c) POSTPONED\n"
+  "#+latex_class: article\n"
+  "#+latex_class_options: [letterpaper]\n"
+  "#+latex_header: \\usepackage{kotex}\n"
+  "#+title: " (or (file-name-base) "") \n
+  "#+author: " (or (user-full-name) "") \n
+  "#+email: " (or user-mail-address "") \n
+  "#+setupfile: " (my/org-html-theme-url) \n
+  "{{{disable-search}}}\n"
   "\n"
-  ":COMMENT:\n"
+  "#+begin_comment\n"
   "Markup hints:\n"
   "  - *bold*, /italic/, _underlined_, =code=, ~verbatim~\n"
   "  - Use '\\\\' at the end of a line to force a line break.\n"
-  "#+BEGIN_EXAMPLE\n"
-  "  ,#+NAME: my target        # to create internal TARGET.\n"
+  "#+begin_example\n"
+  "  ,#+name: my target        # to create internal TARGET.\n"
   "  - <<target>>another item, we refer to item [[target]]\n"
   "  [[URL or TARGET][NAME]]   # to create a hyperlink.\n"
   "  [[google:KEYWORD][DESC]]  # to link to Google with KEYWORD.\n"
   "  [[rfc:NUMBER][DESC]]      # to link to RFC-NUMBER.txt.\n"
   "  [[man:printf(3)][DESC]]          # to link to man printf(3).\n"
   "  [[java:java.lang.String][DESC]]  # to link to Java API\n"
-  "#+END_EXAMPLE\n"
+  "#+end_example\n"
   "  - `C-c C-l' to insert a hyperlink.\n"
   "  - `C-c C-o' to follow a link target.\n"
-  "  - Use \"#+BEGIN_VERSE ... #+END_VERBSE\" to format poetry\n"
-  "  - Use \"#+BEGIN_QUOTE ... #+END_QUOTE\" to format a quotation.\n"
-  "  - Use \"#+BEGIN_CENTER ... #+END_CENTER\" to center some text.\n"
+  "  - Use \"#+begin_verse ... #+end_verse\" to format poetry\n"
+  "  - Use \"#+begin_quote ... #+end_quote\" to format a quotation.\n"
+  "  - Use \"#+begin_center ... #+end_center\" to center some text.\n"
   "  - `C-c C-x f' for footnote action(jump or insert).\n"
-  "  - Unordered list items start with `-', `+', or `*' as bulllets.\n"
+  "  - Unordered list items start with `-', `+', or `*' as bullets.\n"
   "  - Ordered list items start with  `1.' or `1)'.\n"
   "\n"
   "  For the equation, use \\(...\\) for inlined one, or \\[...\\] for the\n"
   "  display math.  Use \\begin{align}...\\end{align} for multi-line\n"
   "  equation with '&' for alignment mark.  For example:\n"
-  "#+BEGIN_SRC org\n"
+  "#+begin_src org\n"
   "  \\begin{align}\n"
-  "    x & = r \\cos \\theta \\\n"
-  "    y & = r \\sin \\theta \\\n"
+  "    x & = r \\cos \\theta \\\\\n"
+  "    y & = r \\sin \\theta \\\\\n"
   "  \\end{align}\n"
-  "#+END_SRC\n"
+  "#+end_src\n"
   "\n"
   "  To numbering use \\begin{XXX}...\\end{XXX} instead \\[...\\].\n"
   "\n"
-  "#+BEGIN_SRC org\n"
+  "#+begin_src org\n"
   "  \\begin{equation}\n"
   "  E = mc^2 \\label{emc}\n"
   "  \\end{equation}\n"
   "  See Equation $\\ref{emc}$ for more.\n"
-  "#+END_SRC\n"
+  "#+end_src\n"
   "\n"
   "  - See [[http://en.wikibooks.org/wiki/LaTeX/Mathematics][Math]] or [[http://cdn.mathjax.org/mathjax/latest/test/sample-eqnum.html][sample-eqnum]] for math equations.\n"
   "\n"
   "  - You can specify the source language and optionally put the header\n"
-  "    how Org handles result of the excution, either =value= or =output=.\n"
-  "    You can execute/insert the result by pressing =C-c C-c=. See also\n"
-  "    [[info:Org#Evaluating Code Blocks]]\n"
+  "    how Org handles the result of the execution, either =value= or\n"
+  "    =output=.  You can execute/insert the result by pressing =C-c C-c=.\n"
+  "    See also [[info:org#Evaluating Code Blocks][info \"(org) Evaluating Code Blocks\"]]\n"
   "\n"
-  "#+BEGIN_SRC bash :results output\n"
+  "#+begin_src bash :results output\n"
   "echo \"hello, world\"\n"
-  "#+END_SRC\n"
+  "#+end_src\n"
   "\n"
   "Table hints:\n"
   "  - =C-c C-c= to re-align the table\n"
   "  - Use \"<N>\" in the field to specify the width of the column.\n"
   "  - Use =C-c `= to edit such a field.\n"
-  "  - See also [[info:org#Column groups][info:Column groups]]\n"
-  "  - See also [[info:org#The spreadsheet][info:Spreadsheet]]\n"
-  ":END:\n"
+  "  - See also [[info:org#Column groups][info \"(org) Column groups\"]]\n"
+  "  - See also [[info:org#The spreadsheet][info \"(org) The spreadsheet\"]]\n"
+  "#+end_comment\n"
   "\n"
   _)
 
-;;(auto-insert-mode 1)
+
+;;; Registration
+
+;; `add-to-list' (rather than `define-auto-insert') is deliberate: it is
+;; idempotent, so re-evaluating this file does not stack up duplicate
+;; actions for the same condition.  New entries go to the front, so they
+;; take precedence over the stock entries.
 
 (add-to-list 'auto-insert-alist
              '(("\\.h\\'" . "C header")
@@ -218,12 +234,39 @@ created file buffer."
              '(("\\.\\(html\\|htm\\|xhtml\\)\\'" . "HTML file")
                . xhtml-skeleton))
 
-(add-to-list 'auto-insert-alist '("\\.org\\'" . (lambda ()
-                                                  (my/safe-call-skeleton
-                                                   'org-skeleton))))
+(add-to-list 'auto-insert-alist '("\\.org\\'" . org-skeleton))
 
-(add-to-list 'auto-insert-alist
-             '(python-mode . py-init-skeleton))
+;; Match on the file name, not on `python-mode': `python-ts-mode' does
+;; not derive from `python-mode', so a mode-based entry would miss it.
+(add-to-list 'auto-insert-alist '("\\.py\\'" . py-init-skeleton))
+
+
+;;; Restrict auto-insert to files opened interactively
+
+(defcustom xskel-auto-insert-commands
+  '(auto-insert                         ; so M-x auto-insert still works
+    find-file
+    find-file-other-window
+    find-file-other-frame
+    find-file-other-tab
+    find-file-at-point
+    ido-find-file
+    counsel-find-file
+    helm-find-files)
+  "Commands after which auto-insert is allowed to run.
+`auto-insert' compares against `this-command', so a file visited by a
+package from inside some other command (e.g. `org-capture') is skipped."
+  :type '(repeat symbol)
+  :group 'auto-insert)
+
+(define-advice auto-insert (:around (orig &rest args) xskel-filter)
+  "Only auto-insert in file buffers opened by an interactive file command."
+  (when (and buffer-file-name
+             (memq this-command xskel-auto-insert-commands))
+    (apply orig args)))
+
+(auto-insert-mode 1)
+
 
 (provide 'xskel)
 ;;; xskel.el ends here
