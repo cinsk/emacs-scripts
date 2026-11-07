@@ -214,6 +214,8 @@
 (column-number-mode 1)              ; show column number in mode-line
 
 
+(uinit "_register")
+
 ;;;
 ;;; emacs server
 ;;;

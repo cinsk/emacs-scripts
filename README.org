@@ -169,6 +169,19 @@
     To select rectangular region, press =C-x SPC=.  Then you can do
     =C-w= or =M-w= as usual.
 
+*** Registers
+
+    See [[info:Emacs#Registers][info "(Emacs) Registers"]]
+
+    Two custom functions bound to
+
+    - =C-x r w R= or =C-<f2>=: save something into register R depending on context
+    - =C-x r y R= or =<f2>=: insert/jump something from register R depending on context
+
+    For saving, if rectagle mark mode is active (=C-x SPC=), then save
+    the rectangle.  if active region is on and either of region whose
+    ends are the beginning of the line, then save the region.
+
 *** Lisp Code in query
 
     When you do M-x replace-regexp, you could insert =\,(LISP...CODE)=.
