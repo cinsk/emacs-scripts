@@ -141,10 +141,22 @@
     (=shell-command-on-region=) to execute =grep -v PATTERN=.
 
 *** Find File at point
-    =M-n= during =C-x C-f= fill the minibuffer with the path name at point.
-    Pressing =M-n= again fill the filename of the buffer.
+    =M-n= during =C-x C-f= fill the minibuffer with the path name at
+    point.  Pressing =M-n= again fill the filename of the buffer.
 
     =M-n= works similarily on =M-x query-replace= as well.
+
+*** switching buffer
+    =C-x b= configured to call =consult-buffer=.  =C-x B= is vanilla
+    =switch-to-buffer=.
+
+    =C-x C-b= configured to call =ibuffer= instead of =list-buffer=.
+    Within ibuffer:
+
+    - =]= list all files without group by recency.
+    - =[= list all files based on /default/ group.
+    - =s= sort buffers (=v= for recency, =m= for mode, etc.)
+    - =i= toggle display of hidden buffers
 
 *** Tramp
 

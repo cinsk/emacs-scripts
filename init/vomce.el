@@ -66,7 +66,6 @@
    ("C-c h" . consult-history)
    ("C-c k" . consult-kmacro)
    ;; Buffers / files
-   ("C-x b"   . consult-buffer)
    ("C-x 4 b" . consult-buffer-other-window)
    ("C-x p b" . consult-project-buffer)
    ("C-x r b" . consult-bookmark)
@@ -92,6 +91,7 @@
    ("M-s l" . consult-line)
    ("M-s L" . consult-line-multi))
   :init
+  (my/move-key :from "C-x b" :to "C-x B" :with #'consult-buffer)
   ;; Use Consult for xref (definitions/references)
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
