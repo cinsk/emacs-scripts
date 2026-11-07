@@ -496,3 +496,32 @@ command this key would run without `my/org-wordjoin-mode'."
 ;;       '((sequence "TODO" "|" "DONE")
 ;;         (sequence "RESEARCH" "|" "DEVELOP" "|" "TEST" "|" "OP-DONE")
 ;;         (sequence "IMPL" "|" "REVIEW" "|" "RELEASE" "|" "SP-DONE")))
+
+
+;; When a org file first opened, expand all nodes except drawers and comment blocks.
+(defun my/org-hide-comment-blocks ()
+  "Fold all #+BEGIN_COMMENT ... #+END_COMMENT blocks."
+  (save-excursion
+    (goto-char (point-min))
+    (let ((case-fold-search t))
+      (while (re-search-forward "^[ \t]*#\\+begin_comment\\b" nil t)
+        (beginning-of-line)
+        (if (fboundp 'org-fold-hide-block-toggle)   ; Org 9.6+
+            (org-fold-hide-block-toggle t)
+          (org-hide-block-toggle t))                ; older Org
+        (forward-line 1)))))
+
+(defun my/org-startup-visibility ()
+  "Expand all headings; fold drawers and comment blocks."
+  (org-show-all '(headings blocks))        ; expand everything except drawers
+  (if (fboundp 'org-fold-hide-drawer-all)  ; fold :PROPERTIES:, :LOGBOOK:, :xxx: ... :END:
+      (org-fold-hide-drawer-all)
+    (org-hide-drawer-all))
+  (my/org-hide-comment-blocks))
+
+(add-hook 'org-mode-hook #'my/org-startup-visibility)
+;; If the above hook seems to have no effect, defer it slightly:
+;;
+;; (add-hook 'org-mode-hook
+;;           (lambda () (run-with-idle-timer 0 nil
+;; 					  #'my/org-startup-visibility (current-buffer))))
