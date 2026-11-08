@@ -18,10 +18,7 @@
 ;;; ==================================================================
 
 
-;;; Load custom configuration -- Emacs's customizable variables will
-;;; update this file if `custom-file' is nil which is not preferrable.
-(setq custom-file "~/.emacs.d/my-custom.el")
-(load custom-file t)
+(load custom-file 'noerror)		; Load custom configuration
 
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 (setq user-emacs-directory "~/.emacs.d/")
