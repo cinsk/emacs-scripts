@@ -205,6 +205,18 @@
     =C-r= to start it, =C-M-c= to exit, =C-]= to abort.
     See also [[info:Emacs#Recursive Edit][info "(Emacs) Recursive Edit"]]
 
+*** Spell checker
+    if =hunspell(1)= is available, /flyspell/ minor mode is auto loaded for
+    /text-mode/ and /prog-mode/.
+
+    - =M-$= bound to the flyspell transient menu.
+      - =d= is for DWIM style operation for /flyspell/.  Enable
+        flyspell if not, check whole buffer for error, move to next
+        error, correct error.  Normally, you want to use following
+        keybindings for correcting.
+    - =C-M-;= move point to the next spelling error
+    - =C-M-'= correct spelling error (choose from candidates)
+
 *** Completing read /w Helm
     Emacs has various ways to read the input using completion.
     The additional package, [Helm](https://github.com/emacs-helm/helm) also

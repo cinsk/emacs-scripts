@@ -220,6 +220,7 @@
 
 
 (uinit "_register")
+(uinit "_spellchk")
 
 ;;;
 ;;; emacs server
@@ -227,8 +228,6 @@
 (when (and (not noninteractive) (display-graphic-p))
   (ignore-errors
     (server-start)))
-
-
 
 ;;; ==================================================================
 ;;; Packages Configuration
