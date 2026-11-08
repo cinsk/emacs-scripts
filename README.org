@@ -1,4 +1,6 @@
 # -*-org-*-
+#+setupfile: ~/.emacs.d/extern/html-theme-readtheorg.setup
+{{{disable-search}}}
 
 * Welcome to Emacs
   This is customized init file to remind myself of how to use Emacs
@@ -44,7 +46,7 @@
       window, use =C-c C-q=.
 
       Pressing =C-c C-f C-p= to parse the tabular data into DataFrame,
-      and evaulate in the inferior Python buffer.
+      and evaluate in the inferior Python buffer.
 
       =C-c C-f C-o= to parse the org table at the point, and evaluate
       it.
@@ -144,7 +146,7 @@
     =M-n= during =C-x C-f= fill the minibuffer with the path name at
     point.  Pressing =M-n= again fill the filename of the buffer.
 
-    =M-n= works similarily on =M-x query-replace= as well.
+    =M-n= works similarly on =M-x query-replace= as well.
 
 *** switching buffer
     =C-x b= configured to call =consult-buffer=.  =C-x B= is vanilla
@@ -169,13 +171,13 @@
 /sudo::/path/to/file
 #+END_VERBATIM
 
-    See [[info:Tramp#Quick Start Guide]] for list of supported file name
+    See [[info:Tramp#Quick Start Guide][info "(Tramp) Quick Start Guide"]] for list of supported file name
     syntax.
 
 *** Keyboard Macros
 
     =C-x (= to start a macro, =C-x )= to end the recording, =C-x e= to replay.
-    See [[info:Emacs#Keyboard Macros]]
+    See [[info:Emacs#Keyboard Macros][info "(Emacs) Keyboard Macros"]]
 
 *** Rectangle Mark Mode
     To select rectangular region, press =C-x SPC=.  Then you can do
@@ -190,23 +192,23 @@
     - =C-x r w R= or =C-<f2>=: save something into register R depending on context
     - =C-x r y R= or =<f2>=: insert/jump something from register R depending on context
 
-    For saving, if rectagle mark mode is active (=C-x SPC=), then save
+    For saving, if rectangle mark mode is active (=C-x SPC=), then save
     the rectangle.  if active region is on and either of region whose
     ends are the beginning of the line, then save the region.
 
 *** Lisp Code in query
 
     When you do M-x replace-regexp, you could insert =\,(LISP...CODE)=.
-    See also [[info:Emacs#Regexp Replacement]] for more and possible examples.
+    See also [[info:Emacs#Regexp Replacement][info "(Emacs) Regexp Replacement"]] for more and possible examples.
 
 *** Recursive Edit
     =C-r= to start it, =C-M-c= to exit, =C-]= to abort.
-    See also [[info:Emacs#Recursive Edit]]
+    See also [[info:Emacs#Recursive Edit][info "(Emacs) Recursive Edit"]]
 
 *** Completing read /w Helm
-    Emacs has various ways to read the predefine input using completion.
+    Emacs has various ways to read the input using completion.
     The additional package, [Helm](https://github.com/emacs-helm/helm) also
-    override this interface to use it's own mechniasm.
+    override this interface to use it's own mechanism.
 
     - To select none (to return =""=), Use =C-RET= or =M-RET=.
 
@@ -215,6 +217,7 @@
     - =0 w= copy the absolute file name into the kill ring.
     - =% d= flag files for deletion with the regular expression
     - =% m= mark files with the regular expression
+    - =* .= mark files with file extensions
 
     - =* c= change existing mark to another
     - =M <DEL>= remove specific mark
@@ -227,7 +230,7 @@
 *** Org mode
 
 ***** Insert Word Joiner or Zero-Width Space
-      To mark up word with Korean postposition, since it is attached
+      To mark up word with Korean particles, since it is attached
       with the words, Org mark up will not detect them.  Insert
       word-joiner character using =C-c C-;=.  If the text contains
       quotation, and Emacs couldn't detect the text correctly, use
@@ -330,7 +333,7 @@ j 2<RET>                     # select 2nd part
 
     It may use the other capitalized word if it found from other
     buffers.  For example, if there was a word "EmaCS" available in
-    current (or anyother) buffer, it will use it as one of candidates.
+    current (or any other) buffer, it will use it as one of candidates.
 
 *** Unfill paragraph
     Select the region, then pressing =M-Q= will change the paragraph
@@ -373,15 +376,15 @@ j 2<RET>                     # select 2nd part
 
     Installing =man-db= with Homebrew and updating the index via
     =mandb(1)= will improve the performance.  However, it has too many
-    dependencies which makes me not comforable due to limited space on
+    dependencies which makes me not comfortable due to limited space on
     my Mac.
 
 *** External tools
 
     Recommended:
 
-    [[https://github.com/sharkdp/fd][- fd]]                 # M-s f (consult-fd)
-    -[[https://github.com/burntsushi/ripgrep][ ripgrep]]            # M-s r (consult-ripgrep)
+    - [[https://github.com/sharkdp/fd][fd]]        # M-s f (consult-fd)
+    - [[https://github.com/burntsushi/ripgrep][ripgrep]]   # M-s r (consult-ripgrep)
 
     On Mac(darwin), install additional GNU packages:
 
@@ -393,6 +396,41 @@ j 2<RET>                     # select 2nd part
     brew install bash
 #+end_example
 
-# Local Variables:
-# eval: (view-mode)
-# End:
+* Emacs Lisp (elisp)
+*** docstring markup
+
+    - ~\\[command]~ is replaced by the key sequence bound to command,
+      or "M-x command" if unbound.
+    - ~\\{keymap-var}~ is replaced by a table of all bindings in that
+      keymap. This is common in mode docstrings,
+      e.g. ~\\{my-mode-map}~.
+    - ~\\<keymap-var>~ says “use this keymap when resolving later
+      ~\\[...]~ references”. Without it, lookups use the current
+      active keymaps, so mode docstrings usually start with
+      ~\\<my-mode-map>~ to make ~\\[...]~ find the mode’s own
+      bindings first.
+    - ~\\=~​ quotes the next character so it isn’t interpreted. For
+      example, ~\\=\\[foo]~ displays a literal ~\[foo]~, and
+      ~\\=foo’`~ suppresses the quote-styling below.
+    - ~`symbol'~ (grave accent and apostrophe) is the older way to
+      mark a symbol reference. It displays as a curved quote and, in
+      the help buffer, becomes a clickable link to the symbol’s
+      documentation. Recent Emacs versions also accept ~'symbol'~ with
+      straight quotes in some contexts, but ~`foo'~ remains the
+      conventional form in docstrings.
+
+    Also,
+    - The first line should be a complete sentence that stands alone,
+      since apropos and completion UIs show only that line. Keep it
+      under about 74 characters.
+    - Argument names are written in UPPERCASE in the docstring (Return
+      the first element of LIST), and the help buffer will display
+      them that way.
+    - Within the docstring, start continuation lines at column 0, not
+      indented, because indentation is preserved literally.
+    - Run =M-x checkdoc= on your file. It flags most violations of
+      these conventions, including unescaped quotes and overlong first
+      lines.
+
+    See [[info:elisp#Documentation Tips][info "(elisp) Documentation Tips"]] and [[info:elisp#Keys in Documentation][info "(elisp) Keys in
+    Documentation"]].

@@ -32,7 +32,12 @@
        (format "create user directory(%s)? " user-emacs-directory))
       (make-directory user-emacs-directory t)))
 
-(setq initial-buffer-choice "~/.emacs.d/README.org")
+(setq initial-buffer-choice
+      (lambda ()
+	(let ((buf (find-file-noselect "~/.emacs.d/README.org")))
+	  (with-current-buffer buf
+	    (view-mode 1))
+	  buf)))
 
 
 ;;; ---- package system initialization ----
