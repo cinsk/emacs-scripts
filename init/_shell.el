@@ -2,7 +2,6 @@
 
 (require 'transient)
 (require 'cinsk-common)
-(require 'transient)
 
 ;;
 ;; Make the inferior shell a login shell.
