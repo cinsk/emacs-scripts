@@ -578,11 +578,7 @@ instead of the next window."
 
 (uinit "ruby" :when (locate-library "ruby-mode"))
 
-(if (locate-library "python-mode")
-    ;; remember that Aquamacs provides its own version of python-mode
-    ;; which may not the one you're looking for.
-    (uinit "_python" :when t)
-  (uinit "_py" :when t))
+(uinit "_py" :when t)
 
 ;;(add-to-list 'load-path (expand-file-name "~/.emacs.d/skewer-mode"))
 ;;(require 'skewer-mode)
