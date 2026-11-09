@@ -109,6 +109,7 @@ calls bounce between the two most recent ons."
 
 (use-package ghostel
   :ensure t
+  :hook (ghostel-mode . ghostel-ime-mode)
   :config
   (my/move-key :from "C-x m" :to "C-x M" :with #'ghostel)
   (when (not (eq system-type 'darwin))
