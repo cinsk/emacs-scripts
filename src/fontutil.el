@@ -249,6 +249,12 @@ Add (#x2190 . #x21FF) for arrows, etc.  Find a character's code with
                :punct ("DejaVu Sans Mono" "Noto Sans Mono" "Hack"
                        "Source Code Pro")
                :sizes ((14 16 nil) (16 18 nil) (18 20 nil) (20 22 nil)))
+    (comic :latin ("Comic Mono") :hangul ("NanumGothicCoding")
+	   :punct ("SauceCodePro Nerd Font Mono")
+	   :symbol ("Symbols Nerd Font Mono")
+	   :sizes ((14 16 auto) (16 18 auto) (18 20 auto) (20 22 auto)
+		   (22 24 auto) (24 26 auto) (26 28 auto) (28 30 auto)
+		   (30 32 auto)))
     ;; ProFont's advance is narrower than 0.6em, so the Hangul size is
     ;; measured at apply time (`auto') instead of being hard-coded.
     ;; Once `fontutil/suggest-hangul-size' gives you the numbers you can
@@ -699,16 +705,30 @@ preset is restored afterwards."
   (interactive)
   (fontutil/zoom -1))
 
+(defun fontutil/bind-wheel ()
+  "Bind C-wheel up/down to the preset zoom commands, globally.
+Both event spellings are bound: `mouse-4'/`mouse-5' (older X builds) and
+`wheel-up'/`wheel-down' (macOS, and newer builds that use XInput2 or
+pgtk).  Bind only the first pair and, on a newer build, Ctrl+wheel falls
+through to Emacs's own `mouse-wheel-text-scale', which scales just ONE
+BUFFER (via face remapping) and ignores the fontset, so Hangul and Latin
+no longer match and other windows do not change."
+  (dolist (b '(("C-<mouse-4>"   . fontutil/increase-default-height)
+               ("C-<mouse-5>"   . fontutil/decrease-default-height)
+               ("C-<wheel-up>"  . fontutil/increase-default-height)
+               ("C-<wheel-down>" . fontutil/decrease-default-height)))
+    (keymap-global-set (car b) (cdr b))))
+
 (defun fontutil/install-mouse-wheel ()
-  "Bind C-wheel up/down to preset zoom on graphic displays."
+  "Bind C-wheel up/down to preset zoom on graphic displays.
+The bindings are made again once `mwheel' has loaded, because
+`mouse-wheel-mode' installs its own text-scale bindings on the same keys
+and whichever runs last wins.  To see what a key does, use C-h k and then
+turn the wheel with Ctrl held."
   (when (or (display-graphic-p) (daemonp))
-    ;; On macOS the wheel events are named differently.
-    (let ((incr "C-<mouse-4>") (decr "C-<mouse-5>"))
-      (when (eq system-type 'darwin)
-        (setq incr "C-<wheel-up>"
-              decr "C-<wheel-down>"))
-      (keymap-global-set incr #'fontutil/increase-default-height)
-      (keymap-global-set decr #'fontutil/decrease-default-height))))
+    (fontutil/bind-wheel)
+    (with-eval-after-load 'mwheel
+      (fontutil/bind-wheel))))
 
 ;;; ------------------------------------------------------------------
 ;;; fixed-pitch-serif workaround
