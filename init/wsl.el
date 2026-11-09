@@ -98,8 +98,9 @@ can be used for `browse-url-browser-function'."
   (when (locate-library "fontutil")
     (require 'fontutil))
 
-  (when (eq 0 (string-to-number (or (getenv "EMACS_NOFONT") "0")))
-    (fontutil/set-font "dejavu-18")))
+  ;; (when (eq 0 (string-to-number (or (getenv "EMACS_NOFONT") "0")))
+  ;;   (fontutil/set-font "dejavu-18"))
+  )
 
 (with-eval-after-load "tex"
   (TeX-global-PDF-mode)
