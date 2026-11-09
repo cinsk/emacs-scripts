@@ -62,3 +62,5 @@
 (add-hook 'dired-before-readin-hook
           (lambda ()
             (set (make-local-variable 'coding-system-for-read) 'utf-8)))
+
+(set-charset-priority 'unicode)
