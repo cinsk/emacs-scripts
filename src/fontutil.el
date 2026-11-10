@@ -170,6 +170,31 @@ Set to nil if you switch to Option 2 below.")
 Add (#x2190 . #x21FF) for arrows, etc.  Find a character's code with
 `describe-char' (C-u C-x =).")
 
+;; --- Math: ranges drawn by the family's `:math' font ----------------------
+;;
+;; Math fonts (Noto Sans Math, STIX Two Math, Cambria Math) cover far more
+;; math than coding fonts, but they are proportional typesetting fonts, so
+;; only some of their glyphs are one cell wide.  They are therefore used to
+;; fill gaps: with `use-default-font-for-symbols' (the default) the Latin
+;; font still draws the math operators it has, and the `:math' font draws
+;; the rest.  The math letters (U+1D400..) are the `mathematical' script,
+;; not `symbol', so `:symbol' never reaches them; only `:math' does.
+(defvar fontutil/math-ranges
+  '((#x2200 . #x22FF)                   ; ∀ ∂ ∑ ≤ math operators
+    (#x27C0 . #x27EF)                   ; ⟂ ⟨ ⟩ misc math symbols A
+    (#x2980 . #x29FF)                   ; ⦃ ⦄ ⧺ misc math symbols B
+    (#x2A00 . #x2AFF)                   ; ⨀ ⨁ ⩽ supplemental operators
+    (#x1D400 . #x1D7FF))                ; 𝐀 𝑥 𝔸 𝟙 math letters and digits
+  "Code ranges drawn by the family's `:math' font, when it has one.")
+
+(defvar fontutil--math-mapped nil
+  "Non-nil once a preset has mapped `fontutil/math-ranges' to a font.
+A later preset without `:math' then resets those ranges (see
+`fontutil/apply'), so the previous math font does not linger.")
+
+(defvar fontutil--math-sizes nil
+  "Cache for `fontutil/fit-math-size': alist of ((FAMILY . CELL) . SIZE).")
+
 ;; --- Option 2 (commented out): declare them 2 cells wide ------------------
 ;;
 ;; Use this instead if you prefer Korean-style full-width quotes and
@@ -286,6 +311,13 @@ Each element is (ID . PLIST) with these keys:
            quotes, ellipsis, box drawing...; optional; none = the Latin
            font).  Its size is measured when the preset is applied so
            that one glyph is exactly one cell wide.
+  :math    candidate family names for `fontutil/math-ranges' (math
+           operators and math letters; optional).  Its size is measured
+           when the preset is applied: the size at which the most math
+           glyphs are one cell wide.  It fills gaps, as the Latin font
+           still draws the math operators it has.  None = math operators
+           fall back to the `:symbol' font, math letters to Emacs's own
+           fallback.
   :hanja   candidate Hanja family names (optional; default
            `fontutil/hanja-families', else the Hangul font)
   :weight  optional weight for the Latin font
@@ -343,6 +375,7 @@ be 2 x (Latin advance in px).  Source Code Pro is 0.6em: size 16 gives
         (symbol (fontutil/first-available (plist-get spec :symbol)))
         (weight (plist-get spec :weight))
         (punct (fontutil/first-available (plist-get spec :punct)))
+        (math (fontutil/first-available (plist-get spec :math)))
         ;; Hanja font: the family's own :hanja, else the global defaults,
         ;; else the Hangul font itself.  Skipped (nil) unless
         ;; `fontutil/enable-hanja', which also saves the font lookups.
@@ -368,6 +401,7 @@ be 2 x (Latin advance in px).  Source Code Pro is 0.6em: size 16 gives
                  :hangul (list :family hangul :size hsize)
                  :hanja (when hanja (list :family hanja))
                  :punct (when punct (list :family punct))
+                 :math (when math (list :family math))
                  :symbol (when (and symbol ssize)
                            (list :family symbol :size ssize))
                  :spacing (or spacing (plist-get spec :spacing)))))
@@ -387,7 +421,8 @@ on a non-graphic display (and does not cache)."
 (defun fontutil/reload ()
   "Forget cached presets and re-detect installed fonts."
   (interactive)
-  (setq fontutil--presets nil)
+  (setq fontutil--presets nil
+        fontutil--math-sizes nil)
   (message "fontutil: %d presets available" (length (fontutil/presets))))
 
 (defun fontutil/preset (name)
@@ -412,6 +447,12 @@ on a non-graphic display (and does not cache)."
   "Map each of SCRIPTS to FAMILY at pixel SIZE in the default fontset."
   (dolist (script scripts)
     (set-fontset-font t script (font-spec :family family :size size))))
+
+(defun fontutil/map-ranges (ranges family size)
+  "Map each code range of RANGES to FAMILY at pixel SIZE.
+Replaces the fontset entry for those characters (no ADD argument)."
+  (dolist (range ranges)
+    (set-fontset-font t range (font-spec :family family :size size))))
 
 (defun fontutil/set-hangul-font (family size)
   "Map `fontutil/hangul-scripts' to FAMILY at pixel SIZE."
@@ -547,7 +588,8 @@ in `fontutil/fit-cell-size'."
 ;;; ------------------------------------------------------------------
 ;;
 ;; Used by `fontutil/generate-family' to tell whether a new family needs
-;; `:punct' and/or `:symbol', and which installed fonts could fill in.
+;; `:punct', `:symbol' and/or `:math', and which installed fonts could
+;; fill in.
 ;; For each group in `fontutil/coverage-groups' a font is scored by
 ;;   HAVE     characters it has a glyph for, and
 ;;   ALIGNED  those whose advance is exactly (char-width CH) cells,
@@ -559,15 +601,22 @@ in `fontutil/fit-cell-size'."
   '(("punctuation" :punct (#x00B7 (#x2018 . #x2027)))
     ("box drawing" :punct ((#x2500 . #x257F)))
     ("arrows"      :symbol ((#x2190 . #x21FF)))
-    ("math"        :symbol ((#x2200 . #x22FF)))
     ("shapes"      :symbol ((#x25A0 . #x25FF)))
-    ("dingbats"    :symbol ((#x2700 . #x27BF))))
+    ("dingbats"    :symbol ((#x2700 . #x27BF)))
+    ("math ops"    :math ((#x2200 . #x22FF)))
+    ("math misc"   :math ((#x27C0 . #x27EF) (#x2980 . #x2AFF)))
+    ("math letters" :math ((#x1D400 . #x1D7FF))))
   "Character groups checked by `fontutil/generate-family'.
-Each element is (NAME ROLE RANGES).  ROLE is `:punct' for characters
-`fontutil/pin-latin-ranges' draws with the Latin or `:punct' font (keep
-these in step with `fontutil/latin-ranges'), or `:symbol' for
-characters of the `symbol' script, drawn by the `:symbol' font.  RANGES
-is a list of characters and (FROM . TO) code ranges.")
+Each element is (NAME ROLE RANGES).  RANGES is a list of characters and
+\(FROM . TO) code ranges.  ROLE says which preset key draws the group
+when the Latin font cannot:
+  `:punct'   `fontutil/pin-latin-ranges' REPLACES the Latin font with
+             the `:punct' font for all these groups at once (keep them
+             in step with `fontutil/latin-ranges').
+  `:symbol'  characters of the `symbol' script; the `:symbol' font fills
+             the gaps the Latin font leaves.
+  `:math'    `fontutil/math-ranges' (keep in step); the `:math' font
+             fills the gaps, else the `:symbol' font does.")
 
 (defun fontutil/group-chars (ranges)
   "Return the list of characters in RANGES (characters and (FROM . TO))."
@@ -580,13 +629,16 @@ is a list of characters and (FROM . TO) code ranges.")
 For `:symbol' only characters of the `symbol' script are kept: the
 others in those blocks (◽ ✅ ❌ ...) are `emoji' script, drawn by the
 emoji font whatever `:symbol' is, and are 2 cells wide, so counting
-them would make every font look misaligned.  `:punct' ranges are
-pinned by code range, so all their characters count."
-  (let ((chars (fontutil/group-chars ranges)))
-    (if (eq role :symbol)
-        (seq-filter (lambda (ch) (eq (aref char-script-table ch) 'symbol))
-                    chars)
-      chars)))
+them would make every font look misaligned.  `:punct' and `:math'
+ranges are mapped by code range, so all their characters count.
+Unassigned code points (gaps in the math letters block) are dropped
+for every ROLE."
+  (seq-filter (lambda (ch)
+                (and (not (eq (get-char-code-property ch 'general-category)
+                              'Cn))
+                     (or (not (eq role :symbol))
+                         (eq (aref char-script-table ch) 'symbol))))
+              (fontutil/group-chars ranges)))
 
 (defun fontutil/role-chars (role)
   "Return all characters of the `fontutil/coverage-groups' with ROLE."
@@ -618,6 +670,29 @@ no size aligns any of CHARS."
         (when (> (nth 1 score) (if best (nth 2 best) 0))
           (setq best (cons size score)))))
     best))
+
+(defun fontutil/math-chars ()
+  "Return the assigned characters of `fontutil/math-ranges'."
+  (fontutil/role-group-chars :math fontutil/math-ranges))
+
+(defun fontutil/fit-math-size (family &optional cell)
+  "Return the size at which FAMILY draws the most math glyphs one cell wide.
+Math fonts are proportional, so unlike the other fits this does not ask
+for every glyph to fit: it picks the size that aligns the most of
+`fontutil/math-ranges' (see `fontutil/best-cell-size').  CELL is the
+cell width in pixels (default: the current default font's).  Returns
+nil if no glyph fits at any size.
+Measuring ~1700 glyphs at each trial size takes ~70 ms, so results are
+cached per FAMILY and CELL; `fontutil/reload' clears the cache."
+  (let* ((cell (or cell (default-font-width)))
+         (key (cons family cell))
+         (hit (assoc key fontutil--math-sizes)))
+    (if hit
+        (cdr hit)
+      (let ((size (car (fontutil/best-cell-size family cell
+                                                (fontutil/math-chars)))))
+        (push (cons key size) fontutil--math-sizes)
+        size))))
 
 (defun fontutil/candidate-families (chars exclude &optional limit)
   "Return up to LIMIT (default 3) installed families covering most of CHARS.
@@ -660,14 +735,53 @@ A font that only fits the cell at under 3/4 of the Latin size draws
 visibly small glyphs next to the Latin text."
   (format "%dpx%s" size (if (< size (* 0.75 latin-size)) " (small)" "")))
 
-(defun fontutil/coverage-report (latin size punct symbol)
+(defun fontutil/try-line (chars cell size exclude &optional note)
+  "Return a \";;     try: ...\" line suggesting fonts for CHARS.
+CELL is the cell width and SIZE the Latin size, both in pixels; fonts
+in EXCLUDE are skipped.  NOTE, if non-nil, is appended in parentheses.
+A wider pool is taken by glyph count (cheap), each is measured at its
+best size (costly), and the 3 that draw the most glyphs one cell wide
+are shown: a font with every glyph at the wrong width is worse than
+one with fewer that align."
+  (let* ((scored
+          (delq nil
+                (mapcar (lambda (c)
+                          (let ((best (fontutil/best-cell-size (car c) cell
+                                                               chars)))
+                            (and best (cons (car c) best))))
+                        (fontutil/candidate-families chars exclude 8))))
+         ;; Each element is (FAMILY SIZE HAVE ALIGNED TOTAL).
+         (ranked (seq-take (sort scored (lambda (a b)
+                                          (> (nth 3 a) (nth 3 b))))
+                           3))
+         (cands (mapcar (lambda (c)
+                          (format "%s %s @%s" (car c)
+                                  (fontutil/format-score (cddr c))
+                                  (fontutil/format-size (nth 1 c) size)))
+                        ranked)))
+    (concat ";;     try"
+            (if note (format " (%s)" note) "")
+            ": "
+            (if cands
+                (string-join cands ", ")
+              "no installed font fits one cell"))))
+
+(defun fontutil/coverage-report (latin size punct symbol &optional math)
   "Return comment lines on how LATIN at pixel SIZE covers each group.
-PUNCT and SYMBOL are the family names given for those roles, or nil.
-For each group of `fontutil/coverage-groups' the Latin font is scored;
-when it does not draw every character one cell wide, the font given for
-the group's role (if any) is scored at its best size, and other
-installed fonts are suggested."
+PUNCT, SYMBOL and MATH are the family names given for those roles, or
+nil.  For each group of `fontutil/coverage-groups' the Latin font is
+scored.  When it does not draw every character one cell wide, the font
+that would fill the gaps (see the roles in `fontutil/coverage-groups')
+is scored at its best size, and other installed fonts are suggested.
+
+`:punct' is different: its font replaces the Latin font for ALL the
+`:punct' groups.  So the given `:punct' font is shown for every such
+group, flagged when it is worse than the Latin font it replaces, and
+`:punct' candidates are scored on all those groups together."
   (let* ((cell (fontutil/cell-width latin size))
+         ;; The `:punct' try line covers all `:punct' groups, so it is
+         ;; computed once, on first need.
+         (punct-try nil)
          ;; Built with `push' and reversed at the end, so the first line
          ;; goes last here.
          (lines (list ";;   (HAVE/TOTAL glyphs; `not one cell' = wrong width)"
@@ -677,55 +791,53 @@ installed fonts are suggested."
       (pcase-let* ((`(,name ,role ,ranges) g)
                    (chars (fontutil/role-group-chars role ranges))
                    (score (fontutil/coverage latin size cell chars))
-                   (given (if (eq role :punct) punct symbol))
-                   ;; (SIZE HAVE ALIGNED TOTAL) for the font given for
-                   ;; ROLE, or nil.
+                   (latin-ok (= (nth 1 score) (nth 2 score)))
+                   ;; The font that would draw this group (or its gaps),
+                   ;; and how to name it: math falls back to `:symbol'.
+                   (given (pcase role
+                            (:punct punct)
+                            (:symbol symbol)
+                            (:math (or math symbol))))
+                   (label (if (and (eq role :math) (not math))
+                              "via :symbol"
+                            (format "your %s" role)))
+                   ;; (SIZE HAVE ALIGNED TOTAL) for GIVEN, or nil.
                    (given-best (and given
                                     (fontutil/best-cell-size given cell chars))))
-        (if (= (nth 1 score) (nth 2 score))
-            (push (format ";;   %-12s Latin %s: OK" name
-                          (fontutil/format-score score))
-                  lines)
-          (push (format ";;   %-12s Latin %s: needs %s" name
-                        (fontutil/format-score score) role)
-                lines)
-          (when given
-            (push (if given-best
-                      (format ";;     your %s %s: %s, best at %s" role given
-                              (fontutil/format-score (cdr given-best))
-                              (fontutil/format-size (car given-best) size))
-                    (format ";;     your %s %s: no glyph fits one cell"
-                            role given))
-                  lines))
-          ;; Suggest others unless the given font already covers it all.
-          (unless (and given-best (= (nth 2 given-best) (nth 3 given-best)))
-            ;; Take a wider pool by glyph count (cheap), measure each at
-            ;; its best size (costly), then show the 3 that draw the most
-            ;; glyphs one cell wide: a font that has every glyph at the
-            ;; wrong width is worse than one with fewer that align.
-            (let* ((scored
-                    (delq nil
-                          (mapcar
-                           (lambda (c)
-                             (let ((best (fontutil/best-cell-size
-                                          (car c) cell chars)))
-                               (and best (cons (car c) best))))
-                           (fontutil/candidate-families
-                            chars (delq nil (list latin given)) 8))))
-                   ;; Each element is (FAMILY SIZE HAVE ALIGNED TOTAL).
-                   (ranked (seq-take (sort scored (lambda (a b)
-                                                    (> (nth 3 a) (nth 3 b))))
-                                     3))
-                   (cands (mapcar (lambda (c)
-                                    (format "%s %s @%s" (car c)
-                                            (fontutil/format-score (cddr c))
-                                            (fontutil/format-size (nth 1 c)
-                                                                  size)))
-                                  ranked)))
-              (push (if cands
-                        (concat ";;     try: " (string-join cands ", "))
-                      ";;     try: no installed font fits one cell")
-                    lines))))))
+        (push (format ";;   %-12s Latin %s: %s" name
+                      (fontutil/format-score score)
+                      (cond (latin-ok "OK")
+                            ((eq role :math) "needs :math (or :symbol)")
+                            (t (format "needs %s" role))))
+              lines)
+        ;; The given font matters where it fills gaps, and always for
+        ;; `:punct', which replaces the Latin font even where it is OK.
+        (when (and given (or (not latin-ok) (eq role :punct)))
+          (let ((worse (and (eq role :punct)
+                            (< (if given-best (nth 2 given-best) 0)
+                               (nth 1 score)))))
+            (push (concat
+                   (if given-best
+                       (format ";;     %s %s: %s, best at %s" label given
+                               (fontutil/format-score (cdr given-best))
+                               (fontutil/format-size (car given-best) size))
+                     (format ";;     %s %s: no glyph fits one cell"
+                             label given))
+                   (if worse " -- WORSE than the Latin font it replaces" ""))
+                  lines)))
+        ;; Suggest others unless the Latin or given font covers it all.
+        (unless (or latin-ok
+                    (and given-best (= (nth 2 given-best) (nth 3 given-best))))
+          (push (if (eq role :punct)
+                    (or punct-try
+                        (setq punct-try
+                              (fontutil/try-line
+                               (fontutil/role-chars :punct) cell size
+                               (delq nil (list latin punct))
+                               "scored on all :punct groups")))
+                  (fontutil/try-line chars cell size
+                                     (delq nil (list latin given))))
+                lines))))
     ;; A symbol font with only Private Use Area icons (e.g. Nerd Font
     ;; "Symbols" fonts) cannot help: the PUA is not part of the `symbol'
     ;; script that `:symbol' is mapped to.
@@ -779,24 +891,31 @@ Each character should be as wide as `char-width' says, in cells."
       (pop-to-buffer (current-buffer)))))
 
 ;;;###autoload
-(defun fontutil/generate-family (id latin hangul punct symbol sizes)
+(defun fontutil/generate-family (id latin hangul punct symbol math sizes)
   "Measure sizes for a new font set and show a family entry to paste.
 ID is the family id (a string, e.g. \"mymono\").  LATIN and HANGUL are
-installed family names.  PUNCT and SYMBOL are family names or nil/\"\":
+installed family names.  PUNCT, SYMBOL and MATH are family names or
+nil/\"\":
   PUNCT  font for `fontutil/latin-ranges' (curly quotes, ellipsis, box
-         drawing...).  nil means the Latin font draws them, so no
-         `:punct' is emitted.
-  SYMBOL font for arrows, math and other `symbol' script characters.
-         nil means no symbol mapping (nil sizes and no `:symbol').
+         drawing...).  It REPLACES the Latin font for all of them.  nil
+         means the Latin font draws them, so no `:punct' is emitted.
+  SYMBOL font for arrows, shapes and other `symbol' script characters
+         the Latin font lacks.  nil means no symbol mapping (nil sizes
+         and no `:symbol').
+  MATH   font for `fontutil/math-ranges' (math operators and letters)
+         the Latin font lacks, e.g. Noto Sans Math.  nil means math
+         operators fall back to SYMBOL and math letters to Emacs's own
+         fallback, so no `:math' is emitted.
 SIZES is a list of Latin PIXEL sizes (the unit of `:size' in
 `fontutil/families', not points).
 
-Not sure whether PUNCT or SYMBOL is needed?  Leave them empty first.
-The coverage report at the top of the result (`fontutil/coverage-report')
-says, for each group of `fontutil/coverage-groups', whether the Latin
-font draws it one cell wide, and if not, which role (`:punct' or
-`:symbol') would cover it and which installed fonts could, at what size.
-Then run this again with the fonts you picked to see what they cover.
+Not sure whether PUNCT, SYMBOL or MATH is needed?  Leave them empty
+first.  The coverage report at the top of the result
+\(`fontutil/coverage-report') says, for each group of
+`fontutil/coverage-groups', whether the Latin font draws it one cell
+wide, and if not, which role (`:punct', `:symbol' or `:math') would
+cover it and which installed fonts could, at what size.  Then run this
+again with the fonts you picked to see what they cover.
 
 For each size the Latin cell width is measured and these are fitted:
   Hangul  size at which 한 is exactly two cells wide.
@@ -804,9 +923,10 @@ For each size the Latin cell width is measured and these are fitted:
           wide.
 A Hangul size where nothing fits gets `auto' (`fontutil/apply' then
 falls back to 2x the cell).  A symbol size where nothing fits gets nil,
-so that preset has no symbol mapping.  The PUNCT size is not put in the
-table because `fontutil/apply' measures it each time (via ─); a size
-where it cannot be fitted is reported in a comment.
+so that preset has no symbol mapping.  The PUNCT and MATH sizes are not
+put in the table because `fontutil/apply' measures them each time (PUNCT
+via ─, MATH by `fontutil/fit-math-size'); each row's comment shows the
+size that will be used, or that none fits.
 
 Fonts are measured directly (`fontutil/glyph-widths'), so the frame's
 fonts are not changed.  The result goes to the *fontutil-family*
@@ -819,6 +939,8 @@ buffer."
            (completing-read "Punctuation family (empty = use Latin): "
                             fams nil t)
            (completing-read "Symbol family (empty = none): " fams nil t)
+           (completing-read "Math family (empty = use symbol): "
+                            fams nil t)
            (mapcar #'string-to-number
                    (split-string
                     (read-string "Latin pixel sizes (space separated): "
@@ -827,7 +949,8 @@ buffer."
     (user-error "Run this in a graphic frame"))
   (when (equal punct "") (setq punct nil))
   (when (equal symbol "") (setq symbol nil))
-  (dolist (f (delq nil (list latin hangul punct symbol)))
+  (when (equal math "") (setq math nil))
+  (dolist (f (delq nil (list latin hangul punct symbol math)))
     (unless (find-font (font-spec :family f))
       (user-error "Font family %S not found" f)))
   ;; `string-to-number' turns a typo such as "1x" into 0, so check here.
@@ -837,8 +960,8 @@ buffer."
   (unless (fontutil/glyph-width hangul (car sizes) ?한)
     (user-error "Hangul family %S has no 한; pick another" hangul))
   (let* ((sym-chars (fontutil/role-chars :symbol))
-         ;; One row per size: (SIZE CELL HSIZE SSIZE PSIZE).  Every value
-         ;; is measured from the fonts themselves for that Latin cell.
+         ;; One row per size: (SIZE CELL HSIZE SSIZE PSIZE MSIZE).  Every
+         ;; value is measured from the fonts themselves for that cell.
          (rows
           (mapcar
            (lambda (size)
@@ -849,7 +972,8 @@ buffer."
                      (and symbol
                           (car (fontutil/best-cell-size symbol cell
                                                         sym-chars)))
-                     (and punct (fontutil/fit-punct-size punct nil cell)))))
+                     (and punct (fontutil/fit-punct-size punct nil cell))
+                     (and math (fontutil/fit-math-size math cell)))))
            sizes))
          ;; The cell width comes from the space; if letters differ from it
          ;; the font is proportional and nothing will line up.
@@ -863,22 +987,27 @@ buffer."
       (when proportional
         (insert (format ";; WARNING: %s is not monospaced (a i M W 0 are \
 not all %dpx); pick another Latin font\n" latin cell0)))
-      (dolist (line (fontutil/coverage-report latin (car sizes) punct symbol))
+      (dolist (line (fontutil/coverage-report latin (car sizes) punct symbol
+                                              math))
         (insert line "\n"))
       (insert "\n")
       (insert (format "(%s :latin (%S) :hangul (%S)\n" id latin hangul))
       (when punct (insert (format " :punct (%S)\n" punct)))
       (when symbol (insert (format " :symbol (%S)\n" symbol)))
+      (when math (insert (format " :math (%S)\n" math)))
       (insert " :sizes (\n")
       (dolist (r rows)
-        (pcase-let ((`(,size ,cell ,hsize ,ssize ,psize) r))
-          (insert (format "   (%d %s %s)   ; cell %dpx%s%s%s\n"
+        (pcase-let ((`(,size ,cell ,hsize ,ssize ,psize ,msize) r))
+          (insert (format "   (%d %s %s)   ; cell %dpx%s%s%s%s\n"
                           size (or hsize 'auto) ssize cell
                           (if hsize "" ", hangul: no fit, using auto")
                           (if (or (null symbol) ssize) ""
                             ", symbol: no glyph fits, no mapping")
                           (if (or (null punct) psize) ""
-                            ", punct: ─ fits no size, pick another font")))))
+                            ", punct: ─ fits no size, pick another font")
+                          (cond ((null math) "")
+                                (msize (format ", math %dpx" msize))
+                                (t ", math: no glyph fits"))))))
       (insert "   ))\n")
       (emacs-lisp-mode)
       (goto-char (point-min))
@@ -964,6 +1093,42 @@ not all %dpx); pick another Latin font\n" latin cell0)))
         ;; size does not linger.  Do NOT pass nil to `set-fontset-font':
         ;; that means "no font" and would blank these characters.
         (fontutil/set-hanja-font family (* 2 (default-font-width))))))
+    ;; Math: the `:math' font draws `fontutil/math-ranges', sized so the
+    ;; most math glyphs are one cell wide (a math font cannot fit them
+    ;; all).  This runs after the `symbol' mapping above, so for math
+    ;; operators it wins over `:symbol'; the Latin font still draws the
+    ;; operators it has (`use-default-font-for-symbols').
+    (let ((mfamily (plist-get (plist-get preset :math) :family)))
+      (cond
+       (mfamily
+        (fontutil/map-ranges
+         fontutil/math-ranges mfamily
+         (or (fontutil/fit-math-size mfamily)
+             (progn
+               (message "fontutil: no one-cell math size for %s with %s"
+                        (plist-get preset :name) mfamily)
+               (plist-get latin :size))))
+        (setq fontutil--math-mapped t))
+       (fontutil--math-mapped
+        ;; No `:math' here, but an earlier preset mapped these ranges.
+        ;; Re-map them as if no math font had ever been set.  Math
+        ;; operators are `symbol' script, so they go to the `:symbol'
+        ;; font if there is one.  Everything else gets an empty
+        ;; `font-spec', which makes Emacs search all fonts for the
+        ;; glyph, as a fresh session does.  Tested with 𝐀: a named font
+        ;; lacking the glyph, nil, `(nil . "iso10646-1")' and
+        ;; `(font-spec :registry "iso10646-1")' all left it with NO
+        ;; font; only the empty spec brought the search back.
+        (let ((ssize (plist-get symbol :size)))
+          (dolist (range fontutil/math-ranges)
+            (set-fontset-font
+             t range
+             (if (and symbol
+                      (eq (aref char-script-table (car range)) 'symbol))
+                 (font-spec :family (plist-get symbol :family)
+                            :size (if (integerp ssize) ssize
+                                    (plist-get latin :size)))
+               (font-spec))))))))
     ;; Option 1: punctuation / box drawing come from the :punct font if the
     ;; family has one (sized so a glyph is one cell wide), else the Latin
     ;; font.  Plain replacement, so order relative to the other mappings
