@@ -235,10 +235,14 @@ A later preset without `:math' then resets those ranges (see
 ;;; ------------------------------------------------------------------
 
 (defvar fontutil/families
-  '((scodepro :latin ("SourceCodePro" "Source_Code_Pro" "Source Code Pro")
-              :weight normal
-              :hangul ("NanumGothicCoding") :symbol ("Symbola")
-              :sizes ((14 16 17) (15 18 20) (16 20 22) (18 22 24) (20 24 24)))
+  '((scodepro :latin ("SauceCodePro Nerd Font Mono" "SourceCodePro" "Source_Code_Pro" "Source Code Pro")
+	      :hangul ("NanumGothicCoding")
+	      :punct ("JuliaMono")
+	      :symbol ("JuliaMono")
+	      :sizes ((12 13 11) (13 15 13) (15 17 15) (17 19 16)
+		      (18 21 18) (20 23 20) (22 25 21) (23 27 23)
+		      (25 29 25) (27 31 26) (28 33 28) (30 35 30)
+		      (32 37 31)))
     (ubuntu :latin ("UbuntuMono") :hangul ("NanumGothicCoding")
             :symbol ("Symbola") :spacing 4
             :sizes ((16 16 17) (18 18 20) (20 20 22) (22 22 22)))
@@ -1053,6 +1057,92 @@ Each character should be as wide as `char-width' says, in cells."
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
 
+;;; ------------------------------------------------------------------
+;;; Suggesting Latin sizes
+;;; ------------------------------------------------------------------
+;;
+;; A Latin size gives a cell of round(SIZE x ADVANCE) pixels (ADVANCE is
+;; the advance of a space in em), so neighbouring sizes often give the
+;; same cell: with 0.62 em, 14px and 15px both give a 9px cell.  Two
+;; presets with one cell width show the same columns and differ only in
+;; glyph size, so one is redundant (and `fontutil/zoom' would step
+;; without the window gaining a column).  Of those, the best is the one
+;; whose exact width SIZE x ADVANCE is closest to the cell: the outline
+;; is drawn at its exact width in a whole-pixel cell, so a large
+;; rounding error shows as letters spaced looser or tighter than
+;; designed (14px: 8.68px glyphs in 9px cells; 15px: 9.30 in 9).
+;;
+;; The Hangul, `:punct', `:symbol' and `:math' fits depend only on the
+;; cell, not on the Latin size, so they cannot tell such sizes apart;
+;; `fontutil/generate-family' notes on each row where they fail.
+
+(defvar fontutil/suggest-size-range '(12 . 32)
+  "Range (FROM . TO) of Latin pixel sizes `fontutil/suggest-sizes' scans.")
+
+(defun fontutil/advance-em (family)
+  "Return the advance of a space in FAMILY in em, to 3 decimals, or nil.
+Measured at 1000px, so rounding to whole pixels does not hide it."
+  (let ((w (fontutil/glyph-width family 1000 ?\s)))
+    (and w (/ w 1000.0))))
+
+(defun fontutil/suggest-sizes (latin &optional from to)
+  "Return the suggested Latin pixel sizes for LATIN, smallest first.
+One size per cell width from FROM to TO (default
+`fontutil/suggest-size-range'): of the sizes giving the same cell, the
+one whose exact width (size x advance) is closest to the cell; see the
+comment above.  The cell is measured (`fontutil/cell-width'), since
+Emacs rounds .5 up where `round' would round to even.
+Interactively, show the result for a chosen family."
+  (interactive
+   (list (completing-read "Latin family: " (delete-dups (font-family-list))
+                          nil t)))
+  (let* ((from (or from (car fontutil/suggest-size-range)))
+         (to (or to (cdr fontutil/suggest-size-range)))
+         (em (or (fontutil/advance-em latin)
+                 (user-error "%S has no space glyph" latin)))
+         ;; Alist of (CELL . (SIZE . ERROR)): the best size so far for
+         ;; each cell width.
+         (best nil))
+    (dolist (size (number-sequence from to))
+      (let* ((cell (fontutil/cell-width latin size))
+             (err (abs (- (* size em) cell)))
+             (cur (alist-get cell best)))
+        (when (or (null cur) (< err (cdr cur)))
+          (setf (alist-get cell best) (cons size err)))))
+    (let ((sizes (sort (mapcar #'cadr best) #'<)))
+      (when (called-interactively-p 'interactive)
+        (message "%s (%.3f em): %s" latin em
+                 (mapconcat #'number-to-string sizes " ")))
+      sizes)))
+
+(defun fontutil/size-notes (latin sizes)
+  "Return an alist (SIZE . NOTE) of problems with the Latin SIZES.
+NOTE says that SIZE gives the same cell as an earlier size (and which
+of the two is closer to the cell, so worth keeping), or that its exact
+width is 0.3px or more off the cell."
+  (let ((em (fontutil/advance-em latin))
+        (seen nil)                      ; alist (CELL . first SIZE)
+        (notes nil))
+    (dolist (size sizes)
+      (let* ((cell (fontutil/cell-width latin size))
+             (exact (* size em))
+             (dup (alist-get cell seen)))
+        (cond
+         (dup
+          ;; Name the one to keep: the size closer to the cell.
+          (push (cons size
+                      (format "same cell as %d, keep %d" dup
+                              (if (< (abs (- exact cell))
+                                     (abs (- (* dup em) cell)))
+                                  size dup)))
+                notes))
+         ((>= (abs (- exact cell)) 0.3)
+          (push (cons size (format "exact %.2fpx, spacing %s" exact
+                                   (if (> cell exact) "looser" "tighter")))
+                notes)))
+        (unless dup (push (cons cell size) seen))))
+    notes))
+
 ;;;###autoload
 (defun fontutil/generate-family (id latin hangul punct symbol math sizes)
   "Measure sizes for a new font set and show a family entry to paste.
@@ -1070,7 +1160,11 @@ nil/\"\":
          operators fall back to SYMBOL and math letters to Emacs's own
          fallback, so no `:math' is emitted.
 SIZES is a list of Latin PIXEL sizes (the unit of `:size' in
-`fontutil/families', not points).
+`fontutil/families', not points).  Interactively it defaults to
+`fontutil/suggest-sizes': one size per cell width, each the size whose
+exact width is closest to its cell.  Rows of a size that repeats a cell
+width, or whose exact width is 0.3px or more off the cell, get a note
+\(`fontutil/size-notes').
 
 Not sure whether PUNCT, SYMBOL or MATH is needed?  Leave them empty
 first.  The coverage report at the top of the result
@@ -1095,19 +1189,24 @@ Fonts are measured directly (`fontutil/glyph-widths'), so the frame's
 fonts are not changed.  The result goes to the *fontutil-family*
 buffer."
   (interactive
-   (let ((fams (delete-dups (font-family-list))))
-     (list (read-string "Family id (e.g. mymono): ")
-           (completing-read "Latin family: " fams nil t)
+   (let* ((fams (delete-dups (font-family-list)))
+          (id (read-string "Family id (e.g. mymono): "))
+          (latin (completing-read "Latin family: " fams nil t)))
+     (list id latin
            (completing-read "Hangul family: " fams nil t)
            (completing-read "Punctuation family (empty = use Latin): "
                             fams nil t)
            (completing-read "Symbol family (empty = none): " fams nil t)
            (completing-read "Math family (empty = use symbol): "
                             fams nil t)
+           ;; The default is one size per cell width for this Latin font
+           ;; (`fontutil/suggest-sizes'); edit it freely.
            (mapcar #'string-to-number
                    (split-string
                     (read-string "Latin pixel sizes (space separated): "
-                                 "14 16 18 20"))))))
+                                 (mapconcat #'number-to-string
+                                            (fontutil/suggest-sizes latin)
+                                            " ")))))))
   (unless (display-graphic-p)
     (user-error "Run this in a graphic frame"))
   (when (equal punct "") (setq punct nil))
@@ -1138,6 +1237,8 @@ buffer."
                      (and punct (fontutil/fit-punct-size punct nil cell))
                      (and math (fontutil/fit-math-size math cell)))))
            sizes))
+         ;; (SIZE . NOTE) for sizes that repeat a cell or round badly.
+         (size-notes (fontutil/size-notes latin sizes))
          ;; The cell width comes from the space; if letters differ from it
          ;; the font is proportional and nothing will line up.
          (cell0 (nth 1 (car rows)))
@@ -1166,6 +1267,13 @@ not all %dpx); pick another Latin font\n" latin cell0)))
             (insert (format ";;   %-8s %s\n" (car f)
                             (fontutil/font-facts-line (nth 1 f) (nth 2 f)
                                                       ref-height))))))
+      (insert (format ";; Suggested sizes (%d-%dpx, one per cell width, \
+%.3f em): %s\n"
+                      (car fontutil/suggest-size-range)
+                      (cdr fontutil/suggest-size-range)
+                      (fontutil/advance-em latin)
+                      (mapconcat #'number-to-string
+                                 (fontutil/suggest-sizes latin) " ")))
       (dolist (line (fontutil/coverage-report latin (car sizes) punct symbol
                                               math))
         (insert line "\n"))
@@ -1177,8 +1285,10 @@ not all %dpx); pick another Latin font\n" latin cell0)))
       (insert " :sizes (\n")
       (dolist (r rows)
         (pcase-let ((`(,size ,cell ,hsize ,ssize ,psize ,msize) r))
-          (insert (format "   (%d %s %s)   ; cell %dpx%s%s%s%s\n"
+          (insert (format "   (%d %s %s)   ; cell %dpx%s%s%s%s%s\n"
                           size (or hsize 'auto) ssize cell
+                          (let ((note (alist-get size size-notes)))
+                            (if note (concat ", " note) ""))
                           (if hsize "" ", hangul: no fit, using auto")
                           (if (or (null symbol) ssize) ""
                             ", symbol: no glyph fits, no mapping")
