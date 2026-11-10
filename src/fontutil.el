@@ -52,6 +52,8 @@
 ;;      (`fontutil/families'), or use `auto' for that size.
 ;;
 ;; Symptom: only 字 (Hanja) is off, e.g. `字=15px(want 16)'.
+;;   -> Hanja is only managed when `fontutil/enable-hanja' is non-nil
+;;      (off by default; 字 is then not checked at all).
 ;;   -> Hangul is fine but the font drawing Hanja differs.  Run
 ;;      C-u C-x = on a Hanja character and read the `font:' line.
 ;;   -> Hanja is fitted separately from Hangul (`fontutil/fit-hanja-size').
@@ -132,6 +134,16 @@ widths for the same size (Noto Sans Mono CJK KR does).")
 NanumGothicCoding appears to lack Hanja glyphs, so Emacs falls back to
 an arbitrary font at an arbitrary width.  If none of these is installed,
 the family's own Hangul font is used instead.")
+
+(defvar fontutil/enable-hanja nil
+  "If non-nil, map and size a Hanja font when a preset is applied.
+When nil (the default), Hanja is left alone: presets get no Hanja font,
+`fontutil/apply' does not measure or map `fontutil/hanja-scripts' (Emacs
+draws Hanja with its own fallback font, unaligned), and
+`fontutil/check-alignment' does not test 字.
+Presets are cached, so after changing this run `fontutil/reload' and
+re-select the font.  A Hanja mapping made before turning this off stays
+until Emacs restarts.")
 
 (defvar fontutil/check-chars (string-to-list "“”‘’…·•─│")
   "Characters that commonly break alignment, tested by the checkers.")
@@ -305,10 +317,12 @@ be 2 x (Latin advance in px).  Source Code Pro is 0.6em: size 16 gives
         (weight (plist-get spec :weight))
         (punct (fontutil/first-available (plist-get spec :punct)))
         ;; Hanja font: the family's own :hanja, else the global defaults,
-        ;; else the Hangul font itself.
-        (hanja (or (fontutil/first-available
-                    (or (plist-get spec :hanja) fontutil/hanja-families))
-                   hangul)))
+        ;; else the Hangul font itself.  Skipped (nil) unless
+        ;; `fontutil/enable-hanja', which also saves the font lookups.
+        (hanja (and fontutil/enable-hanja
+                    (or (fontutil/first-available
+                         (or (plist-get spec :hanja) fontutil/hanja-families))
+                        hangul))))
     (cond
      ((not (and latin hangul))
       (when fontutil/verbose
@@ -325,7 +339,7 @@ be 2 x (Latin advance in px).  Source Code Pro is 0.6em: size 16 gives
                  :latin (append (list :family latin :size size)
                                 (when weight (list :weight weight)))
                  :hangul (list :family hangul :size hsize)
-                 :hanja (list :family hanja)
+                 :hanja (when hanja (list :family hanja))
                  :punct (when punct (list :family punct))
                  :symbol (when (and symbol ssize)
                            (list :family symbol :size ssize))
@@ -487,7 +501,9 @@ Each character should be as wide as `char-width' says, in cells."
                              (want (* cell (char-width ch))))
                          (unless (= w want)
                            (format "%c=%dpx(want %d)" ch w want))))
-                     (append "a한字" fontutil/check-chars nil)))))
+                     ;; 字 is only checked when Hanja is managed here.
+                     (append "a한" (and fontutil/enable-hanja "字")
+                             fontutil/check-chars nil)))))
     (format "cell=%dpx %s" cell
             (if bad (string-join bad " ") "OK"))))
 
@@ -652,21 +668,32 @@ preset is restored afterwards."
         (setq hsize (* 2 (default-font-width)))))
     (fontutil/set-hangul-font (plist-get hangul :family) hsize)
     ;; Hanja is fitted on its own, always by measurement (字 must be two
-    ;; cells).  If nothing fits, the font probably lacks Hanja: set
-    ;; `:hanja' for the family, or install a CJK mono font.  The mapping is
-    ;; then left to Emacs's fallback, so 字 will be misaligned.
+    ;; cells).  Nothing is done unless `fontutil/enable-hanja' is set
+    ;; (presets built while it was nil have no :hanja anyway; the check
+    ;; here also covers presets cached before it was turned off).
     (let* ((hanja (plist-get preset :hanja))
-           (family (plist-get hanja :family))
-           (size (and family (fontutil/fit-hanja-size family))))
-      (if size
-          (fontutil/set-hanja-font family size)
-        (when family
-          (message "fontutil: no aligned Hanja size for %s with %s"
-                   (plist-get preset :name) family)
-          ;; Map Hanja to a sane guess (2x cell) so the previous preset's
-          ;; size does not linger.  Do NOT pass nil to `set-fontset-font':
-          ;; that means "no font" and would blank these characters.
-          (fontutil/set-hanja-font family (* 2 (default-font-width))))))
+           (family (and fontutil/enable-hanja (plist-get hanja :family)))
+           (has-hanja (and family
+                           (font-has-char-p
+                            (find-font (font-spec :family family)) ?字)))
+           (size (and has-hanja (fontutil/fit-hanja-size family))))
+      (cond
+       (size (fontutil/set-hanja-font family size))
+       ((null family))                  ; Hanja disabled: leave it alone
+       ((not has-hanja)
+        ;; The font has no Hanja glyphs, so there is no size to search
+        ;; for and mapping Hanja to it would be pointless.  Set `:hanja'
+        ;; for the family, or install a CJK mono font (see
+        ;; `fontutil/hanja-families').
+        (message "fontutil: %s has no Hanja (字); %s"
+                 family "Hanja left to Emacs's fallback"))
+       (t
+        (message "fontutil: no aligned Hanja size for %s with %s"
+                 (plist-get preset :name) family)
+        ;; Map Hanja to a sane guess (2x cell) so the previous preset's
+        ;; size does not linger.  Do NOT pass nil to `set-fontset-font':
+        ;; that means "no font" and would blank these characters.
+        (fontutil/set-hanja-font family (* 2 (default-font-width))))))
     ;; Option 1: punctuation / box drawing come from the :punct font if the
     ;; family has one (sized so a glyph is one cell wide), else the Latin
     ;; font.  Plain replacement, so order relative to the other mappings
