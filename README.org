@@ -218,9 +218,9 @@
     - =C-M-'= correct spelling error (choose from candidates)
 
 *** Completing read /w Helm
-    Emacs has various ways to read the input using completion.
-    The additional package, [Helm](https://github.com/emacs-helm/helm) also
-    override this interface to use it's own mechanism.
+    Emacs has various ways to read the input using completion.  The
+    additional package, [[https://github.com/emacs-helm/helm][Helm]] also override this interface to use it's
+    own mechanism.
 
     - To select none (to return =""=), Use =C-RET= or =M-RET=.
 
@@ -377,8 +377,8 @@ j 2<RET>                     # select 2nd part
       Update =fontutil/default-fontconfig= in [[file:src/fontutil.el][fontutil.el]].  Make sure you
       undo by =C-_=.  (Or =C-c C-v k=).
 
-#+BEGIN_SRC emacs-lisp
-(fontutil/remove-unavailable fontutil/default-fontconfig t)
+#+BEGIN_SRC emacs-lisp :results none
+(fontutil/display-presets)
 #+END_SRC
 
 *** man pages on MacOs (darwin)

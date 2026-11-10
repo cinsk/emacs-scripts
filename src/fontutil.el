@@ -97,6 +97,7 @@
 ;;   -> Set `fontutil/prefer-symbol-font' to t (Emacs 28+).
 
 (require 'seq)
+(require 'popup-buffer nil 'noerror)
 
 ;;; ------------------------------------------------------------------
 ;;; Variables
@@ -351,6 +352,16 @@ on a non-graphic display (and does not cache)."
 (defun fontutil/preset (name)
   "Return the preset named NAME (a symbol), or nil."
   (seq-find (lambda (p) (eq (plist-get p :name) name)) (fontutil/presets)))
+
+(defun fontutil/display-presets ()
+  "Pop up buffer containing all `fontutil/preset'."
+  (interactive)
+  (with-popup-buffer ("*fontutil/presets*" :mode #'emacs-lisp-mode
+		      :action '((display-buffer-at-bottom)
+				(dedicated . t)
+				(window-height . fit-window-to-buffer)))
+    (dolist (i (fontutil/presets))
+      (insert (prin1-to-string i) "\n"))))
 
 ;;; ------------------------------------------------------------------
 ;;; Measuring
