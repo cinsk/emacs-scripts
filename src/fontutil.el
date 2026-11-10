@@ -292,9 +292,36 @@ Each element is (ID . PLIST) with these keys:
   :spacing default `line-spacing' frame parameter
   :sizes   list of (LATIN HANGUL SYMBOL [SPACING]), one per preset
 
-The preset name is ID-LATIN, e.g. `scodepro-16'.  HANGUL and SYMBOL may
-be the symbol `auto' to measure them when the preset is applied (Hangul:
-한 two cells wide; symbol: → one cell wide).  SYMBOL may be nil to skip.
+The preset name is ID-LATIN, e.g. `scodepro-16'.  HANGUL and SYMBOL
+each take a pixel size, `auto' or nil:
+
+  HANGUL (2nd)
+    integer  fixed pixel size, used as is; nothing is measured.
+    `auto'   measured each time the preset is applied: the size at
+             which 한 is exactly two cells wide.  If nothing fits, a
+             message is shown and 2 x the cell width is used.
+    nil      the Hangul font is mapped with no size (:size nil), so
+             Emacs picks one, normally following the default font;
+             Hangul is then usually not two cells wide.  Rarely wanted:
+             use a number or `auto'.
+
+  SYMBOL (3rd)
+    integer  fixed pixel size, used as is; nothing is measured.
+    `auto'   measured each time the preset is applied: the size at
+             which → is exactly one cell wide.  If nothing fits, a
+             message is shown and the Latin size is used.
+    nil      no symbol mapping for that preset (`fontutil/expand-family'
+             drops `:symbol'), so Emacs picks its own fallback for
+             arrows, math etc.  Normal when the Latin font covers the
+             symbols or the family has no `:symbol' font.
+
+`auto' is for when the number is not known yet; it works but measures
+on every apply.  Replace it with the number from
+`fontutil/suggest-hangul-size' (Hangul) or `fontutil/generate-family'.
+`fontutil/generate-family' follows the same rules: a Hangul size it
+cannot fit is written as `auto' (so apply uses the 2 x cell fallback),
+a symbol size it cannot fit as nil (`auto' would just fail again on
+every apply).
 
 Integer sizes are in pixels.  Emacs rounds the Latin advance to whole
 pixels, and a Hangul glyph is about 1em wide, so the Hangul size should
@@ -432,63 +459,284 @@ small on purpose."
 ;; while `string-pixel-width' silently measured Emacs's fallback font
 ;; (the old code could "fit" a size by accident that way).
 
+(defun fontutil/glyph-widths (family size chars)
+  "Return the advance widths in pixels of CHARS in FAMILY at pixel SIZE.
+CHARS is a list of characters; the result has one element per
+character, nil where FAMILY lacks it (all nil if FAMILY is not
+installed).  The font is opened once, so this is cheap even for a few
+hundred characters.  Nothing is changed on any frame; see the comment
+above."
+  (let* ((entity (find-font (font-spec :family family :size size)))
+         (font (and entity (open-font entity size))))
+    (if (null font)
+        (make-list (length chars) nil)
+      ;; `font-get-glyphs' returns a vector with one element per
+      ;; character: nil if the font has no glyph for it, else a vector
+      ;; [FROM TO C CODE WIDTH LBEARING RBEARING ASCENT DESCENT ...].
+      (mapcar (lambda (glyph) (and glyph (aref glyph 4))) ; WIDTH = advance
+              (font-get-glyphs font 0 (length chars) (apply #'string chars))))))
+
 (defun fontutil/glyph-width (family size char)
   "Return the advance width in pixels of CHAR in FAMILY at pixel SIZE.
-Returns nil if FAMILY is not installed or lacks CHAR.  Nothing is
-changed on any frame; see the comment above."
-  (let* ((entity (find-font (font-spec :family family :size size)))
-         (font (and entity (open-font entity size)))
-         ;; `font-get-glyphs' returns one element per character: nil if
-         ;; the font has no glyph for it, else a vector
-         ;; [FROM TO C CODE WIDTH LBEARING RBEARING ASCENT DESCENT ...].
-         (glyph (and font (aref (font-get-glyphs font 0 1 (string char)) 0))))
-    (and glyph (aref glyph 4))))        ; WIDTH = advance in pixels
+Returns nil if FAMILY is not installed or lacks CHAR."
+  (car (fontutil/glyph-widths family size (list char))))
 
-(defun fontutil/fit-size (scripts family char)
+(defun fontutil/cell-width (family size)
+  "Return the cell width in pixels Emacs uses for FAMILY at pixel SIZE.
+That is the advance of a space, which equals `default-font-width' once
+FAMILY is the default font (checked for several monospaced fonts), so a
+font can be measured without making it the default."
+  (fontutil/glyph-width family size ?\s))
+
+(defun fontutil/fit-size (scripts family char &optional cell)
   "Return the smallest pixel size at which CHAR is two cells wide.
-FAMILY's CHAR is measured against the current default font's cell
-width.  Returns nil if no size fits, e.g. when FAMILY lacks CHAR.
-The fontset is not changed; callers install the size they choose.
-SCRIPTS is no longer needed (trial sizes are not installed any more)
-and is kept so the callers stay the same."
+FAMILY's CHAR is measured against CELL, the cell width in pixels
+(default: the current default font's).  Returns nil if no size fits,
+e.g. when FAMILY lacks CHAR.  The fontset is not changed; callers
+install the size they choose.  SCRIPTS is no longer needed (trial
+sizes are not installed any more) and is kept so the callers stay the
+same."
   (ignore scripts)
-  (let* ((target (* 2 (default-font-width)))
+  (let* ((target (* 2 (or cell (default-font-width))))
          (lo (max 6 (- target 6)))
          (hi (+ target 8)))
     (seq-find (lambda (size)
                 (eql (fontutil/glyph-width family size char) target))
               (number-sequence lo hi))))
 
-(defun fontutil/fit-hangul-size (family)
-  "Return the pixel size at which FAMILY's 한 is two cells wide, or nil."
-  (fontutil/fit-size fontutil/hangul-scripts family ?한))
+(defun fontutil/fit-hangul-size (family &optional cell)
+  "Return the pixel size at which FAMILY's 한 is two cells wide, or nil.
+CELL is the cell width in pixels (default: the current default font's)."
+  (fontutil/fit-size fontutil/hangul-scripts family ?한 cell))
 
 (defun fontutil/fit-hanja-size (family)
   "Return the pixel size at which FAMILY's 字 is two cells wide, or nil."
   (fontutil/fit-size fontutil/hanja-scripts family ?字))
 
-(defun fontutil/fit-cell-size (family latin char)
+(defun fontutil/cell-sizes (cell)
+  "Return the pixel sizes tried when fitting a glyph to CELL pixels."
+  (number-sequence (max 6 (- cell 2)) (+ (* 2 cell) 4)))
+
+(defun fontutil/fit-cell-size (family latin char &optional cell)
   "Return the pixel size at which FAMILY draws CHAR exactly one cell wide.
-The cell width is read from the current default font, which must
-already be the Latin font.  Returns nil if no size fits (for instance
-when FAMILY lacks CHAR).  The default face is not changed.
-LATIN (the Latin font plist) was used to restore the default face after
-trying FAMILY in it; that is no longer done, and LATIN is kept so the
-callers stay the same."
+CELL is the cell width in pixels; by default it is read from the
+current default font, which must then already be the Latin font.
+Returns nil if no size fits (for instance when FAMILY lacks CHAR).  The
+default face is not changed.  LATIN (the Latin font plist) was used to
+restore the default face after trying FAMILY in it; that is no longer
+done, and LATIN is kept so the callers stay the same."
   (ignore latin)
-  (let ((cell (default-font-width)))
+  (let ((cell (or cell (default-font-width))))
     (seq-find (lambda (size)
                 (eql (fontutil/glyph-width family size char) cell))
-              (number-sequence (max 6 (- cell 2)) (+ (* 2 cell) 4)))))
+              (fontutil/cell-sizes cell))))
 
-(defun fontutil/fit-punct-size (family latin)
-  "Return the size at which FAMILY's ─ is one cell wide, or nil."
-  (fontutil/fit-cell-size family latin ?─))
+(defun fontutil/fit-punct-size (family latin &optional cell)
+  "Return the size at which FAMILY's ─ is one cell wide, or nil.
+CELL is as in `fontutil/fit-cell-size'."
+  (fontutil/fit-cell-size family latin ?─ cell))
 
-(defun fontutil/fit-symbol-size (family latin)
+(defun fontutil/fit-symbol-size (family latin &optional cell)
   "Return the size at which FAMILY's → is one cell wide, or nil.
-Arrows are the usual symbols and have a `char-width' of 1."
-  (fontutil/fit-cell-size family latin ?→))
+Arrows are the usual symbols and have a `char-width' of 1.  CELL is as
+in `fontutil/fit-cell-size'."
+  (fontutil/fit-cell-size family latin ?→ cell))
+
+;;; ------------------------------------------------------------------
+;;; Coverage: which font should draw punctuation and symbols
+;;; ------------------------------------------------------------------
+;;
+;; Used by `fontutil/generate-family' to tell whether a new family needs
+;; `:punct' and/or `:symbol', and which installed fonts could fill in.
+;; For each group in `fontutil/coverage-groups' a font is scored by
+;;   HAVE     characters it has a glyph for, and
+;;   ALIGNED  those whose advance is exactly (char-width CH) cells,
+;; out of TOTAL characters in the group.  A group is fine when ALIGNED =
+;; TOTAL for the Latin font; otherwise the group's ROLE says which
+;; preset key would cover it, and other fonts are searched as candidates.
+
+(defvar fontutil/coverage-groups
+  '(("punctuation" :punct (#x00B7 (#x2018 . #x2027)))
+    ("box drawing" :punct ((#x2500 . #x257F)))
+    ("arrows"      :symbol ((#x2190 . #x21FF)))
+    ("math"        :symbol ((#x2200 . #x22FF)))
+    ("shapes"      :symbol ((#x25A0 . #x25FF)))
+    ("dingbats"    :symbol ((#x2700 . #x27BF))))
+  "Character groups checked by `fontutil/generate-family'.
+Each element is (NAME ROLE RANGES).  ROLE is `:punct' for characters
+`fontutil/pin-latin-ranges' draws with the Latin or `:punct' font (keep
+these in step with `fontutil/latin-ranges'), or `:symbol' for
+characters of the `symbol' script, drawn by the `:symbol' font.  RANGES
+is a list of characters and (FROM . TO) code ranges.")
+
+(defun fontutil/group-chars (ranges)
+  "Return the list of characters in RANGES (characters and (FROM . TO))."
+  (mapcan (lambda (r)
+            (if (consp r) (number-sequence (car r) (cdr r)) (list r)))
+          ranges))
+
+(defun fontutil/role-group-chars (role ranges)
+  "Return the characters of RANGES that a ROLE font would really draw.
+For `:symbol' only characters of the `symbol' script are kept: the
+others in those blocks (◽ ✅ ❌ ...) are `emoji' script, drawn by the
+emoji font whatever `:symbol' is, and are 2 cells wide, so counting
+them would make every font look misaligned.  `:punct' ranges are
+pinned by code range, so all their characters count."
+  (let ((chars (fontutil/group-chars ranges)))
+    (if (eq role :symbol)
+        (seq-filter (lambda (ch) (eq (aref char-script-table ch) 'symbol))
+                    chars)
+      chars)))
+
+(defun fontutil/role-chars (role)
+  "Return all characters of the `fontutil/coverage-groups' with ROLE."
+  (mapcan (lambda (g)
+            (and (eq (nth 1 g) role)
+                 (fontutil/role-group-chars role (nth 2 g))))
+          fontutil/coverage-groups))
+
+(defun fontutil/coverage (family size cell chars)
+  "Score FAMILY at pixel SIZE on CHARS against a CELL-pixel cell.
+Return (HAVE ALIGNED TOTAL); see the comment above this function."
+  (let ((have 0) (aligned 0))
+    (seq-mapn (lambda (ch w)
+                (when w
+                  (setq have (1+ have))
+                  (when (= w (* cell (char-width ch)))
+                    (setq aligned (1+ aligned)))))
+              chars (fontutil/glyph-widths family size chars))
+    (list have aligned (length chars))))
+
+(defun fontutil/best-cell-size (family cell chars)
+  "Return (SIZE HAVE ALIGNED TOTAL) for FAMILY's best size on CHARS.
+The best size is the one with the most cell-aligned CHARS (the smallest
+such size on ties), tried over `fontutil/cell-sizes'.  Returns nil when
+no size aligns any of CHARS."
+  (let ((best nil))
+    (dolist (size (fontutil/cell-sizes cell))
+      (let ((score (fontutil/coverage family size cell chars)))
+        (when (> (nth 1 score) (if best (nth 2 best) 0))
+          (setq best (cons size score)))))
+    best))
+
+(defun fontutil/candidate-families (chars exclude &optional limit)
+  "Return up to LIMIT (default 3) installed families covering most of CHARS.
+Families in EXCLUDE are skipped, and so are hidden system fonts (names
+starting with \".\") and LastResort, which claims every character but
+only draws placeholder boxes.  Ranked by how many of CHARS they have,
+monospaced fonts first on ties.  Only `font-has-char-p' is used here,
+which is cheap; sizes are checked by the caller for the few winners."
+  (let (scored)
+    (dolist (f (delete-dups (font-family-list)))
+      (unless (or (member f exclude)
+                  (string-prefix-p "." f)
+                  (string-match-p "LastResort" f))
+        (let* ((entity (find-font (font-spec :family f)))
+               (n (if entity
+                      (seq-count (lambda (ch) (font-has-char-p entity ch))
+                                 chars)
+                    0)))
+          (when (> n 0)
+            (push (list f n (and (find-font (font-spec :family f :spacing 100))
+                                 t))
+                  scored)))))
+    (seq-take (sort scored
+                    (lambda (a b)
+                      (or (> (nth 1 a) (nth 1 b))
+                          (and (= (nth 1 a) (nth 1 b)) (nth 2 a)
+                               (not (nth 2 b))))))
+              (or limit 3))))
+
+(defun fontutil/format-score (score)
+  "Format a (HAVE ALIGNED TOTAL) SCORE for a coverage report."
+  (pcase-let ((`(,have ,aligned ,total) score))
+    (if (= have aligned)
+        (format "%d/%d" have total)
+      (format "%d/%d (%d not one cell)" have total (- have aligned)))))
+
+(defun fontutil/format-size (size latin-size)
+  "Format a fitted pixel SIZE, flagging one well below LATIN-SIZE.
+A font that only fits the cell at under 3/4 of the Latin size draws
+visibly small glyphs next to the Latin text."
+  (format "%dpx%s" size (if (< size (* 0.75 latin-size)) " (small)" "")))
+
+(defun fontutil/coverage-report (latin size punct symbol)
+  "Return comment lines on how LATIN at pixel SIZE covers each group.
+PUNCT and SYMBOL are the family names given for those roles, or nil.
+For each group of `fontutil/coverage-groups' the Latin font is scored;
+when it does not draw every character one cell wide, the font given for
+the group's role (if any) is scored at its best size, and other
+installed fonts are suggested."
+  (let* ((cell (fontutil/cell-width latin size))
+         ;; Built with `push' and reversed at the end, so the first line
+         ;; goes last here.
+         (lines (list ";;   (HAVE/TOTAL glyphs; `not one cell' = wrong width)"
+                      (format ";; Coverage at %dpx (cell %dpx), Latin = %s"
+                              size cell latin))))
+    (dolist (g fontutil/coverage-groups)
+      (pcase-let* ((`(,name ,role ,ranges) g)
+                   (chars (fontutil/role-group-chars role ranges))
+                   (score (fontutil/coverage latin size cell chars))
+                   (given (if (eq role :punct) punct symbol))
+                   ;; (SIZE HAVE ALIGNED TOTAL) for the font given for
+                   ;; ROLE, or nil.
+                   (given-best (and given
+                                    (fontutil/best-cell-size given cell chars))))
+        (if (= (nth 1 score) (nth 2 score))
+            (push (format ";;   %-12s Latin %s: OK" name
+                          (fontutil/format-score score))
+                  lines)
+          (push (format ";;   %-12s Latin %s: needs %s" name
+                        (fontutil/format-score score) role)
+                lines)
+          (when given
+            (push (if given-best
+                      (format ";;     your %s %s: %s, best at %s" role given
+                              (fontutil/format-score (cdr given-best))
+                              (fontutil/format-size (car given-best) size))
+                    (format ";;     your %s %s: no glyph fits one cell"
+                            role given))
+                  lines))
+          ;; Suggest others unless the given font already covers it all.
+          (unless (and given-best (= (nth 2 given-best) (nth 3 given-best)))
+            ;; Take a wider pool by glyph count (cheap), measure each at
+            ;; its best size (costly), then show the 3 that draw the most
+            ;; glyphs one cell wide: a font that has every glyph at the
+            ;; wrong width is worse than one with fewer that align.
+            (let* ((scored
+                    (delq nil
+                          (mapcar
+                           (lambda (c)
+                             (let ((best (fontutil/best-cell-size
+                                          (car c) cell chars)))
+                               (and best (cons (car c) best))))
+                           (fontutil/candidate-families
+                            chars (delq nil (list latin given)) 8))))
+                   ;; Each element is (FAMILY SIZE HAVE ALIGNED TOTAL).
+                   (ranked (seq-take (sort scored (lambda (a b)
+                                                    (> (nth 3 a) (nth 3 b))))
+                                     3))
+                   (cands (mapcar (lambda (c)
+                                    (format "%s %s @%s" (car c)
+                                            (fontutil/format-score (cddr c))
+                                            (fontutil/format-size (nth 1 c)
+                                                                  size)))
+                                  ranked)))
+              (push (if cands
+                        (concat ";;     try: " (string-join cands ", "))
+                      ";;     try: no installed font fits one cell")
+                    lines))))))
+    ;; A symbol font with only Private Use Area icons (e.g. Nerd Font
+    ;; "Symbols" fonts) cannot help: the PUA is not part of the `symbol'
+    ;; script that `:symbol' is mapped to.
+    (when symbol
+      (let ((sym-chars (fontutil/role-chars :symbol)))
+        (when (and (zerop (car (fontutil/coverage symbol size cell sym-chars)))
+                   (fontutil/glyph-width symbol size #xE0A0))
+          (push (format ";;   NOTE: %s only has Private Use Area icons; as \
+`:symbol' it has no effect" symbol)
+                lines))))
+    (nreverse lines)))
 
 (defun fontutil/alignment-report ()
   "Return \"OK\" or a description of characters that are not cell aligned.
@@ -535,24 +783,34 @@ Each character should be as wide as `char-width' says, in cells."
   "Measure sizes for a new font set and show a family entry to paste.
 ID is the family id (a string, e.g. \"mymono\").  LATIN and HANGUL are
 installed family names.  PUNCT and SYMBOL are family names or nil/\"\":
-  PUNCT  font for curly quotes, ellipsis, box drawing and similar.  nil
-         means the Latin font draws them, so no `:punct' is emitted.
-  SYMBOL font for arrows and other symbols.  nil means no symbol
-         mapping (the entry gets nil sizes and no `:symbol').
+  PUNCT  font for `fontutil/latin-ranges' (curly quotes, ellipsis, box
+         drawing...).  nil means the Latin font draws them, so no
+         `:punct' is emitted.
+  SYMBOL font for arrows, math and other `symbol' script characters.
+         nil means no symbol mapping (nil sizes and no `:symbol').
 SIZES is a list of Latin PIXEL sizes (the unit of `:size' in
 `fontutil/families', not points).
 
-For each size the Latin font is applied, its cell width is read, and
-these are searched for:
+Not sure whether PUNCT or SYMBOL is needed?  Leave them empty first.
+The coverage report at the top of the result (`fontutil/coverage-report')
+says, for each group of `fontutil/coverage-groups', whether the Latin
+font draws it one cell wide, and if not, which role (`:punct' or
+`:symbol') would cover it and which installed fonts could, at what size.
+Then run this again with the fonts you picked to see what they cover.
+
+For each size the Latin cell width is measured and these are fitted:
   Hangul  size at which 한 is exactly two cells wide.
-  symbol  size at which → is exactly one cell wide.
-A size where nothing fits gets `auto', which retries when the preset is
-applied; if that also fails, that font has unusual metrics or lacks the
-glyph, so use another font or Latin size.  The PUNCT size is not put in
-the table because `fontutil/apply' measures it each time (via ─).  A
-PUNCT font that cannot be fitted at some size is reported in a comment.
-The result goes to the *fontutil-family* buffer; the previously selected
-preset is restored afterwards."
+  symbol  size at which the most `:symbol' group glyphs are one cell
+          wide.
+A Hangul size where nothing fits gets `auto' (`fontutil/apply' then
+falls back to 2x the cell).  A symbol size where nothing fits gets nil,
+so that preset has no symbol mapping.  The PUNCT size is not put in the
+table because `fontutil/apply' measures it each time (via ─); a size
+where it cannot be fitted is reported in a comment.
+
+Fonts are measured directly (`fontutil/glyph-widths'), so the frame's
+fonts are not changed.  The result goes to the *fontutil-family*
+buffer."
   (interactive
    (let ((fams (delete-dups (font-family-list))))
      (list (read-string "Family id (e.g. mymono): ")
@@ -572,47 +830,59 @@ preset is restored afterwards."
   (dolist (f (delq nil (list latin hangul punct symbol)))
     (unless (find-font (font-spec :family f))
       (user-error "Font family %S not found" f)))
-  (let ((orig fontutil/current)
-        (rows nil))
-    (unwind-protect
-        (dolist (size sizes)
-          (let ((lplist (list :family latin :size size)))
-            (set-face-attribute 'default nil :font (apply #'font-spec lplist))
-            ;; (clear-font-cache)  ; can free fonts still used by faces → crash
-            ;; The fits measure fonts directly and leave the default face
-            ;; on LATIN, so the cell width read below is the Latin one.
-            (push (list size
-                        (default-font-width)
-                        (fontutil/fit-hangul-size hangul)
-                        (and symbol (fontutil/fit-symbol-size symbol lplist))
-                        (and punct (fontutil/fit-punct-size punct lplist)))
-                  rows)))
-      ;; The loop above set the default face to each Latin size; put the
-      ;; selected preset back.
-      (when orig (fontutil/set-font orig)))
+  ;; `string-to-number' turns a typo such as "1x" into 0, so check here.
+  (unless (and sizes (seq-every-p (lambda (s) (and (integerp s) (> s 0)))
+                                  sizes))
+    (user-error "Sizes must be positive integer pixel sizes, got %S" sizes))
+  (unless (fontutil/glyph-width hangul (car sizes) ?한)
+    (user-error "Hangul family %S has no 한; pick another" hangul))
+  (let* ((sym-chars (fontutil/role-chars :symbol))
+         ;; One row per size: (SIZE CELL HSIZE SSIZE PSIZE).  Every value
+         ;; is measured from the fonts themselves for that Latin cell.
+         (rows
+          (mapcar
+           (lambda (size)
+             (let ((cell (or (fontutil/cell-width latin size)
+                             (user-error "%S has no space glyph" latin))))
+               (list size cell
+                     (fontutil/fit-hangul-size hangul cell)
+                     (and symbol
+                          (car (fontutil/best-cell-size symbol cell
+                                                        sym-chars)))
+                     (and punct (fontutil/fit-punct-size punct nil cell)))))
+           sizes))
+         ;; The cell width comes from the space; if letters differ from it
+         ;; the font is proportional and nothing will line up.
+         (cell0 (nth 1 (car rows)))
+         (proportional
+          (seq-some (lambda (w) (not (eql w cell0)))
+                    (fontutil/glyph-widths latin (car sizes)
+                                           (string-to-list "aiMW0")))))
     (with-current-buffer (get-buffer-create "*fontutil-family*")
       (erase-buffer)
+      (when proportional
+        (insert (format ";; WARNING: %s is not monospaced (a i M W 0 are \
+not all %dpx); pick another Latin font\n" latin cell0)))
+      (dolist (line (fontutil/coverage-report latin (car sizes) punct symbol))
+        (insert line "\n"))
+      (insert "\n")
       (insert (format "(%s :latin (%S) :hangul (%S)\n" id latin hangul))
       (when punct (insert (format " :punct (%S)\n" punct)))
       (when symbol (insert (format " :symbol (%S)\n" symbol)))
       (insert " :sizes (\n")
-      (dolist (r (nreverse rows))
+      (dolist (r rows)
         (pcase-let ((`(,size ,cell ,hsize ,ssize ,psize) r))
           (insert (format "   (%d %s %s)   ; cell %dpx%s%s%s\n"
-                          size (or hsize 'auto)
-                          (cond ((null symbol) 'nil) (ssize) (t 'auto))
-                          cell
+                          size (or hsize 'auto) ssize cell
                           (if hsize "" ", hangul: no fit, using auto")
                           (if (or (null symbol) ssize) ""
-                            ", symbol: no fit, using auto")
+                            ", symbol: no glyph fits, no mapping")
                           (if (or (null punct) psize) ""
-                            ", punct: no fit, pick another font")))))
+                            ", punct: ─ fits no size, pick another font")))))
       (insert "   ))\n")
       (emacs-lisp-mode)
       (goto-char (point-min))
-      (pop-to-buffer (current-buffer)))
-    (unless orig
-      (message "fontutil: no preset was selected, so the default font was not restored"))))
+      (pop-to-buffer (current-buffer)))))
 
 ;;;###autoload
 (defun fontutil/suggest-hangul-size ()
