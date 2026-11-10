@@ -110,8 +110,13 @@ calls bounce between the two most recent ons."
 (use-package ghostel
   :ensure t
   :hook (ghostel-mode . ghostel-ime-mode)
+  :init
+  ;; Must run at startup, not in :config: ghostel is deferred until a
+  ;; ghostel command is first called.  `ghostel' is autoloaded.  The
+  ;; guard keeps re-evaluating this file from signalling an error.
+  (when (eq (keymap-lookup global-map "C-x m") 'compose-mail)
+    (my/move-key :from "C-x m" :to "C-x M" :with #'ghostel))
   :config
-  (my/move-key :from "C-x m" :to "C-x M" :with #'ghostel)
   (when (not (eq system-type 'darwin))
     ;; On macOS, ghostel seems to make the shell a login shell by default.
     (setq ghostel-shell '("/bin/bash" "--login")))
@@ -158,15 +163,19 @@ calls bounce between the two most recent ons."
 (use-package consult-ghostel
   :if (locate-library "consult-ghostel")  ; skip entirely if not installed
   :ensure nil                             ; only needed if always-ensure is on
-  :after ghostel
-  :demand t                               ; enable mode as soon as deps load
+  ;; No :after ghostel here; that would defer the global :bind below
+  ;; until ghostel is loaded.  The commands are autoloaded, and loading
+  ;; consult-ghostel pulls in consult and ghostel itself.
+  :init
+  (with-eval-after-load 'ghostel
+    ;; Hook ghostel buffers into consult-buffer etc. once ghostel is
+    ;; in use.  This loads consult-ghostel (and consult).
+    (consult-ghostel-mode 1)
+    (keymap-set ghostel-semi-char-mode-map "C-c h" #'consult-ghostel-history))
   :config
-  (consult-ghostel-mode)
   (transient-replace-suffix 'my/ghostel-menu "\""
     '("\"" "List all buffers" consult-ghostel))
   :bind
   (("C-x m" . consult-ghostel)
    :map project-prefix-map
-   ("m" . consult-ghostel-project)
-   :map ghostel-semi-char-mode-map
-   ("C-c h" . consult-ghostel-history)))
+   ("m" . consult-ghostel-project)))
