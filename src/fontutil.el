@@ -399,22 +399,51 @@ small on purpose."
   (dolist (range fontutil/latin-ranges)
     (set-char-table-range char-width-table range 1)))
 
+;; Why the fitting functions below measure fonts directly
+;; ------------------------------------------------------
+;; They used to measure by changing the live frame: install a trial size
+;; (`set-fontset-font', or `set-face-attribute' on the default face),
+;; then ask the display engine with `string-pixel-width', repeated for
+;; every candidate size.  Doing that while init.el/postinit.el runs
+;; crashed Emacs 30 (NS) about two times in three with a NULL pointer in
+;; `face_for_font': redisplay had not yet caught up with the font change
+;; when the next measurement ran.  `clear-font-cache' between trials
+;; made it worse.
+;;
+;; `fontutil/glyph-width' instead opens the font object and reads the
+;; glyph metrics, so measuring never touches faces, fontsets or
+;; redisplay.  It returns the same numbers `string-pixel-width' gives
+;; once the font is installed (checked against it for Hangul, ─ and →).
+;; One difference: when the font lacks the character it returns nil,
+;; while `string-pixel-width' silently measured Emacs's fallback font
+;; (the old code could "fit" a size by accident that way).
+
+(defun fontutil/glyph-width (family size char)
+  "Return the advance width in pixels of CHAR in FAMILY at pixel SIZE.
+Returns nil if FAMILY is not installed or lacks CHAR.  Nothing is
+changed on any frame; see the comment above."
+  (let* ((entity (find-font (font-spec :family family :size size)))
+         (font (and entity (open-font entity size)))
+         ;; `font-get-glyphs' returns one element per character: nil if
+         ;; the font has no glyph for it, else a vector
+         ;; [FROM TO C CODE WIDTH LBEARING RBEARING ASCENT DESCENT ...].
+         (glyph (and font (aref (font-get-glyphs font 0 1 (string char)) 0))))
+    (and glyph (aref glyph 4))))        ; WIDTH = advance in pixels
+
 (defun fontutil/fit-size (scripts family char)
   "Return the smallest pixel size at which CHAR is two cells wide.
-SCRIPTS are mapped to FAMILY at each trial size and CHAR is measured
-against the current default font's cell width.  Returns nil if no size
-fits, e.g. when FAMILY lacks CHAR, so Emacs measures some fallback font
-whose width never changes.  Leaves the last tried size installed in the
-fontset, so callers should set the real one afterwards."
+FAMILY's CHAR is measured against the current default font's cell
+width.  Returns nil if no size fits, e.g. when FAMILY lacks CHAR.
+The fontset is not changed; callers install the size they choose.
+SCRIPTS is no longer needed (trial sizes are not installed any more)
+and is kept so the callers stay the same."
+  (ignore scripts)
   (let* ((target (* 2 (default-font-width)))
          (lo (max 6 (- target 6)))
          (hi (+ target 8)))
-    (catch 'fit
-      (dolist (size (number-sequence lo hi))
-        (fontutil/map-scripts scripts family size)
-        (clear-font-cache)
-        (when (= (string-pixel-width (string char)) target)
-          (throw 'fit size))))))
+    (seq-find (lambda (size)
+                (eql (fontutil/glyph-width family size char) target))
+              (number-sequence lo hi))))
 
 (defun fontutil/fit-hangul-size (family)
   "Return the pixel size at which FAMILY's 한 is two cells wide, or nil."
@@ -426,23 +455,17 @@ fontset, so callers should set the real one afterwards."
 
 (defun fontutil/fit-cell-size (family latin char)
   "Return the pixel size at which FAMILY draws CHAR exactly one cell wide.
-LATIN is the Latin font plist (:family :size ...).  The cell width is read
-from the current default font, which must already be LATIN.  FAMILY is
-tried as the default face at each size, then the default face is
-restored to LATIN.  Returns nil if no size fits (for instance when FAMILY
-lacks CHAR so Emacs measures a fallback font)."
-  (let ((cell (default-font-width))
-        ;; Avoid resizing the frame while the default font changes.
-        (frame-inhibit-implied-resize t))
-    (unwind-protect
-        (catch 'fit
-          (dolist (size (number-sequence (max 6 (- cell 2)) (+ (* 2 cell) 4)))
-            (set-face-attribute 'default nil
-                                :font (font-spec :family family :size size))
-            (clear-font-cache)
-            (when (= (string-pixel-width (string char)) cell)
-              (throw 'fit size))))
-      (set-face-attribute 'default nil :font (apply #'font-spec latin)))))
+The cell width is read from the current default font, which must
+already be the Latin font.  Returns nil if no size fits (for instance
+when FAMILY lacks CHAR).  The default face is not changed.
+LATIN (the Latin font plist) was used to restore the default face after
+trying FAMILY in it; that is no longer done, and LATIN is kept so the
+callers stay the same."
+  (ignore latin)
+  (let ((cell (default-font-width)))
+    (seq-find (lambda (size)
+                (eql (fontutil/glyph-width family size char) cell))
+              (number-sequence (max 6 (- cell 2)) (+ (* 2 cell) 4)))))
 
 (defun fontutil/fit-punct-size (family latin)
   "Return the size at which FAMILY's ─ is one cell wide, or nil."
@@ -539,16 +562,17 @@ preset is restored afterwards."
         (dolist (size sizes)
           (let ((lplist (list :family latin :size size)))
             (set-face-attribute 'default nil :font (apply #'font-spec lplist))
-            (clear-font-cache)
-            ;; Each fit leaves the default face on LATIN, so the cell width
-            ;; read below is always the Latin one.
+            ;; (clear-font-cache)  ; can free fonts still used by faces → crash
+            ;; The fits measure fonts directly and leave the default face
+            ;; on LATIN, so the cell width read below is the Latin one.
             (push (list size
                         (default-font-width)
                         (fontutil/fit-hangul-size hangul)
                         (and symbol (fontutil/fit-symbol-size symbol lplist))
                         (and punct (fontutil/fit-punct-size punct lplist)))
                   rows)))
-      ;; The searches leave trial sizes installed; put the real font back.
+      ;; The loop above set the default face to each Latin size; put the
+      ;; selected preset back.
       (when orig (fontutil/set-font orig)))
     (with-current-buffer (get-buffer-create "*fontutil-family*")
       (erase-buffer)
@@ -581,8 +605,8 @@ preset is restored afterwards."
   (let* ((p (or (fontutil/preset fontutil/current)
                 (user-error "Select a font with `fontutil/set-font' first")))
          (family (plist-get (plist-get p :hangul) :family))
+         ;; Measuring does not change the fontset, so nothing to restore.
          (size (fontutil/fit-hangul-size family)))
-    (fontutil/apply p)                  ; restore the real mapping
     (message "%s: Latin %d -> (hangul :family %S :size %s)"
              (plist-get p :name) (plist-get (plist-get p :latin) :size)
              family (or size "none found in 8..40"))))
@@ -598,7 +622,7 @@ preset is restored afterwards."
          (symbol (plist-get preset :symbol))
          (spacing (plist-get preset :spacing))
          (hsize (plist-get hangul :size)))
-    (clear-font-cache)
+    ;; (clear-font-cache)  ; can free fonts still used by faces → crash
     (set-face-attribute 'default nil :font (apply #'font-spec latin))
     (when symbol
       (when (and fontutil/prefer-symbol-font
@@ -639,9 +663,9 @@ preset is restored afterwards."
         (when family
           (message "fontutil: no aligned Hanja size for %s with %s"
                    (plist-get preset :name) family)
-          ;; Replace the leftover trial size from the search with a sane
-          ;; guess (2x cell).  Do NOT pass nil to `set-fontset-font': that
-          ;; means "no font" and would blank these characters.
+          ;; Map Hanja to a sane guess (2x cell) so the previous preset's
+          ;; size does not linger.  Do NOT pass nil to `set-fontset-font':
+          ;; that means "no font" and would blank these characters.
           (fontutil/set-hanja-font family (* 2 (default-font-width))))))
     ;; Option 1: punctuation / box drawing come from the :punct font if the
     ;; family has one (sized so a glyph is one cell wide), else the Latin
