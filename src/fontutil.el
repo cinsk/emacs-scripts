@@ -235,17 +235,20 @@ A later preset without `:math' then resets those ranges (see
 ;;; ------------------------------------------------------------------
 
 (defvar fontutil/families
-  '((scodepro :latin ("SauceCodePro Nerd Font Mono" "SourceCodePro" "Source_Code_Pro" "Source Code Pro")
+  '((saucepro :latin ("SauceCodePro Nerd Font Mono")
 	      :hangul ("NanumGothicCoding")
-	      :punct ("JuliaMono")
-	      :symbol ("JuliaMono")
-	      :sizes ((12 13 11) (13 15 13) (15 17 15) (17 19 16)
-		      (18 21 18) (20 23 20) (22 25 21) (23 27 23)
-		      (25 29 25) (27 31 26) (28 33 28) (30 35 30)
-		      (32 37 31)))
-    (ubuntu :latin ("UbuntuMono") :hangul ("NanumGothicCoding")
-            :symbol ("Symbola") :spacing 4
-            :sizes ((16 16 17) (18 18 20) (20 20 22) (22 22 22)))
+	      :punct ("JuliaMono") :symbol ("JuliaMono")
+	      ;; tested in archlinux, mac
+	      :sizes ((12 14 11) (13 16 13) (15 18 15) (17 20 16) (18 22 18)
+		      (20 24 20) (22 26 21) (23 28 23) (25 30 25) (27 32 26)
+		      (28 34 28) (30 36 30) (32 38 31)))
+    (ubuntu :latin ("Ubuntu Mono")
+	    :hangul ("NanumGothicCoding")
+	    :punct ("JuliaMono") :symbol ("JuliaMono")
+	    ;; tested in archlinux
+	    :sizes ((12 12 10) (14 14 11) (16 16 13) (18 18 15)
+		    (20 20 16) (22 22 18) (24 24 20) (26 26 21)
+		    (28 28 23) (30 30 25) (32 32 26)))
     (dejavu :latin ("DejaVuSansMono") :hangul ("NanumGothicCoding")
             :symbol ("Symbola") :spacing 4
             :sizes ((16 16 17) (18 18 20) (20 20 22)))
@@ -256,54 +259,123 @@ A later preset without `:math' then resets those ranges (see
                  :symbol ("Symbola")
                  :sizes ((14 14 15 2) (15 16 17 2) (16 16 17 3) (20 20 22 3)))
     (consolas :latin ("Consolas") :hangul ("NanumGothicCoding")
-              :symbol ("Symbola")
-              :sizes ((14 16 16 2) (15 16 16 2) (16 18 17 3) (20 22 25 3)))
+	      :symbol ("JuliaMono")
+	      ;; tested in mac
+	      :sizes ((13 13 11) (15 15 13) (16 17 15) (18 19 16) (20 21 18)
+		      (22 23 20) (24 25 21) (25 27 23) (27 29 25) (29 31 26)
+		      (31 33 28) (32 35 30)))
     (monaco :latin ("Monaco") :hangul ("NanumGothicCoding")
-            :symbol ("Symbola")
-            :sizes ((14 16 17) (15 18 20) (16 22 22)))
+	    :symbol ("JuliaMono")
+	    ;; tested in mac
+	    :sizes ((12 13 11) (13 15 13) (15 17 15) (17 19 16) (18 21 18)
+		    (20 23 20) (22 25 21) (23 27 23) (25 29 25) (27 31 26)
+		    (28 33 28) (30 35 30) (32 37 31)))
     (menlo :latin ("Menlo") :hangul ("NanumGothicCoding")
-           :symbol ("Symbola")
-           :sizes ((14 16 20) (16 20 20) (18 22 20)))
+	   :symbol ("JuliaMono")
+	   ;; tested in mac
+	   :sizes ((12 13 11) (13 15 13) (15 17 15) (17 19 16) (18 21 18)
+		   (20 23 20) (22 25 21) (23 27 23) (25 29 25) (27 31 26)
+		   (28 33 28) (30 35 30) (32 37 31)))
     (pt :latin ("PT Mono") :hangul ("NanumGothicCoding")
-        :symbol ("Symbola")
-        :sizes ((14 16 20 4) (16 20 20) (18 22 20 3)))
-    (hack :latin ("Hack") :hangul ("NanumGothicCoding")
-          :symbol ("Symbola")
-          :sizes ((14 16 20) (16 20 20) (18 22 20)))
+	:symbol ("JuliaMono")
+	;; tested in mac
+	:sizes ((12 13 11) (13 15 13) (15 17 15) (17 19 16) (18 21 18)
+		(20 23 20) (22 25 21) (23 27 23) (25 29 25) (27 31 26)
+		(28 33 28) (30 35 30) (32 37 31)))
     ;; Second names are the WSL-style spellings.  The symbol font is
     ;; optional: presets still work when it is missing.
-    (noto :latin ("Noto Sans Mono" "NotoSansMono") :weight normal
-          :hangul ("Noto Sans Mono CJK KR" "NotoSansMonoCJKkr")
-          :symbol ("Noto Sans Symbols")
-          :sizes ((14 17 16) (16 22 16) (18 24 18) (20 26 18)))
+    ;; (noto :latin ("Noto Sans Mono") ; :weight normal
+    ;; 	  :hangul ("Noto Sans Mono CJK KR")
+    ;; 	  :punct ("Noto Sans Math") :symbol ("Noto Sans Math")
+    ;; 	  :sizes ((12 13 7) (14 15 8)  (16 17 9)  (18 20 11)
+    ;; 		  (20 22 12) (22 24 13) (24 26 14) (26 28 16)
+    ;; 		  (28 30 17) (30 33 18) (32 35 19)))
+    (noto :latin ("Noto Sans Mono")
+	  :hangul ("NanumGothicCoding")
+	  :punct ("Noto Sans Math") :symbol ("Noto Sans Math")
+	  ; tested in archlinux, mac
+	  :sizes ((12 14 7) (14 16 8) (16 20 9) (18 22 11)
+		  (20 24 12) (22 26 13) (24 28 14) (26 32 16)
+		  (28 34 17) (30 36 18) (32 38 19)))
     (cascadia :latin ("CascadiaCode") :hangul ("NanumGothicCoding")
               :symbol ("Symbola")
               :sizes ((14 16 20) (16 18 20) (18 22 20) (20 24 20)))
     (firacode :latin ("Fira Code") :hangul ("NanumGothicCoding")
               :symbol ("Symbola")
               :sizes ((14 16 20) (15 18 20) (16 20 15) (18 22 24)))
-    (adwaita :latin ("Adwaita Mono") :hangul ("NanumGothicCoding")
-             :symbol ("Symbola")
-             :sizes ((14 16 20) (16 20 20) (18 22 20) (20 24 20)))
+    (adwaita :latin ("Adwaita Mono")
+	     :hangul ("NanumGothicCoding")
+	     :punct ("JuliaMono") :symbol ("JuliaMono")
+	     ;; tested in archlinux
+	     :sizes ((12 14 11) (13 16 13) (15 18 15) (17 20 16)
+		     (18 22 18) (20 24 20) (22 26 21) (23 28 23)
+		     (25 30 25) (27 32 26) (28 34 28) (30 36 30)
+		     (32 38 31)))
+    (monaArgon :latin ("MonaspiceAr Nerd Font Mono" "Monaspace Argon NF")
+	       :hangul ("NanumGothicCoding")
+	       :symbol ("JuliaMono")
+	       ;; tested in archlinux, mac
+	       :sizes ((12 14 11) (13 16 13) (15 18 15) (16 20 16)
+		       (18 22 18) (19 24 20) (21 26 21) (23 28 23)
+		       (24 30 25) (26 32 26) (27 34 28) (29 36 30)
+		       (31 38 31) (32 40 33)))
+    (monaKrypt :latin ("MonaspiceKr Nerd Font Mono" "Monaspace Krypton NF")
+	       :hangul ("NanumGothicCoding")
+	       :symbol ("JuliaMono")
+	       ;; tested in archlinux, mac
+	       :sizes ((12 14 11) (13 16 13) (15 18 15) (16 20 16)
+		       (18 22 18) (19 24 20) (21 26 21) (23 28 23)
+		       (24 30 25) (26 32 26) (27 34 28) (29 36 30)
+		       (31 38 31) (32 40 33)))
+    (monaNeon :latin ("MonaspiceNe Nerd Font Mono" "Monaspace Neon NF")
+	      :hangul ("NanumGothicCoding")
+	      :symbol ("JuliaMono")
+	      ;; tested in archlinux, mac
+	      :sizes ((12 14 11) (13 16 13) (15 18 15) (16 20 16)
+		      (18 22 18) (19 24 20) (21 26 21) (23 28 23)
+		      (24 30 25) (26 32 26) (27 34 28) (29 36 30)
+		      (31 38 31) (32 40 33)))
+    (monaRadon :latin ("MonaspiceRn Nerd Font Mono" "Monaspace Radon NF")
+	       :hangul ("NanumGothicCoding")
+	       :symbol ("JuliaMono")
+	       ;; tested in archlinux, mac
+	       :sizes ((12 14 11) (13 16 13) (15 18 15) (16 20 16)
+		       (18 22 18) (19 24 20) (21 26 21) (23 28 23)
+		       (24 30 25) (26 32 26) (27 34 28) (29 36 30)
+		       (31 38 31) (32 40 33)))
+    (monaXenon :latin ("MonaspiceXe Nerd Font Mono" "Monaspace Xenon NF")
+	       :hangul ("NanumGothicCoding")
+	       :symbol ("JuliaMono")
+	       ;; tested in archlinux, mac
+	       :sizes ((12 14 11) (13 16 13) (15 18 15) (16 20 16)
+		       (18 22 18) (19 24 20) (21 26 21) (23 28 23)
+		       (24 30 25) (26 32 26) (27 34 28) (29 36 30)
+		       (31 38 31) (32 40 33)))
     ;; Comic Mono lacks the punctuation/box-drawing glyphs, so they come
     ;; from a separate monospaced font (:punct); the first installed wins.
-    (ComicMono :latin ("Comic Mono") :hangul ("NanumGothicCoding")
-               :punct ("DejaVu Sans Mono" "Noto Sans Mono" "Hack"
-                       "Source Code Pro")
-               :sizes ((14 16 nil) (16 18 nil) (18 20 nil) (20 22 nil)))
-    (comic :latin ("Comic Mono") :hangul ("NanumGothicCoding")
-	   :punct ("SauceCodePro Nerd Font Mono")
-	   :symbol ("Symbols Nerd Font Mono")
-	   :sizes ((14 16 auto) (16 18 auto) (18 20 auto) (20 22 auto)
-		   (22 24 auto) (24 26 auto) (26 28 auto) (28 30 auto)
-		   (30 32 auto)))
+    ;; (ComicMono :latin ("Comic Mono") :hangul ("NanumGothicCoding")
+    ;;            :punct ("DejaVu Sans Mono" "Noto Sans Mono" "Hack"
+    ;;                    "Source Code Pro")
+    ;;            :sizes ((14 16 nil) (16 18 nil) (18 20 nil) (20 22 nil)))
+    (comic :latin ("Comic Mono")
+	   :hangul ("NanumGothicCoding")
+	   :punct ("JuliaMono") :symbol ("JuliaMono")
+	   ;; tested in archlinux, mac
+	   :sizes ((13 14 11) (15 16 13) (17 18 15) (18 20 16)
+		   (20 22 18) (22 24 20) (24 26 21) (26 28 23)
+		   (28 30 25) (29 32 26) (31 34 28)))
     ;; ProFont's advance is narrower than 0.6em, so the Hangul size is
     ;; measured at apply time (`auto') instead of being hard-coded.
     ;; Once `fontutil/suggest-hangul-size' gives you the numbers you can
     ;; replace `auto' with them.
     (profont :latin ("ProFont IIx Nerd Font Mono")
-             :hangul ("NanumGothicCoding") :symbol ("Symbola")
-             :sizes ((14 auto 20) (16 auto 20) (18 auto 20) (20 auto 20))))
+	     :hangul ("NanumGothicCoding")
+	     :punct ("JuliaMono") :symbol ("JuliaMono")
+	     ; tested in archlinux, mac
+	     :sizes ((12 16 13) (13 18 15) (15 20 16) (16 22 18)
+		     (18 24 20) (19 26 21) (21 28 23) (22 30 25)
+		     (24 32 26) (25 34 28) (27 36 30) (28 38 31)
+		     (30 40 33) (31 42 35))))
   "Font families and their size presets.
 
 Each element is (ID . PLIST) with these keys:
