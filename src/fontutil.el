@@ -640,12 +640,25 @@ for every ROLE."
                          (eq (aref char-script-table ch) 'symbol))))
               (fontutil/group-chars ranges)))
 
-(defun fontutil/role-chars (role)
-  "Return all characters of the `fontutil/coverage-groups' with ROLE."
+(defun fontutil/role-chars (role &optional groups)
+  "Return all characters of the GROUPS with ROLE.
+GROUPS defaults to `fontutil/coverage-groups'."
   (mapcan (lambda (g)
             (and (eq (nth 1 g) role)
                  (fontutil/role-group-chars role (nth 2 g))))
-          fontutil/coverage-groups))
+          (or groups fontutil/coverage-groups)))
+
+(defvar fontutil/describe-groups
+  '(("ASCII"        :latin ((#x21 . #x7E)))
+    ("Latin-1"      :latin ((#xA1 . #xFF)))
+    ("Latin Ext-A"  :latin ((#x100 . #x17F)))
+    ("Hangul"       :hangul ((#xAC00 . #xD7A3)))
+    ("Hangul jamo"  :hangul ((#x3131 . #x318E)))
+    ("Hanja"        :hanja ((#x4E00 . #x9FFF))))
+  "Extra groups shown by `fontutil/describe-coverage'.
+Same format as `fontutil/coverage-groups', which is shown after these.
+`:latin' groups want one cell per character, `:hangul' and `:hanja'
+two (as `char-width' says).")
 
 (defun fontutil/coverage (family size cell chars)
   "Score FAMILY at pixel SIZE on CHARS against a CELL-pixel cell.
@@ -727,7 +740,7 @@ which is cheap; sizes are checked by the caller for the few winners."
   (pcase-let ((`(,have ,aligned ,total) score))
     (if (= have aligned)
         (format "%d/%d" have total)
-      (format "%d/%d (%d not one cell)" have total (- have aligned)))))
+      (format "%d/%d (%d wrong width)" have total (- have aligned)))))
 
 (defun fontutil/format-size (size latin-size)
   "Format a fitted pixel SIZE, flagging one well below LATIN-SIZE.
@@ -784,7 +797,7 @@ group, flagged when it is worse than the Latin font it replaces, and
          (punct-try nil)
          ;; Built with `push' and reversed at the end, so the first line
          ;; goes last here.
-         (lines (list ";;   (HAVE/TOTAL glyphs; `not one cell' = wrong width)"
+         (lines (list ";;   (HAVE/TOTAL glyphs; `wrong width' = not the cells `char-width' wants)"
                       (format ";; Coverage at %dpx (cell %dpx), Latin = %s"
                               size cell latin))))
     (dolist (g fontutil/coverage-groups)
@@ -849,6 +862,156 @@ group, flagged when it is worse than the Latin font it replaces, and
 `:symbol' it has no effect" symbol)
                 lines))))
     (nreverse lines)))
+
+;;; ------------------------------------------------------------------
+;;; Describing a font: facts and coverage of every group
+;;; ------------------------------------------------------------------
+
+(defun fontutil/font-facts (family size)
+  "Return a plist of facts about FAMILY at pixel SIZE, or nil if missing.
+  :mono     non-nil if the font says it is monospaced
+  :em       advance of a space in em (Source Code Pro is 0.60); a
+            monospaced Latin font's cell is about SIZE x :em pixels
+  :height   ascent + descent in pixels at SIZE (the line height it
+            needs; a taller helper font makes lines with its glyphs
+            taller than the rest)
+  :weights  available weights, e.g. (light regular bold)
+  :italic   non-nil if there is an italic or oblique style
+  :widths   available widths other than normal, e.g. (expanded)
+  :icons    number of Private Use Area glyphs (Nerd Font icons)
+Only the font object is queried; no frame is changed."
+  (let* ((entity (find-font (font-spec :family family :size size)))
+         (font (and entity (open-font entity size)))
+         ;; [NAME FILENAME PIXEL-SIZE MAX-WIDTH ASCENT DESCENT SPACE-WIDTH
+         ;;  AVERAGE-WIDTH CAPABILITY]; FILENAME is nil on macOS.
+         (info (and font (query-font font)))
+         (styles (list-fonts (font-spec :family family)))
+         ;; Measure the em ratio at 100px so rounding does not hide it.
+         (space100 (fontutil/glyph-width family 100 ?\s)))
+    (when info
+      (list :mono (and (find-font (font-spec :family family :spacing 100)) t)
+            :em (and space100 (/ space100 100.0))
+            :height (+ (aref info 4) (aref info 5))
+            :weights (delete-dups (mapcar (lambda (e) (font-get e :weight))
+                                          styles))
+            :italic (seq-some (lambda (e)
+                                (memq (font-get e :slant) '(italic oblique)))
+                              styles)
+            :widths (delq 'normal
+                          (delete-dups (mapcar (lambda (e) (font-get e :width))
+                                               styles)))
+            :icons (seq-count (lambda (ch) (font-has-char-p entity ch))
+                              (number-sequence #xE000 #xF8FF))))))
+
+(defun fontutil/font-facts-line (family size &optional ref-height)
+  "Return a one-line summary of FAMILY at pixel SIZE for a report.
+REF-HEIGHT, if given, is the line height in pixels of the font it will
+sit next to (the Latin font); the ratio is shown when it differs."
+  (let ((f (fontutil/font-facts family size)))
+    (if (null f)
+        (format "%s: not installed" family)
+      (format "%s @%dpx: %s, %.2f em, line %dpx%s, %s%s%s%s"
+              family size
+              (if (plist-get f :mono) "monospaced" "PROPORTIONAL")
+              (or (plist-get f :em) 0)
+              (plist-get f :height)
+              (if (and ref-height (/= ref-height (plist-get f :height)))
+                  (format " (%.2fx)" (/ (float (plist-get f :height))
+                                        ref-height))
+                "")
+              (mapconcat #'symbol-name (plist-get f :weights) "/")
+              (if (plist-get f :italic) " + italic" "")
+              (if (plist-get f :widths)
+                  (format ", widths %s"
+                          (mapconcat #'symbol-name (plist-get f :widths) "/"))
+                "")
+              (if (> (plist-get f :icons) 0)
+                  (format ", %d icons (PUA)" (plist-get f :icons))
+                "")))))
+
+;;;###autoload
+(defun fontutil/describe-coverage (family &optional cell)
+  "Show what FAMILY covers and how well it fits a CELL-pixel cell.
+CELL defaults to the current default font's cell width; with a prefix
+argument it is asked for.  Use this to judge a font before putting it
+in `fontutil/families' (as `:latin', `:hangul', `:punct', `:symbol' or
+`:math').  The *fontutil-coverage* buffer shows:
+
+  Facts      see `fontutil/font-facts'; the line height is compared
+             with the current default font.
+  Groups     each group of `fontutil/describe-groups' and
+             `fontutil/coverage-groups', scored at the size where the
+             most of its characters have the width `char-width' wants
+             (1 cell, 2 for Hangul/Hanja): HAVE/TOTAL glyphs, and how
+             many of those have the wrong width.  `none fits' means no
+             size aligns any glyph; the HAVE count is then at the size
+             whose space is one cell.
+  By role    the same, but over all groups of a role at ONE size, since
+             a preset uses one size per role: this is what you get.
+
+In a CJK language environment, Emacs counts ambiguous-width characters
+\(some Latin-1, arrows, math) as 2 cells, so a font drawing them one
+cell wide shows them as wrong width; that is Emacs's width table, not
+the font."
+  (interactive
+   (list (completing-read "Font family: " (delete-dups (font-family-list))
+                          nil t)
+         (and current-prefix-arg
+              (read-number "Cell width in pixels: " (default-font-width)))))
+  (unless (display-graphic-p)
+    (user-error "Run this in a graphic frame"))
+  (let* ((cell (or cell (default-font-width)))
+         (groups (append fontutil/describe-groups fontutil/coverage-groups))
+         ;; Size used for the facts and for HAVE when nothing aligns: the
+         ;; one whose space is one cell, else a 0.6 em guess.
+         (ref-size (or (seq-find (lambda (s)
+                                   (eql (fontutil/cell-width family s) cell))
+                                 (fontutil/cell-sizes cell))
+                       (round (/ cell 0.6))))
+         (default-font (face-attribute 'default :font))
+         (default-info (and (fontp default-font 'font-object)
+                            (query-font default-font)))
+         (default-height (and default-info
+                              (+ (aref default-info 4) (aref default-info 5)))))
+    (let ((row (lambda (name role chars)
+                (let ((best (fontutil/best-cell-size family cell chars)))
+                  (format "  %-13s %-8s %-14s %s\n" name role
+                          (if best
+                              (concat "@" (fontutil/format-size (car best)
+                                                                ref-size))
+                            "")
+                          (if best
+                              (fontutil/format-score (cdr best))
+                            (let ((have (car (fontutil/coverage
+                                              family ref-size cell chars))))
+                              (if (zerop have)
+                                  (format "0/%d" (length chars))
+                                (format "%d/%d, none fits" have
+                                        (length chars))))))))))
+      (with-current-buffer (get-buffer-create "*fontutil-coverage*")
+        (let ((inhibit-read-only t))
+          (erase-buffer)
+          (insert (format "%s, measured against a %dpx cell (default font: %s)\n\n"
+                          family cell
+                          (if default-info
+                              (format "%s %dpx" (font-get default-font :family)
+                                      (aref default-info 2))
+                            "?")))
+          (insert "Facts\n  "
+                  (fontutil/font-facts-line family ref-size default-height)
+                  "\n\n")
+          (insert "Groups (best size each; HAVE/TOTAL glyphs, and how many have the wrong width)\n")
+          (dolist (g groups)
+            (pcase-let ((`(,name ,role ,ranges) g))
+              (insert (funcall row name role
+                               (fontutil/role-group-chars role ranges)))))
+          (insert "\nBy role (one size for all groups of the role)\n")
+          (dolist (role '(:latin :hangul :hanja :punct :symbol :math))
+            (insert (funcall row (substring (symbol-name role) 1) role
+                             (fontutil/role-chars role groups)))))
+        (goto-char (point-min))
+        (special-mode)
+        (pop-to-buffer (current-buffer))))))
 
 (defun fontutil/alignment-report ()
   "Return \"OK\" or a description of characters that are not cell aligned.
@@ -987,6 +1150,22 @@ buffer."
       (when proportional
         (insert (format ";; WARNING: %s is not monospaced (a i M W 0 are \
 not all %dpx); pick another Latin font\n" latin cell0)))
+      ;; Facts on each chosen font, at the sizes of the first row.  The
+      ;; line height ratio is against the Latin font: a helper font that
+      ;; is taller makes the lines where its glyphs appear taller.
+      (pcase-let* ((`(,size ,_cell ,hsize ,ssize ,psize ,msize) (car rows))
+                   (ref-height (plist-get (fontutil/font-facts latin size)
+                                          :height)))
+        (insert ";; Fonts (sizes of the first row; see `fontutil/font-facts')\n")
+        (dolist (f (list (list "Latin" latin size)
+                         (list "Hangul" hangul (or hsize (* 2 (nth 1 (car rows)))))
+                         (list ":punct" punct (or psize size))
+                         (list ":symbol" symbol (or ssize size))
+                         (list ":math" math (or msize size))))
+          (when (nth 1 f)
+            (insert (format ";;   %-8s %s\n" (car f)
+                            (fontutil/font-facts-line (nth 1 f) (nth 2 f)
+                                                      ref-height))))))
       (dolist (line (fontutil/coverage-report latin (car sizes) punct symbol
                                               math))
         (insert line "\n"))
