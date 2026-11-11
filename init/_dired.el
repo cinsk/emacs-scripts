@@ -11,9 +11,14 @@
   ;; helm package does not play nicely with dired-x-find-file.
   (setq dired-x-hands-off-my-keys t)
   (require 'dired-x)
+  (require 'dired-xx)
 
   (keymap-set dired-mode-map "C-<return>" #'dired-find-file-other-frame)
   (keymap-set dired-mode-map "M-O" #'dired-do-desktop-open)
+
+  ;; "M-s f" in `dired-mode-map' conflicts with global "M-s f" which is
+  ;; bound to `consult-fd'.
+  (my/move-key :keymap dired-mode-map :from "M-s f" :to "M-s s")
   )
 
 
@@ -127,17 +132,18 @@ to a single directory listing."
 (add-hook 'dired-after-readin-hook #'my/dired-dot-dirs-first)
 
 (setq dired-omit-files
-      (concat ""
-              ;; lockfiles
-              "^\\.?#"
-              ;; Omit RCS files
-              "\\|^RCS$\\|,v\\'"
-              ;; Omit CVS and Bitkeeper files
-              "\\|^CVS$\\|^BitKeeper\\'"
-              ;; Omit dot files (except "." and "..")
-              "\\|^\\.[^.]+.*\\'"
-              ;; Omit .o, .lo, .Po, .Plo, .a, .la files
-              "\\|.+\\.\\(o\\|lo\\|Po\\|Plo\\|a\\|la\\)\\'"))
+      (string-join
+       '(
+         "\\`\\.?#"			; lockfiles
+	 "\\`[.][.]?\\'"		; omit "." and ".."
+	 ;; Note above two components are from the default value from Emacs.
+	 "\\`[.][^.]+.*\\'"		; anything starts with "."
+         "\\`RCS\\'" ",v\\'"		; RCS files
+         "\\`CVS\\'" "\\`BitKeeper\\'"	; CVS and Bitkeeper files
+	 "\\.DS_Store\\'" 		; macOS Desktop Services Store
+	 ":Zone\\.Identifier\\'"	; Windows ADS file
+         "\\.\\(o\\|lo\\|Po\\|Plo\\|a\\|la\\)\\'" ; object files
+	 ) "\\|"))
 
 (when nil
   ;; I want to delete all files that look like ".#gbd.tex.1.22", or
@@ -216,98 +222,6 @@ to a single directory listing."
 
 
 
-(defun my/dired--marked-paths ()
-  "Return absolute paths of all explicitly marked entries in this Dired buffer.
-Unlike `dired-get-marked-files', this does not fall back to the entry at point."
-  (save-excursion
-    (goto-char (point-min))
-    (let (acc)
-      (while (re-search-forward (dired-marker-regexp) nil t)
-        (let ((f (dired-get-filename nil t)))
-          (when f
-            (push (expand-file-name f) acc))))
-      (nreverse acc))))
-
-(defun my/dired--path-at-point ()
-  "Return the absolute path of the entry at point, or nil."
-  (let ((f (dired-get-filename nil t)))
-    (and f (expand-file-name f))))
-
-(defun my/dired--ediff-dirs (a b ask)
-  "Run `ediff-directories' on directories A and B.
-If ASK is non-nil, prompt for a filter regexp (empty means no filter).
-Subdirectories appear as entries in the session buffer; press RET on
-one to open a nested directory session."
-  (let ((filter (if ask
-                    (read-string "Filter regexp (RET for none): ")
-                  ""))
-        (a (file-name-as-directory a))
-        (b (file-name-as-directory b)))
-    (ediff-directories a b filter)))
-
-(defun my/dired--ediff-pair (a b ask)
-  "Run ediff on A and B, choosing files or directories by type.
-ASK is passed to `my/dired--ediff-dirs' for directory comparisons."
-  (let ((a-dir (file-directory-p a))
-        (b-dir (file-directory-p b)))
-    (cond
-     ((and a-dir b-dir)
-      (my/dired--ediff-dirs a b ask))
-     ((or a-dir b-dir)
-      (user-error "Cannot compare a file with a directory: %s vs %s" a b))
-     (t
-      (ediff-files a b)))))
-
-(defun my/dired-ediff (&optional prefix)
-  "Run ediff from a Dired buffer, using full paths for files and directories.
-
-Works with inserted subdirectories and `find-dired' listings.
-
-- If two entries are marked, ediff those two.
-- If one entry is marked and differs from the entry at point, ediff the
-  marked entry against the entry at point.
-- Otherwise, fall back to plain `ediff-files', or to directory
-  comparison if point is on a directory.
-
-Two files use `ediff-files'.  Two directories use `ediff-directories'.
-Mixing a file and a directory signals an error.
-
-With a prefix argument PREFIX, when comparing directories, prompt for
-a filter regexp (RET for no filter)."
-  (interactive "P")
-  ;; When the dired buffer contains subdirectories or from a virtual
-  ;; dired, ediff-files cannot get the pathname of default files,
-  ;; rather it assumed marked files are in the current directory.  To
-  ;; solve this, we need to get the absolute pathname of the marked
-  ;; files.
-  (let ((marks (my/dired--marked-paths))
-        (here (my/dired--path-at-point))
-        (ask (and prefix t)))
-    (cond
-     ;; Case 1: exactly two marked entries.
-     ((= (length marks) 2)
-      (my/dired--ediff-pair (nth 0 marks) (nth 1 marks) ask))
-     ;; Case 2: one marked entry, different from the entry at point.
-     ((and (= (length marks) 1)
-           here
-           (not (string= (car marks) here)))
-      (my/dired--ediff-pair (car marks) here ask))
-     ;; Case 3: point is on a directory.
-     ((and here (file-directory-p here))
-      (if ask
-          ;; Prompt for both directories ourselves so the filter and
-          ;; recursive answers can be applied.
-          (my/dired--ediff-dirs
-           (read-directory-name "Directory A: " (file-name-as-directory here)
-                                nil t)
-           (read-directory-name "Directory B: " nil nil t)
-           t)
-        (call-interactively #'ediff-directories)))
-     ;; Case 4: default file behavior.
-     (t
-      (call-interactively #'ediff-files)))))
-
-(keymap-set dired-mode-map "E" #'my/dired-ediff)
 
 
 ;; Search filenames (e.g. C-s or C-M-s) only when the point is in the
