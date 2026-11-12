@@ -320,9 +320,11 @@ j 2<RET>                     # select 2nd part
 
 * Features I added/modified
 *** remove all whitespaces
-    zap-to-nonspace, [[file:init/delete.el::delete-chars-forward-with-syntax][delete-chars-forward-with-syntax]] can delete
-    one or more whitespaces starting from the point(cursor).
-    Use =C-c C-d=.
+
+    - =M-z= deletes characters that belong to the same syntax class
+    - =M-S-z= zap-to-char
+    - =C-M-z= deletes all blank chars after points.
+
 
 *** launch VCS(version control system) like git, CVS, SVN, etc.
     =<f12>= bounds to [[file:src/vc-dirx.el][vc/dir]], which is smart enough to launch

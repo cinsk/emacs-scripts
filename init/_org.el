@@ -458,7 +458,7 @@ command this key would run without `my/org-wordjoin-mode'."
   ;; (my/move-key :keymap org-mode-map :from "C-<tab>" :to "C-x C-<tab>")
 
   ;; Move `org-deadline' from "C-c C-d" to "C-c C-S-d", since I use
-  ;; "C-c C-d" for `delete-chars-forward-with-syntax'.
+  ;; "C-c C-d" for `my/kill-same-syntax'.
   (when (eq (keymap-lookup org-mode-map "C-c C-d") 'org-deadline)
     (my/move-key :keymap org-mode-map :from "C-c C-d" :to "C-c C-S-d"))
 

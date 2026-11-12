@@ -13,7 +13,7 @@
 
 (with-eval-after-load "cider-mode"
   (when (boundp 'cider-mode-map)
-    ;; I used `C-c C-d' for `delete-chars-forward-with-syntax' years.
+    ;; I used `C-c C-d' for `my/kill-same-syntax' years.
     ;; Since xcscope.el uses `C-c s d' for similar purpose, I rebind
     ;; `cider-doc-map' to `C-c s'.
     (my/move-key :keymap cider-mode-map :from "C-c C-d" :to "C-c s")))
