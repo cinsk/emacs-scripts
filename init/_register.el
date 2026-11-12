@@ -1,17 +1,31 @@
 ;;; _register.el ---                                 -*- lexical-binding: t; -*-
 
 
+(defun my--kmacro-make-last (macro)
+  "Make MACRO the last keyboard macro unless it already is.
+The previous last macro is pushed onto `kmacro-ring' first."
+  (unless (equal macro (kmacro-ring-head))
+    (kmacro-push-ring)                 ; keep the old macro and its counter
+    (kmacro-split-ring-element macro)))
+
 (defun my/insert-register-dwim (register &optional arg)
   "Insert REGISTER's text, or jump to it if it holds anything else.
-With prefix ARG, leave point after the inserted text."
+If REGISTER holds a keyboard macro, make it the last macro and run it,
+so that \\[kmacro-end-or-call-macro] can repeat it.  A numeric prefix
+ARG is the repeat count for a macro.
+Otherwise, a prefix ARG leaves point after the inserted text."
   (interactive (list (register-read-with-preview "Register: ")
                      current-prefix-arg))
   (let ((val (get-register register)))
-    (if (or (stringp val)
-            (numberp val)
-            (and (consp val) (stringp (car val))))   ; rectangle
-        (insert-register register arg)
-      (jump-to-register register))))
+    (cond
+     ((and (fboundp 'kmacro-p) (kmacro-p val))
+      (my--kmacro-make-last val)
+      (kmacro-call-macro arg))
+     ((or (stringp val)
+          (numberp val)
+          (and (consp val) (stringp (car val))))   ; rectangle
+      (insert-register register arg))
+     (t (jump-to-register register)))))
 
 (defun my--region-rectangle-p (beg end)
   "Heuristic: return non-nil if BEG..END looks like a rectangle.
@@ -37,7 +51,11 @@ of a line) is considered ordinary text."
 (defun my/copy-to-register-dwim (register &optional arg)
   "Save something into REGISTER, depending on context.
 
-With an active region, save it as text or as a rectangle:
+While a keyboard macro is being defined, end the definition and save
+the macro.  The key sequence that invoked this command is not
+recorded in the macro.
+
+Otherwise, with an active region, save it as text or as a rectangle:
   - If `rectangle-mark-mode' is active, always save a rectangle.
     The prefix argument is ignored in this case.
   - Otherwise, `my--region-rectangle-p' guesses the kind of region.
@@ -51,10 +69,14 @@ With no active region, the prefix argument selects what to save:
   - \\[universal-argument]:                   the frame configuration (all frames).
   - \\[universal-argument] \\[universal-argument]:                 point (as a marker).
 
-Use `my/copy-to-register-dwim' to restore or insert the saved value."
+Use `my/insert-register-dwim' to restore or insert the saved value."
   (interactive (list (register-read-with-preview "Save to register: ")
                      current-prefix-arg))
   (cond
+   (defining-kbd-macro
+    (kmacro-end-macro nil)
+    (kmacro-to-register register)
+    (message "Saved keyboard macro to register %c" register))
    ((use-region-p)
     (let ((beg (region-beginning))
           (end (region-end)))
