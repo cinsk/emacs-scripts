@@ -101,9 +101,9 @@ Prefix argument means switch to the Lisp buffer afterwards."
     ;; C-c C-e slime-eval-last-expression
     ;; C-c C-r slime-eval-region
 
-    ;; `M-x slime-interrupt' moved to `C-c C-B' from `C-c C-b'
-    (my/move-key :keymap slime-mode-map :from "C-c C-b" :to "C-c C-B")
-    (my/move-key :keymap slime-mode-map :from "C-c C-e" :to "C-M :")
+    ;; `M-x slime-interrupt' moved to `C-c C-S-b' from `C-c C-b'
+    (my/move-key :keymap slime-mode-map :from "C-c C-b" :to "C-c C-S-b")
+    (my/move-key :keymap slime-mode-map :from "C-c C-e" :to "C-M-:")
     ;; C-c v   slime-describe-symbol
     ;; C-c f   slime-describe
     ;;(keymap-set slime-mode-map "C-c v" #'slime-describe-symbol)
@@ -199,7 +199,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
   ;; TODO: `racket-run' or `racket-repl'?
   (keymap-set racket-mode-map "C-c !" #'my/racket-mode-switch-to-repl)
   ;; keep `C-c C-c' for `comment-region'.
-  (my/move-key :keymap racket-mode-map :from "C-c C-c" :to "C-c C-C")
+  (my/move-key :keymap racket-mode-map :from "C-c C-c" :to "C-c C-S-c")
 
   ;; geiser forces to use scheme-mode for ".rkt" files. force to use
   ;; `racket-mode'.
@@ -226,7 +226,7 @@ Prefix argument means switch to the Lisp buffer afterwards."
 
 (with-eval-after-load "geiser-mode"
   (keymap-set geiser-mode-map "C-c !" #'geiser-mode-switch-to-repl)
-  (my/move-key :keymap geiser-mode-map :from "C-c C-c" :to "C-c C-C"))
+  (my/move-key :keymap geiser-mode-map :from "C-c C-c" :to "C-c C-S-c"))
 )
 
 (defun pop-to-scratch-buffer ()

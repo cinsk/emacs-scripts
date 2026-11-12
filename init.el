@@ -379,8 +379,18 @@ instead of the next window."
 (keymap-global-set "M-S-<prior>" #'scroll-other-frame-down)
 (keymap-global-set "M-S-<next>" #'scroll-other-frame)
 
-(keymap-global-set "C-M-]" #'forward-page)
-(keymap-global-set "C-M-[" #'backward-page)
+;; Disabled: both bindings break built-in keys, and the commands are
+;; already on `C-x ]' (`forward-page') and `C-x [' (`backward-page').
+;;
+;; - "C-M-]" replaces the default `abort-recursive-edit'.
+;; - "C-M-[" is really "M-ESC" ("ESC ESC"), because C-[ is the ASCII
+;;   ESC character.  Binding it turns the "ESC ESC" prefix into a
+;;   command, which breaks `ESC ESC ESC' (`keyboard-escape-quit') and
+;;   `ESC ESC :' (`eval-expression').  Check with:
+;;     (key-description (key-parse "C-M-["))   ;=> "M-ESC"
+;;
+;; (keymap-global-set "C-M-]" #'forward-page)
+;; (keymap-global-set "C-M-[" #'backward-page)
 
 
 

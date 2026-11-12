@@ -13,7 +13,7 @@
 
 (my/move-key :from "M-x" :to "M-X" :with #'helm-M-x :overwrite t)
 (my/move-key :from "C-x b" :to "C-x B" :with #'helm-buffers-list)
-(my/move-key :from "C-x C-f" :to "C-x C-F" :with #'helm-find-files)
+(my/move-key :from "C-x C-f" :to "C-x C-S-f" :with #'helm-find-files)
 (my/move-key :from "M-y" :to "M-Y" :with #'helm-show-kill-ring)
 
 (keymap-global-set "C-x C-a" #'helm-command-prefix)

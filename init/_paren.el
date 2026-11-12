@@ -62,8 +62,8 @@
      'paredit-backward-delete
      'paredit-close-round))
 
-  (my/move-key :keymap paredit-mode-map :from "C-k" :to "C-K")
-  (my/move-key :keymap paredit-mode-map :from "C-d" :to "C-D")
+  (my/move-key :keymap paredit-mode-map :from "C-k" :to "C-S-k")
+  (my/move-key :keymap paredit-mode-map :from "C-d" :to "C-S-d") ; TODO: conflict with global key bindings
   (my/move-key :keymap paredit-mode-map :from "DEL" :to "S-<backspace>"))
 
 
