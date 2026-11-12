@@ -18,8 +18,6 @@
 ;;; ==================================================================
 
 
-(load custom-file 'noerror)		; Load custom configuration
-
 ;;; emacs packages for my personal uses are placed in $HOME/.emacs.d
 (setq user-emacs-directory "~/.emacs.d/")
 
@@ -657,8 +655,8 @@ instead of the next window."
 (uinit "X" :when (eq window-system 'x))
 
 
-
-(load (file-name-concat user-emacs-directory "postinit.el") t)
+(load custom-file 'noerror)		; Load custom configuration
+(load (file-name-concat user-emacs-directory "postinit.el") 'noerror)
 
 
 ;;; Local Variables:
