@@ -26,7 +26,9 @@
 
 
 (when (locate-library "wfutils")
-  (require 'wfutils))
+  (require 'wfutils)
+  (my/move-key :from "C-x f" :to "C-x F")
+  (wfu-mode 1))
 
 
 
@@ -72,163 +74,6 @@ CONFIGURATION."
     nil))
 
 
-
-;; (defun reverse-other-window (arg)
-;;   "Reverse `other-window' with no argument"
-;;   (interactive "p")
-;;   (other-window (- arg)))
-
-;; (defun first-window ()
-;;   "Select the first window of the current frame."
-;;   (let ((window nil))
-;;     (mapcar '(lambda (w)
-;;                (let ((edges (window-edges w)))
-;;                  (and (eql (car edges) 0)
-;;                       (eql (cadr edges) 0)
-;;                       (setq window w)))) (window-list))
-;;     window))
-
-;; (defun abs-other-window (index)
-;;   "Same as \\[other-window] except the base is the first window not the
-;; current window"
-;;   (interactive "p")
-;;   (select-window (first-window))
-;;   (other-window index))
-
-;; (keymap-global-set "C-x w 0"
-;;                 (lambda () (interactive) (abs-other-window 0)))
-;; (keymap-global-set "C-x w 1"
-;;                 (lambda () (interactive) (abs-other-window 1)))
-;; (keymap-global-set "C-x w 2"
-;;                 (lambda () (interactive) (abs-other-window 2)))
-;; (keymap-global-set "C-x w 3"
-;;                 (lambda () (interactive) (abs-other-window 3)))
-;; (keymap-global-set "C-x w 4"
-;;                 (lambda () (interactive) (abs-other-window 4)))
-;; (keymap-global-set "C-x w 5"
-;;                 (lambda () (interactive) (abs-other-window 5)))
-;; (keymap-global-set "C-x w 6"
-;;                 (lambda () (interactive) (abs-other-window 6)))
-;; (keymap-global-set "C-x w 7"
-;;                 (lambda () (interactive) (abs-other-window 7)))
-;; (keymap-global-set "C-x w 8"
-;;                 (lambda () (interactive) (abs-other-window 8)))
-;; (keymap-global-set "C-x w 9"
-;;                 (lambda () (interactive) (abs-other-window 9)))
-
-;;(keymap-global-set "C-<tab>" #'other-window)  ; C-x o
-;;(keymap-global-set "S-<iso-lefttab>" #'reverse-other-window)
-;;(keymap-global-set "<backtab>" #'reverse-other-window)
-
-;;(keymap-global-set "C-<tab>" #'smart-other-frame-or-window)
-;;(keymap-global-set "C-<tab>" #'other-window-or-frame)
-
-;; ;; I want C-<tab> works consistently even in minibuffer-mode.
-;; ;; Since, C-<tab> is bound to `file-cache-minibuffer-complete'
-;; ;; in the minibuffer mode, I'll replace to S-<tab>.
-;; (keymap-set minibuffer-local-map "<backtab>" #'file-cache-minibuffer-complete)
-;; (keymap-set minibuffer-local-map "C-<tab>" #'smart-other-frame-or-window)
-
-
-;; TODO: How about to bind keys like these?
-;;
-;; C-x w 1  - select the first window
-;; C-x w 2  - select the second window
-;; ...
-
-;; (keymap-global-set "C-x w n" #'other-window)
-;; (keymap-global-set "C-x w o" #'other-window)
-;; (keymap-global-set "C-x w p" #'reverse-other-window)
-;; (keymap-global-set "C-x w k" #'delete-window)
-;; (keymap-global-set "C-x w K" #'delete-other-window)
-
-;; (defun first-window ()
-;;   "Return the first window of the current frame"
-;;   (labels ((distance (win)
-;;                      (let ((edges (window-edges win)))
-;;                        (+ (car edges) (cadr edges)))))
-;;     (let (cand-win (cand-dist 99999))
-;;       (dolist (win (window-list) cand-win)
-;;         (let ((dist (distance win)))
-;;           (if (< dist cand-dist)
-;;               (setq cand-win win
-;;                     cand-dist dist)))))))
-
-;; (defun nth-window (n)
-;;   "Select Nth window in cyclic ordering of windows."
-;;   (interactive "P")
-;;   (labels ((position (item seq)
-;;                      (let ((count 0))
-;;                        (catch 'found
-;;                          (dolist (v seq nil)
-;;                            (if (eq v item)
-;;                                (throw 'found count)
-;;                              (setq count (1+ count))))))))
-;;     (let ((pos (if n (prefix-numeric-value n)
-;;                  0)))
-;;       ;; (message "position: %s" pos))
-;;       (other-window (+ pos (let ((winlist (window-list)))
-;;                              ;;(nconc winlist winlist)
-;;                              (position (first-window)
-;;                                        winlist)))))))
-
-
-;; (defun smart-other-window ()
-;;   "This calls `other-window' if there are more than one window, otherwise
-;; calls `iswitchb'"
-;;   (interactive)
-;;   (if (one-window-p t 1)
-;;       (call-interactively 'iswitchb-buffer)
-;;     (call-interactively 'other-window)))
-
-;; (defun smart-other-frame (arg)
-;;   "This calls `other-frame' if there are more than one frame,
-;; otherwise it calls `other-window'"
-;;   (interactive "p")
-;;   (if (> (length (frame-list)) 1)
-;;       (other-frame arg)
-;;     (other-window arg)))
-
-;; (defun smart-other-frame-or-window (&optional arg)
-;;   "Switch focus to other window or frame."
-;;   (interactive "p")
-;;   (if (one-window-p 'nomini)
-;;       (if (> (length (frame-list)) 1)
-;;           (other-frame arg)
-;;         (call-interactively 'iswitchb-buffer))
-;;     (other-window arg)))
-
-;; (defun reverse-smart-other-frame (arg)
-;;   "This calls `other-frame' if there are more than one frame, otherwise calls
-;; `other-window'"
-;;   (interactive "p")
-;;   (if (> (length (frame-list)) 1)
-;;       (other-frame (- arg))
-;;     (other-window (- arg))))
-;;(keymap-global-set "C-x o" #'smart-other-frame)
-(defun delete-current-frame-keep-focus ()
-  "Select another available frame before deleting the current frame, to
-prevent focus loss."
-  (interactive)
-  (let* ((cframe (selected-frame))
-         (oframe (next-frame cframe nil)))
-    (if (and oframe (not (eq oframe cframe)))
-        (progn (select-frame-set-input-focus oframe)
-               (delete-frame cframe))
-      (message "No other frame to select"))))
-
-(defvar-keymap my/ctl-x-f-map
-  :doc "frame (or tab) management keymap"
-  "f" #'make-frame
-  "k" #'delete-current-frame-keep-focus
-  "K" #'delete-other-frames
-  "n" #'smart-other-frame
-  ;; "t" #'tab-bar-new-tab
-  "o" #'smart-other-frame
-  "p" #'reverse-smart-other-frame)
-
-(my/move-key :from "C-x f" :to "C-x F" :with my/ctl-x-f-map)
-
 (when (require 'tab-bar nil t)
   (when (boundp 'tab-prefix-map)
     (keymap-set tab-prefix-map "[" #'tab-previous)
@@ -242,24 +87,6 @@ prevent focus loss."
   (select-frame (make-frame))
   (call-interactively command))
 (keymap-global-set "C-x 5 M-x" #'run-command-other-frame)
-
-
-;;
-;; Quick Frame Configuration Load/Save
-;;
-(when nil
-  (keymap-global-set "C-<f3>" (lambda ()
-                                "Quick frame load"
-                                (interactive)
-                                (jump-to-register ?\x3)
-                                (message "Load saved frame configuration")))
-
-  (keymap-global-set "C-<f4>" (lambda ()
-                                "Quick frame save"
-                                (interactive)
-                                (frame-configuration-to-register ?\x3)
-                                (message "Frame configuration saved"))))
-
 
 
 ;; (defun frame-position-for-resizing (width height &optional frame display)
@@ -325,18 +152,6 @@ to the display width"
        0)))
 
 
-
-;; (keymap-global-set "C-x w <up>" #'move-window-border-up)
-;; (keymap-global-set "C-x w <down>" #'move-window-border-down)
-;; (keymap-global-set "C-x w <left>" #'move-window-border-left)
-;; (keymap-global-set "C-x w <right>" #'move-window-border-right)
-
-;; (keymap-global-set "M-S-<up>" #'move-window-border-up)
-;; (keymap-global-set "M-S-<down>" #'move-window-border-down)
-;; (keymap-global-set "M-S-<left>" #'move-window-border-left)
-;; (keymap-global-set "M-S-<right>" #'move-window-border-right)
-
-
 (defun load-or-save-frame-configuration (&optional arg)
   (interactive "P")
   (let* ((cmdvec (this-command-keys))
