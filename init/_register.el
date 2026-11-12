@@ -104,4 +104,6 @@ Use `my/insert-register-dwim' to restore or insert the saved value."
 ;; <f2> is bound to 2C-comman which I don't use.  Since <f6> is
 ;; undefined, move <f2> to <f6>.
 (my/move-key :from "<f2>" :to "<f6>" :with #'my/insert-register-dwim)
+;; On macOs, "C-<f2>" is bound to the system menubar, unable to cache it from Emacs
 (keymap-global-set "C-<f2>" #'my/copy-to-register-dwim)
+(keymap-global-set "M-<f2>" #'my/copy-to-register-dwim)
